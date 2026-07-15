@@ -4,10 +4,11 @@ exports.getTutors = async (req, res) => {
     try {
         const tutors = await User.find({ role: 'TUTOR' })
             .select("-password")
-            .sort({ rating: -1 });
+            .sort({ rating: -1 })
+            .lean();
         res.json(tutors);
     } catch (err) {
-        console.error("Get Tutors Error:", err);
+        console.error("Get Tutors Error:", err.name, "-", err.message);
         res.status(500).json({ message: "Failed to fetch tutors" });
     }
 };

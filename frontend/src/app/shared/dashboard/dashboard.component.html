@@ -1,133 +1,183 @@
 <div class="dashboard-container container animate-fade-in">
-    <div class="welcome-section">
+
+  <!-- ── Welcome Banner ──────────────────────────────────── -->
+  <div class="welcome-banner">
+    <div class="wb-left">
+      <div class="wb-avatar">{{ userName.charAt(0) || '?' }}</div>
+      <div>
         <h1>Welcome back, <span class="text-gradient">{{ userName }}</span></h1>
-        <p>Here's what's happening with your account today.</p>
+        <p>
+          @if (userRole === 'PARENT') { Here's what's happening with your requirements. }
+          @if (userRole === 'TUTOR')  { Check your latest leads and points balance. }
+          @if (userRole === 'ADMIN')  { Platform overview and admin controls. }
+        </p>
+      </div>
     </div>
-
-    @if (loading) {
-        <div class="loading-spinner">
-            <i class="fa-solid fa-circle-notch fa-spin"></i>
-            <p>Preparing your dashboard...</p>
-        </div>
-    }
-
-    @if (!loading && stats) {
-        <div class="stats-grid">
-            <!-- Parent Stats -->
-            @if (userRole === 'PARENT') {
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-paper-plane"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.totalLeads }}</h3>
-                        <p>Total Requirements</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.activeLeads }}</h3>
-                        <p>Active Requirements</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.totalInterest }}</h3>
-                        <p>Tutor Responses</p>
-                    </div>
-                </div>
-            }
-
-            <!-- Tutor Stats -->
-            @if (userRole === 'TUTOR') {
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-lock-open"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.unlockedCount }}</h3>
-                        <p>Leads Unlocked</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-coins"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.points }}</h3>
-                        <p>Points Balance</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.availableLeads }}</h3>
-                        <p>Open Opportunities</p>
-                    </div>
-                </div>
-            }
-
-            <!-- Admin Stats -->
-            @if (userRole === 'ADMIN') {
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.revenue }}</h3>
-                        <p>Total Revenue (pts)</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.totalLeads }}</h3>
-                        <p>Total Leads</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-panel">
-                    <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
-                    <div class="stat-info">
-                        <h3>{{ stats.unlockEvents }}</h3>
-                        <p>Unlock Events</p>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-
-    <!-- Quick Actions -->
-    <div class="actions-section mt-4">
-        <h2>Quick Actions</h2>
-        <div class="actions-grid">
-            @if (userRole === 'PARENT') {
-                <a routerLink="/parent/create-lead" class="action-card glass-panel">
-                    <i class="fa-solid fa-plus-circle"></i>
-                    <span>Post New Requirement</span>
-                </a>
-                <a routerLink="/parent/my-leads" class="action-card glass-panel">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Manage My Leads</span>
-                </a>
-            }
-            @if (userRole === 'TUTOR') {
-                <a routerLink="/tutor/leads" class="action-card glass-panel">
-                    <i class="fa-solid fa-search"></i>
-                    <span>Browse Leads</span>
-                </a>
-                <a routerLink="/tutor/buy-points" class="action-card glass-panel">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>Buy Points</span>
-                </a>
-            }
-            @if (userRole === 'ADMIN') {
-                <a routerLink="/admin" class="action-card glass-panel">
-                    <i class="fa-solid fa-gauge-high"></i>
-                    <span>Admin Panel</span>
-                </a>
-            }
-            <a routerLink="/profile" class="action-card glass-panel">
-                <i class="fa-solid fa-user-pen"></i>
-                <span>Edit Profile</span>
-            </a>
-            <button (click)="logout()" class="action-card glass-panel logout-btn">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
-            </button>
-        </div>
+    <div class="wb-right">
+      @if (userRole === 'PARENT') {
+        <a routerLink="/parent/create-lead" class="btn btn-primary">
+          <i class="fa-solid fa-plus"></i> Post Requirement
+        </a>
+      }
+      @if (userRole === 'TUTOR') {
+        <a routerLink="/tutor/buy-points" class="btn btn-accent">
+          <i class="fa-solid fa-coins"></i> Buy Points
+        </a>
+      }
     </div>
+  </div>
+
+  <!-- ── Skeleton while loading ──────────────────────────── -->
+  @if (loading) {
+    <div class="stats-grid mt-4">
+      <div class="stat-card">
+        <div class="skeleton skeleton-avatar"></div>
+        <div style="flex:1">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text" style="width:70%"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="skeleton skeleton-avatar"></div>
+        <div style="flex:1">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text" style="width:70%"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="skeleton skeleton-avatar"></div>
+        <div style="flex:1">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text" style="width:70%"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Live Stats ───────────────────────────────────────── -->
+  @if (!loading && stats) {
+    <div class="stats-grid mt-4">
+
+      @if (userRole === 'PARENT') {
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-paper-plane"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.totalLeads }}</h3>
+            <p>Total Requirements</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-success"><i class="fa-solid fa-bolt"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.activeLeads }}</h3>
+            <p>Active Requirements</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-accent"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.totalInterest }}</h3>
+            <p>Tutor Responses</p>
+          </div>
+        </div>
+      }
+
+      @if (userRole === 'TUTOR') {
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-lock-open"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.unlockedCount }}</h3>
+            <p>Leads Unlocked</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-accent"><i class="fa-solid fa-coins"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.points }}</h3>
+            <p>Points Balance</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-success"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.availableLeads }}</h3>
+            <p>Open Opportunities</p>
+          </div>
+        </div>
+      }
+
+      @if (userRole === 'ADMIN') {
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-success"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.revenue }}</h3>
+            <p>Total Revenue (pts)</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.totalLeads }}</h3>
+            <p>Total Leads</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-accent"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="stat-info">
+            <h3>{{ stats.unlockEvents }}</h3>
+            <p>Unlock Events</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Quick Actions ────────────────────────────────────── -->
+  <div class="actions-section mt-6">
+    <h2 class="actions-title">Quick Actions</h2>
+    <div class="actions-grid">
+      @if (userRole === 'PARENT') {
+        <a routerLink="/parent/create-lead" class="action-card">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>Post Requirement</span>
+        </a>
+        <a routerLink="/parent/my-leads" class="action-card">
+          <i class="fa-solid fa-list-check"></i>
+          <span>My Leads</span>
+        </a>
+        <a routerLink="/find-tutors" class="action-card">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Find Tutors</span>
+        </a>
+      }
+      @if (userRole === 'TUTOR') {
+        <a routerLink="/tutor/leads" class="action-card">
+          <i class="fa-solid fa-search"></i>
+          <span>Browse Leads</span>
+        </a>
+        <a routerLink="/tutor/buy-points" class="action-card">
+          <i class="fa-solid fa-wallet"></i>
+          <span>Buy Points</span>
+        </a>
+        <a routerLink="/find-students" class="action-card">
+          <i class="fa-solid fa-users"></i>
+          <span>Find Students</span>
+        </a>
+      }
+      @if (userRole === 'ADMIN') {
+        <a routerLink="/admin" class="action-card">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Admin Panel</span>
+        </a>
+      }
+      <a routerLink="/profile" class="action-card">
+        <i class="fa-solid fa-user-pen"></i>
+        <span>Edit Profile</span>
+      </a>
+      <button (click)="logout()" class="action-card logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
 </div>

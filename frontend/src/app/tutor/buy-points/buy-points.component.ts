@@ -82,7 +82,7 @@ export class BuyPointsComponent implements OnInit {
             key: 'rzp_test_placeholder', // Replace with real Razorpay key from env
             amount: order.amount * 100,
             currency: order.currency || 'INR',
-            name: 'ApnaTution',
+            name: 'ApnaTutors',
             description: `${order.planName} — ${order.points} Points`,
             order_id: order.paymentId,
             handler: (response: any) => {

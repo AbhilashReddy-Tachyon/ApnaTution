@@ -1,57 +1,89 @@
 <div class="auth-page">
-    <div class="auth-card">
-        <div class="auth-header">
-            <a routerLink="/" class="auth-brand">ApnaTution</a>
-            <h2>Welcome Back</h2>
-            <p>Sign in to continue to your account</p>
-        </div>
 
-        @if (successMessage) {
-            <div class="success-alert">
-                <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
-            </div>
-        }
-
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="form-group" [class.has-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-                <label>Email Address</label>
-                <input type="email" formControlName="email" placeholder="you@example.com" autocomplete="email">
-                @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-                    <span class="field-error">Enter a valid email address</span>
-                }
-            </div>
-
-            <div class="form-group" [class.has-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-                <div class="label-row">
-                    <label>Password</label>
-                    <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>
-                </div>
-                <div class="input-with-icon">
-                    <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
-                        placeholder="Your password" autocomplete="current-password">
-                    <button type="button" class="toggle-pwd" (click)="togglePassword()">
-                        <i [class]="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                    </button>
-                </div>
-            </div>
-
-            @if (error) {
-                <div class="error-alert">
-                    <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
-                </div>
-            }
-
-            <button type="submit" class="btn-submit" [disabled]="loading">
-                @if (loading) {
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> Signing in...
-                } @else {
-                    <i class="fa-solid fa-right-to-bracket"></i> Sign In
-                }
-            </button>
-        </form>
-
-        <p class="auth-footer">
-            Don't have an account? <a routerLink="/register">Create one free</a>
-        </p>
+  <!-- ── Left Brand Panel ─────────────────────────────────── -->
+  <div class="auth-panel-left">
+    <a routerLink="/" class="auth-brand-logo">
+      <div class="auth-brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+      <span class="auth-brand-text">Apna<span>Tutors</span></span>
+    </a>
+    <h1 class="auth-panel-headline">
+      Connect with the<br><span>best tutors</span><br>near you.
+    </h1>
+    <p class="auth-panel-sub">
+      India's smartest tuition marketplace. Free for parents, affordable for tutors.
+    </p>
+    <div class="auth-panel-stats">
+      <div class="aps-item">
+        <span class="aps-num">500+</span>
+        <span class="aps-label">Tutors</span>
+      </div>
+      <div class="aps-item">
+        <span class="aps-num">2,000+</span>
+        <span class="aps-label">Students</span>
+      </div>
+      <div class="aps-item">
+        <span class="aps-num">100+</span>
+        <span class="aps-label">Cities</span>
+      </div>
     </div>
+  </div>
+
+  <!-- ── Right Form Panel ──────────────────────────────────── -->
+  <div class="auth-panel-right">
+    <div class="auth-form-header">
+      <a routerLink="/" class="auth-back-home">
+        <i class="fa-solid fa-arrow-left"></i> Back to home
+      </a>
+      <h2>Welcome back</h2>
+      <p>Sign in to your ApnaTutors account</p>
+    </div>
+
+    @if (successMessage) {
+      <div class="success-alert">
+        <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group" [class.has-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+        <label>Email Address</label>
+        <input type="email" formControlName="email" placeholder="you@example.com" autocomplete="email">
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+          <span class="field-error">Enter a valid email address</span>
+        }
+      </div>
+
+      <div class="form-group" [class.has-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+        <div class="label-row">
+          <label>Password</label>
+          <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
+        <div class="input-with-icon">
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+            placeholder="Your password" autocomplete="current-password">
+          <button type="button" class="toggle-pwd" (click)="togglePassword()">
+            <i [class]="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (error) {
+        <div class="error-alert">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+        </div>
+      }
+
+      <button type="submit" class="btn-submit" [disabled]="loading">
+        @if (loading) {
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Signing in...
+        } @else {
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account? <a routerLink="/register">Create one free</a>
+    </p>
+  </div>
 </div>

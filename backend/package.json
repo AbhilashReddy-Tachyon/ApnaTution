@@ -8,9 +8,9 @@
   "description": "",
   "main": "src/server.cjs",
   "scripts": {
-    "start": "node src/server.cjs",
+    "start": "node --dns-result-order=ipv4first src/server.cjs",
     "build": "echo 'No build step required for backend'",
-    "dev": "nodemon src/server.cjs",
+    "dev": "nodemon --exec \"node --dns-result-order=ipv4first\" src/server.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

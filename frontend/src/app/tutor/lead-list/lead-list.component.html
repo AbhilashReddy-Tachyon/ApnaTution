@@ -1,198 +1,246 @@
 <div class="page-wrapper">
 
-    <!-- Toast Notification -->
-    @if (toast) {
-        <div class="toast-notification" [class]="'toast-' + toast.type">
-            <span>{{ toast.message }}</span>
-        </div>
+  <!-- Toast Notification -->
+  @if (toast) {
+    <div class="toast-notification" [class]="'toast-' + toast.type">
+      <i class="fa-solid" [class.fa-circle-check]="toast.type === 'success'"
+         [class.fa-circle-exclamation]="toast.type === 'error'"
+         [class.fa-circle-info]="toast.type === 'info'"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+  }
+
+  <!-- ── Sidebar Filters ─────────────────────────────────���── -->
+  <aside class="sidebar">
+    <div class="filter-card">
+      <div class="filter-header">
+        <h3><i class="fa-solid fa-sliders"></i> Filters</h3>
+        <button class="clear-btn" (click)="clearFilters()">Clear All</button>
+      </div>
+
+      <div class="filter-group">
+        <label>Location / City</label>
+        <input type="text" placeholder="e.g. Mumbai, Delhi"
+          [value]="filters.location"
+          (input)="onFilterChange('location', $event)">
+      </div>
+
+      <div class="filter-group">
+        <label>Class / Course</label>
+        <input type="text" placeholder="e.g. Class 10, JEE"
+          [value]="filters.course"
+          (input)="onFilterChange('course', $event)">
+      </div>
+
+      <div class="filter-group">
+        <label>Subject</label>
+        <input type="text" placeholder="e.g. Mathematics, Physics"
+          [value]="filters.subject"
+          (input)="onFilterChange('subject', $event)">
+      </div>
+
+      <div class="filter-group">
+        <label>Teaching Mode</label>
+        <select [value]="filters.mode" (change)="onFilterChange('mode', $event)">
+          <option value="">All Modes</option>
+          <option value="online">Online</option>
+          <option value="home">Home Tuition</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+
+      <div class="results-count">
+        @if (loadingLeads) {
+          Loading leads...
+        } @else {
+          <strong>{{ filteredLeads.length }}</strong> lead{{ filteredLeads.length !== 1 ? 's' : '' }} found
+        }
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────── -->
+  <main class="main-content">
+    <div class="header-section">
+      <div>
+        <h2>Tuition Opportunities</h2>
+        <p class="header-sub">
+          <i class="fa-solid fa-coins" style="color:#f59e0b"></i>
+          Unlock a lead to reveal parent contact — 1 Point per lead
+        </p>
+      </div>
+      <a routerLink="/tutor/buy-points" class="btn-buy-points">
+        <i class="fa-solid fa-wallet"></i> Buy Points
+      </a>
+    </div>
+
+    <!-- ── Skeleton Loading ───────────────────────────────���─ -->
+    @if (loadingLeads) {
+      <div class="skeleton-leads">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="skeleton-lead-card">
+            <div class="flex items-center justify-between">
+              <div class="skeleton" style="height:22px;width:80px;border-radius:99px"></div>
+              <div class="skeleton" style="height:16px;width:80px"></div>
+            </div>
+            <div class="skeleton" style="height:22px;width:75%"></div>
+            <div class="specs-grid">
+              <div>
+                <div class="skeleton" style="height:12px;width:50px;margin-bottom:6px"></div>
+                <div class="skeleton" style="height:16px;width:80px"></div>
+              </div>
+              <div>
+                <div class="skeleton" style="height:12px;width:60px;margin-bottom:6px"></div>
+                <div class="skeleton" style="height:16px;width:100px"></div>
+              </div>
+              <div>
+                <div class="skeleton" style="height:12px;width:55px;margin-bottom:6px"></div>
+                <div class="skeleton" style="height:16px;width:70px"></div>
+              </div>
+              <div>
+                <div class="skeleton" style="height:12px;width:50px;margin-bottom:6px"></div>
+                <div class="skeleton" style="height:16px;width:90px"></div>
+              </div>
+            </div>
+            <div class="skeleton" style="height:70px;border-radius:8px"></div>
+            <div class="skeleton" style="height:44px;border-radius:10px"></div>
+          </div>
+        }
+      </div>
     }
 
-    <!-- Sidebar Filters -->
-    <aside class="sidebar">
-        <div class="filter-card">
-            <div class="filter-header">
-                <h3>Filter Leads</h3>
-                <button class="clear-btn" (click)="clearFilters()">Clear All</button>
-            </div>
-
-            <div class="filter-group">
-                <label>Location / City</label>
-                <input type="text" placeholder="e.g. Mumbai, Delhi" [value]="filters.location"
-                    (input)="onFilterChange('location', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Class / Course</label>
-                <input type="text" placeholder="e.g. Class 10, JEE" [value]="filters.course"
-                    (input)="onFilterChange('course', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Subject</label>
-                <input type="text" placeholder="e.g. Mathematics, Physics" [value]="filters.subject"
-                    (input)="onFilterChange('subject', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Teaching Mode</label>
-                <select [value]="filters.mode" (change)="onFilterChange('mode', $event)">
-                    <option value="">All Modes</option>
-                    <option value="online">Online</option>
-                    <option value="home">Home Tuition</option>
-                    <option value="both">Both</option>
-                </select>
-            </div>
-
-            <div class="results-count">
-                <span>{{ filteredLeads.length }} lead{{ filteredLeads.length !== 1 ? 's' : '' }} found</span>
-            </div>
+    <!-- ── Empty State ───────────────────────────────��────── -->
+    @if (!loadingLeads && filteredLeads.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fa-solid fa-inbox"></i>
         </div>
-    </aside>
+        <h3>No leads found</h3>
+        <p>Try adjusting your filters or check back later for new tuition opportunities.</p>
+        <button class="btn-clear" (click)="clearFilters()">
+          <i class="fa-solid fa-rotate-left"></i> Clear Filters
+        </button>
+      </div>
+    }
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="header-section">
-            <div>
-                <h2>Tuition Opportunities</h2>
-                <p class="header-sub">Unlock a lead to reveal parent contact details (1 Point per lead)</p>
+    <!-- ── Leads Grid ─────────────────────────────────────── -->
+    <div class="leads-grid">
+      @for (lead of filteredLeads; track lead._id) {
+        <div class="lead-card" [class.lead-unlocked]="lead.isUnlocked">
+
+          <!-- Card Top Bar -->
+          <div class="card-top-bar">
+            <span class="mode-badge" [class]="'mode-' + (lead.mode?.toLowerCase() || 'offline')">
+              {{ lead.mode || 'OFFLINE' }}
+            </span>
+            <span class="posted-date">
+              <i class="fa-regular fa-clock"></i>
+              {{ lead.createdAt ? (lead.createdAt | date:'dd MMM yyyy') : 'Recent' }}
+            </span>
+          </div>
+
+          <!-- Lead Title -->
+          <h3 class="lead-title">{{ lead.title }}</h3>
+
+          <!-- Specs Grid -->
+          <div class="specs-grid">
+            <div class="spec-item">
+              <span class="spec-label">Class / Level</span>
+              <span class="spec-value">{{ lead.classLevel }}</span>
             </div>
-            <a routerLink="/tutor/buy-points" class="btn-buy-points">
-                <i class="fa-solid fa-wallet"></i> Buy Points
-            </a>
-        </div>
-
-        <!-- Loading State -->
-        @if (loadingLeads) {
-            <div class="loading-state">
-                <i class="fa-solid fa-circle-notch fa-spin"></i>
-                <p>Loading opportunities...</p>
+            <div class="spec-item">
+              <span class="spec-label">Subjects</span>
+              <span class="spec-value subjects-val">{{ lead.subjects?.join(', ') }}</span>
             </div>
-        }
-
-        <!-- Empty State -->
-        @if (!loadingLeads && filteredLeads.length === 0) {
-            <div class="empty-state">
-                <i class="fa-solid fa-search"></i>
-                <h3>No leads found</h3>
-                <p>Try adjusting your filters or check back later for new opportunities.</p>
-                <button class="btn-clear" (click)="clearFilters()">Clear Filters</button>
+            <div class="spec-item">
+              <span class="spec-label">Location</span>
+              @if (lead.isUnlocked) {
+                <span class="spec-value location-revealed">
+                  <i class="fa-solid fa-location-dot"></i> {{ lead.location || 'Not specified' }}
+                </span>
+              } @else {
+                <span class="spec-value locked-val">
+                  <i class="fa-solid fa-lock"></i> Unlock to view
+                </span>
+              }
             </div>
-        }
+            <div class="spec-item">
+              <span class="spec-label">Budget</span>
+              @if (lead.isUnlocked) {
+                <span class="spec-value budget-revealed">
+                  <i class="fa-solid fa-indian-rupee-sign"></i> {{ lead.budgetRange || 'Negotiable' }}
+                </span>
+              } @else {
+                <span class="spec-value locked-val">
+                  <i class="fa-solid fa-lock"></i> Locked
+                </span>
+              }
+            </div>
+          </div>
 
-        <!-- Leads Grid -->
-        <div class="leads-grid">
-            @for (lead of filteredLeads; track lead._id) {
-                <div class="lead-card" [class.lead-unlocked]="lead.isUnlocked">
-
-                    <!-- Card Status Bar -->
-                    <div class="card-top-bar">
-                        <span class="mode-badge" [class]="'mode-' + lead.mode?.toLowerCase()">
-                            {{ lead.mode }}
-                        </span>
-                        <span class="posted-date">
-                            {{ lead.createdAt ? (lead.createdAt | date:'dd MMM yyyy') : 'Recent' }}
-                        </span>
-                    </div>
-
-                    <!-- Lead Title -->
-                    <h3 class="lead-title">{{ lead.title }}</h3>
-
-                    <!-- Specs Grid -->
-                    <div class="specs-grid">
-                        <div class="spec-item">
-                            <span class="spec-label">Class</span>
-                            <span class="spec-value">{{ lead.classLevel }}</span>
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-label">Subjects</span>
-                            <span class="spec-value subjects-val">{{ lead.subjects?.join(', ') }}</span>
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-label">Location</span>
-                            @if (lead.isUnlocked) {
-                                <span class="spec-value location-revealed">
-                                    <i class="fa-solid fa-location-dot"></i> {{ lead.location || 'Not specified' }}
-                                </span>
-                            } @else {
-                                <span class="spec-value locked-val">
-                                    <i class="fa-solid fa-lock"></i> Unlock to view
-                                </span>
-                            }
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-label">Budget</span>
-                            @if (lead.isUnlocked) {
-                                <span class="spec-value budget-revealed">{{ lead.budgetRange || 'Negotiable' }}</span>
-                            } @else {
-                                <span class="spec-value locked-val">
-                                    <i class="fa-solid fa-lock"></i> Locked
-                                </span>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="desc-section">
-                        @if (lead.isUnlocked && lead.description) {
-                            <p class="desc-text">{{ lead.description }}</p>
-                        } @else if (!lead.isUnlocked) {
-                            <p class="desc-blur">
-                                Looking for a {{ lead.classLevel }} tutor covering {{ lead.subjects?.join(', ') }}.
-                                Unlock to view full details including contact information...
-                            </p>
-                        }
-                    </div>
-
-                    <!-- Parent Contact (shown after unlock) -->
-                    @if (lead.isUnlocked && lead.parentContact) {
-                        <div class="contact-card">
-                            <div class="contact-header">
-                                <i class="fa-solid fa-circle-check"></i>
-                                <span>Parent Contact Revealed</span>
-                            </div>
-                            <div class="contact-details">
-                                <div class="contact-row">
-                                    <i class="fa-solid fa-user"></i>
-                                    <span>{{ lead.parentContact.name }}</span>
-                                </div>
-                                @if (lead.parentContact.phone && lead.parentContact.phone !== 'Not provided') {
-                                    <div class="contact-row">
-                                        <i class="fa-solid fa-phone"></i>
-                                        <a href="tel:{{ lead.parentContact.phone }}" class="contact-link">
-                                            {{ lead.parentContact.phone }}
-                                        </a>
-                                    </div>
-                                }
-                                <div class="contact-row">
-                                    <i class="fa-solid fa-envelope"></i>
-                                    <a href="mailto:{{ lead.parentContact.email }}" class="contact-link">
-                                        {{ lead.parentContact.email }}
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    <!-- Actions -->
-                    <div class="card-actions">
-                        @if (!lead.isUnlocked) {
-                            <button class="btn-unlock"
-                                [disabled]="unlockingId === lead._id"
-                                (click)="unlockLead(lead)">
-                                @if (unlockingId === lead._id) {
-                                    <i class="fa-solid fa-circle-notch fa-spin"></i> Unlocking...
-                                } @else {
-                                    <i class="fa-solid fa-lock-open"></i> Unlock for 1 Point
-                                }
-                            </button>
-                        } @else {
-                            <div class="unlocked-badge">
-                                <i class="fa-solid fa-circle-check"></i> Unlocked
-                            </div>
-                        }
-                    </div>
-                </div>
+          <!-- Description -->
+          <div class="desc-section">
+            @if (lead.isUnlocked && lead.description) {
+              <p class="desc-text">{{ lead.description }}</p>
+            } @else if (!lead.isUnlocked) {
+              <p class="desc-blur">
+                <i class="fa-solid fa-lock" style="font-size:0.75rem;margin-right:0.3rem"></i>
+                Unlock to view full description and parent contact details...
+              </p>
             }
+          </div>
+
+          <!-- Contact Card (post-unlock) -->
+          @if (lead.isUnlocked && lead.parentContact) {
+            <div class="contact-card">
+              <div class="contact-header">
+                <i class="fa-solid fa-circle-check"></i>
+                Contact Revealed
+              </div>
+              <div class="contact-details">
+                <div class="contact-row">
+                  <i class="fa-solid fa-user"></i>
+                  <span>{{ lead.parentContact.name }}</span>
+                </div>
+                @if (lead.parentContact.phone && lead.parentContact.phone !== 'Not provided') {
+                  <div class="contact-row">
+                    <i class="fa-solid fa-phone"></i>
+                    <a href="tel:{{ lead.parentContact.phone }}" class="contact-link">
+                      {{ lead.parentContact.phone }}
+                    </a>
+                  </div>
+                }
+                <div class="contact-row">
+                  <i class="fa-solid fa-envelope"></i>
+                  <a href="mailto:{{ lead.parentContact.email }}" class="contact-link">
+                    {{ lead.parentContact.email }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="card-actions">
+            @if (!lead.isUnlocked) {
+              <button class="btn-unlock"
+                [disabled]="unlockingId === lead._id"
+                (click)="unlockLead(lead)">
+                @if (unlockingId === lead._id) {
+                  <i class="fa-solid fa-circle-notch fa-spin"></i> Unlocking...
+                } @else {
+                  <i class="fa-solid fa-lock-open"></i> Unlock for 1 Point
+                }
+              </button>
+            } @else {
+              <div class="unlocked-badge">
+                <i class="fa-solid fa-circle-check"></i> Unlocked
+              </div>
+            }
+          </div>
+
         </div>
-    </main>
+      }
+    </div>
+  </main>
 </div>

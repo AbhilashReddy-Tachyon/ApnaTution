@@ -1,268 +1,671 @@
-<div class="landing-wrapper">
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-content container animate-fade-in">
-            @if (!userRole) {
-                <h1 class="hero-title">
-                    The Smart Way to <br>
-                    <span class="text-gradient">Find Your Tutor</span>
-                </h1>
-            }
+<div class="landing">
+
+  <!-- ══════════════════════════════════════════════════════
+       HERO SECTION
+       ══════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-bg-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container hero-inner">
+      <div class="hero-content animate-fade-in">
+
+        <div class="hero-badge">
+          <i class="fa-solid fa-star"></i>
+          India's #1 Tuition Marketplace
+        </div>
+
+        @if (!userRole) {
+          <h1 class="hero-title">
+            Find the Perfect Tutor<br>
+            <span class="text-gradient-hero">Near You</span>
+          </h1>
+          <p class="hero-sub">
+            Connect with qualified tutors for CBSE, ICSE, JEE, NEET and more.
+            Parents post <strong>for free</strong>. Tutors grow their business.
+          </p>
+        }
+        @if (userRole === 'PARENT') {
+          <h1 class="hero-title">
+            Welcome back,<br>
+            <span class="text-gradient-hero">{{ userName || 'Parent' }}!</span>
+          </h1>
+          <p class="hero-sub">Post a new requirement or manage your active leads.</p>
+        }
+        @if (userRole === 'TUTOR') {
+          <h1 class="hero-title">
+            Ready to grow your<br>
+            <span class="text-gradient-hero">tuition business?</span>
+          </h1>
+          <p class="hero-sub">Browse fresh student leads and unlock parent contacts with just 1 point.</p>
+        }
+
+        <!-- Search Bar -->
+        @if (!userRole) {
+          <div class="search-bar animate-delay-1">
+            <div class="search-field">
+              <i class="fa-solid fa-location-dot search-icon"></i>
+              <input
+                type="text"
+                [(ngModel)]="searchCity"
+                placeholder="City (e.g. Delhi, Mumbai)"
+                (keyup.enter)="onSearch()"
+              >
+            </div>
+            <div class="search-divider"></div>
+            <div class="search-field">
+              <i class="fa-solid fa-book search-icon"></i>
+              <input
+                type="text"
+                [(ngModel)]="searchSubject"
+                placeholder="Subject (e.g. Maths, Physics)"
+                (keyup.enter)="onSearch()"
+              >
+            </div>
+            <button class="search-btn" (click)="onSearch()">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Find Tutors</span>
+            </button>
+          </div>
+        }
+
+        <!-- CTA Buttons (logged in) -->
+        @if (userRole) {
+          <div class="hero-cta animate-delay-1">
+            <a [routerLink]="dashboardLink" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
+            </a>
             @if (userRole === 'PARENT') {
-                <h1 class="hero-title">
-                    Unlock Your Child's <br>
-                    <span class="text-gradient">Full Potential</span>
-                </h1>
+              <a routerLink="/parent/create-lead" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-plus"></i> Post Requirement
+              </a>
             }
             @if (userRole === 'TUTOR') {
-                <h1 class="hero-title">
-                    Grow Your Teaching <br>
-                    <span class="text-gradient">Business Today</span>
-                </h1>
+              <a routerLink="/tutor/leads" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-search"></i> Browse Leads
+              </a>
             }
-
-            <p class="hero-subtitle">
-                @if (userName) { <span>Welcome back, <strong>{{ userName }}</strong>! </span> }
-                Connect with expert tutors or find eager students near you.
-                ApnaTution bridges the gap between knowledge and curiosity.
-            </p>
-
-            <div class="hero-actions">
-                @if (userRole) {
-                    <a [routerLink]="dashboardLink" class="btn btn-primary btn-glow">
-                        <i class="fa-solid fa-gauge-high"></i> Go to Dashboard
-                    </a>
-                    @if (userRole === 'PARENT') {
-                        <a routerLink="/parent/create-lead" class="btn btn-secondary ml-2">
-                            <i class="fa-solid fa-plus"></i> Post Requirement
-                        </a>
-                    }
-                    @if (userRole === 'TUTOR') {
-                        <a routerLink="/tutor/leads" class="btn btn-secondary ml-2">
-                            <i class="fa-solid fa-search"></i> Browse Jobs
-                        </a>
-                    }
-                } @else {
-                    <a routerLink="/register" class="btn btn-primary btn-glow">
-                        <i class="fa-solid fa-rocket"></i> Get Started Free
-                    </a>
-                    <a routerLink="/login" class="btn btn-secondary">
-                        <i class="fa-solid fa-right-to-bracket"></i> Login
-                    </a>
-                }
-            </div>
-
-            <div class="stats-row animate-delay-2">
-                <div class="stat-item">
-                    <span class="stat-num">{{ stats.tutors || '500' }}+</span>
-                    <span class="stat-desc">Active Tutors</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-num">{{ stats.students || '1000' }}+</span>
-                    <span class="stat-desc">Students</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-num">{{ stats.activeLeads || '100' }}+</span>
-                    <span class="stat-desc">Open Leads</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="hero-visual">
-            <div class="floating-card card-1 glass-panel">
-                <i class="fa-solid fa-book-open"></i>
-                <span>Math Expert</span>
-            </div>
-            <div class="floating-card card-2 glass-panel">
-                <i class="fa-solid fa-flask"></i>
-                <span>Science Pro</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="container mt-4 mb-4">
-        <div class="section-header text-center mb-3">
-            <h2>How It Works</h2>
-            <p>Simple steps to connect parents with the right tutors</p>
-            <div class="toggle-container mt-2">
-                <button class="toggle-btn" [class.active]="activeTab === 'PARENT'" (click)="setActiveTab('PARENT')">
-                    For Parents
-                </button>
-                <button class="toggle-btn" [class.active]="activeTab === 'TUTOR'" (click)="setActiveTab('TUTOR')">
-                    For Tutors
-                </button>
-            </div>
-        </div>
-
-        @if (activeTab === 'PARENT') {
-            <div class="works-content animate-fade-in">
-                <div class="works-grid">
-                    <div class="works-image glass-panel">
-                        <div class="works-illustration">
-                            <i class="fa-solid fa-clipboard-list" style="font-size:4rem; color: var(--primary); opacity:0.7"></i>
-                            <p>Post your requirement in minutes</p>
-                        </div>
-                    </div>
-                    <div class="works-steps">
-                        <div class="step-card">
-                            <div class="step-number">1</div>
-                            <div class="step-info">
-                                <h3>Post Your Requirement</h3>
-                                <p>Describe what you need — subject, class level, location and budget. Completely free.</p>
-                            </div>
-                        </div>
-                        <div class="step-card">
-                            <div class="step-number">2</div>
-                            <div class="step-info">
-                                <h3>Tutors Contact You</h3>
-                                <p>Interested tutors unlock your lead and reach out directly. No waiting around.</p>
-                            </div>
-                        </div>
-                        <div class="step-card">
-                            <div class="step-number">3</div>
-                            <div class="step-info">
-                                <h3>Pick & Start Learning</h3>
-                                <p>Choose the best tutor from those who contacted you and start classes immediately.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         }
 
-        @if (activeTab === 'TUTOR') {
-            <div class="works-content animate-fade-in">
-                <div class="works-grid">
-                    <div class="works-image glass-panel">
-                        <div class="works-illustration">
-                            <i class="fa-solid fa-graduation-cap" style="font-size:4rem; color: var(--secondary); opacity:0.7"></i>
-                            <p>Browse and unlock tuition leads</p>
-                        </div>
-                    </div>
-                    <div class="works-steps">
-                        <div class="step-card">
-                            <div class="step-number">1</div>
-                            <div class="step-info">
-                                <h3>Create Your Profile</h3>
-                                <p>Sign up and showcase your expertise, subjects, experience and hourly rate.</p>
-                            </div>
-                        </div>
-                        <div class="step-card">
-                            <div class="step-number">2</div>
-                            <div class="step-info">
-                                <h3>Buy Points & Unlock Leads</h3>
-                                <p>Browse available tuition requirements. Pay just 1 point to reveal parent contact details.</p>
-                            </div>
-                        </div>
-                        <div class="step-card">
-                            <div class="step-number">3</div>
-                            <div class="step-info">
-                                <h3>Connect & Start Earning</h3>
-                                <p>Contact the parent directly, conduct classes and grow your tuition business.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Guest CTAs -->
+        @if (!userRole) {
+          <div class="hero-cta animate-delay-2">
+            <a routerLink="/register" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-rocket"></i> Get Started — It's Free
+            </a>
+            <a routerLink="/find-tutors" class="btn btn-secondary btn-lg">
+              <i class="fa-solid fa-chalkboard-user"></i> Browse Tutors
+            </a>
+          </div>
         }
-    </section>
 
-    <!-- Recent Leads (for tutors and guests) -->
-    @if (userRole !== 'PARENT' && leads.length > 0) {
-        <section class="container mt-4 mb-4">
-            <div class="section-header text-center mb-2">
-                <h2>Recent Tuition Opportunities</h2>
-                <p>Fresh requirements posted by parents — unlock to see contact details.</p>
+        <!-- Trust Stats -->
+        <div class="hero-stats animate-delay-3">
+          <div class="hstat">
+            <span class="hstat-num">{{ stats.tutors || '500' }}+</span>
+            <span class="hstat-label">Active Tutors</span>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <span class="hstat-num">{{ stats.students || '2000' }}+</span>
+            <span class="hstat-label">Students Helped</span>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <span class="hstat-num">{{ stats.activeLeads || '200' }}+</span>
+            <span class="hstat-label">Open Leads</span>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <span class="hstat-num">100+</span>
+            <span class="hstat-label">Cities Covered</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual -->
+      <div class="hero-visual hide-mobile">
+        <div class="hero-card float-1">
+          <div class="hcard-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div>
+            <div class="hcard-title">Math Expert</div>
+            <div class="hcard-sub">IIT Delhi Graduate</div>
+          </div>
+          <div class="hcard-rating"><i class="fa-solid fa-star"></i> 4.9</div>
+        </div>
+        <div class="hero-card float-2 hcard-alt">
+          <div class="hcard-icon hcard-icon-green"><i class="fa-solid fa-flask"></i></div>
+          <div>
+            <div class="hcard-title">Science Tutor</div>
+            <div class="hcard-sub">10 yrs experience</div>
+          </div>
+          <div class="hcard-rating"><i class="fa-solid fa-star"></i> 5.0</div>
+        </div>
+        <div class="hero-card float-3 hcard-sm">
+          <i class="fa-solid fa-circle-check" style="color:#10b981"></i>
+          <span>Lead unlocked!</span>
+        </div>
+        <div class="hero-card float-1 hcard-xs">
+          <i class="fa-solid fa-users" style="color:#4f46e5"></i>
+          <span>3 new leads today</span>
+        </div>
+        <div class="hero-glow"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       TRUSTED BY BANNER
+       ══════════════════════════════════════════════════════ -->
+  <div class="trust-bar">
+    <div class="container trust-bar-inner">
+      <span class="trust-label">Trusted by students in</span>
+      @for (city of topCities.slice(0, 6); track city.name) {
+        <span class="trust-city">{{ city.name }}</span>
+      }
+      <span class="trust-more">& 90+ more cities</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       POPULAR SUBJECTS
+       ══════════════════════════════════════════════════════ -->
+  @if (userRole !== 'TUTOR') {
+  <section class="section bg-white">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Popular Subjects</div>
+        @if (userRole === 'PARENT') {
+          <h2>What do you want to learn?</h2>
+          <p>From school boards to competitive exams — we have tutors for every need.</p>
+        } @else {
+          <h2>Explore Subjects & Find Tutors</h2>
+          <p>Browse tutors by subject — from school boards to competitive exam prep.</p>
+        }
+      </div>
+      <div class="subjects-grid">
+        @for (subj of popularSubjects; track subj.name) {
+          <button class="subject-card" (click)="searchBySubject(subj.name)">
+            <div class="subject-icon" [style.background]="subj.color + '18'" [style.color]="subj.color">
+              <i class="fa-solid {{ subj.icon }}"></i>
             </div>
-            <div class="leads-grid">
-                @for (lead of leads; track lead._id) {
-                    <div class="lead-card glass-panel animate-fade-in">
-                        <div class="lead-tag">{{ lead.mode }}</div>
-                        <h3>{{ lead.title }}</h3>
-                        <div class="lead-meta">
-                            @if (lead.location) {
-                                <span><i class="fa-solid fa-location-dot"></i> {{ lead.location }}</span>
-                            }
-                            <span><i class="fa-solid fa-graduation-cap"></i> {{ lead.classLevel }}</span>
-                        </div>
-                        <div class="subjects">
-                            @for (sub of lead.subjects; track sub) {
-                                <span class="badge">{{ sub }}</span>
-                            }
-                        </div>
-                        <a routerLink="/tutor/leads" class="btn btn-outline btn-block mt-1">View & Unlock</a>
-                    </div>
+            <span class="subject-name">{{ subj.name }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+  }
+  <!-- ══════════════════════════════════════════════════════
+       HOW IT WORKS
+       ══════════════════════════════════════════════════════ -->
+  <section class="section how-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">How It Works</div>
+        @if (userRole === 'PARENT') {
+          <h2>How to find your perfect tutor</h2>
+          <p>Post your requirement for free and let qualified tutors come to you — in 3 simple steps.</p>
+        } @else if (userRole === 'TUTOR') {
+          <h2>Start growing your tuition business</h2>
+          <p>Get connected with parents actively looking for tutors — no middlemen, just real leads.</p>
+        } @else {
+          <h2>Simple steps to your perfect match</h2>
+          <p>ApnaTutors connects parents and tutors seamlessly in 3 easy steps.</p>
+        }
+      </div>
+
+      @if (!userRole) {
+        <div class="tab-toggle">
+          <button class="tab-btn" [class.tab-active]="activeTab === 'PARENT'" (click)="setActiveTab('PARENT')">
+            <i class="fa-solid fa-users"></i> For Parents
+          </button>
+          <button class="tab-btn" [class.tab-active]="activeTab === 'TUTOR'"  (click)="setActiveTab('TUTOR')">
+            <i class="fa-solid fa-chalkboard-user"></i> For Tutors
+          </button>
+        </div>
+      }
+
+      @if (activeTab === 'PARENT') {
+        <div class="steps-row animate-fade-in">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+            <h3>Post Your Requirement</h3>
+            <p>Describe what you need — subject, class, location and budget. Takes 2 minutes. Completely free.</p>
+          </div>
+          <div class="step-connector"><i class="fa-solid fa-arrow-right"></i></div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-icon step-icon-green"><i class="fa-solid fa-bell"></i></div>
+            <h3>Tutors Reach Out</h3>
+            <p>Qualified tutors unlock your lead and contact you directly. No waiting, no middleman.</p>
+          </div>
+          <div class="step-connector"><i class="fa-solid fa-arrow-right"></i></div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-icon step-icon-orange"><i class="fa-solid fa-handshake"></i></div>
+            <h3>Pick & Start Learning</h3>
+            <p>Choose the best fit from tutors who reach out and begin classes immediately.</p>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'TUTOR') {
+        <div class="steps-row animate-fade-in">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
+            <h3>Create Your Profile</h3>
+            <p>Sign up and showcase your expertise — subjects, experience, location and hourly rate.</p>
+          </div>
+          <div class="step-connector"><i class="fa-solid fa-arrow-right"></i></div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-icon step-icon-green"><i class="fa-solid fa-lock-open"></i></div>
+            <h3>Unlock Student Leads</h3>
+            <p>Browse available requirements and spend 1 point to reveal parent contact details instantly.</p>
+          </div>
+          <div class="step-connector"><i class="fa-solid fa-arrow-right"></i></div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-icon step-icon-orange"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <h3>Connect & Earn</h3>
+            <p>Contact the family directly, conduct classes and grow your tuition business on your terms.</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       RECENT LEADS (guests / tutors)
+       ══════════════════════════════════════════════════════ -->
+  @if (userRole !== 'PARENT' && leads.length > 0) {
+    <section class="section bg-white">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Live Opportunities</div>
+          <h2>Fresh Tuition Requirements</h2>
+          <p>New leads posted by parents — unlock to see contact details.</p>
+        </div>
+        <div class="leads-grid">
+          @for (lead of leads; track lead._id) {
+            <div class="lead-preview-card animate-fade-in">
+              <div class="lpc-top">
+                <span class="badge" [class]="'badge-' + (lead.mode === 'ONLINE' ? 'primary' : 'success')">
+                  {{ lead.mode }}
+                </span>
+                <span class="lpc-date">{{ lead.createdAt | date:'dd MMM' }}</span>
+              </div>
+              <h4 class="lpc-title">{{ lead.title }}</h4>
+              <div class="lpc-specs">
+                <span><i class="fa-solid fa-graduation-cap"></i> {{ lead.classLevel }}</span>
+                @if (lead.location) {
+                  <span><i class="fa-solid fa-location-dot"></i> {{ lead.location }}</span>
                 }
-            </div>
-        </section>
-    }
-
-    <!-- Featured Tutors (for parents) -->
-    @if (userRole === 'PARENT' && tutors.length > 0) {
-        <section class="container mt-4 mb-4">
-            <div class="section-header text-center mb-2">
-                <h2>Top Rated Tutors</h2>
-                <p>Connect with the best educators on our platform.</p>
-            </div>
-            <div class="tutors-grid">
-                @for (tutor of tutors; track tutor._id) {
-                    <div class="tutor-card glass-panel animate-fade-in">
-                        <div class="tutor-header">
-                            <div class="avatar">{{ tutor.name.charAt(0) }}</div>
-                            <div>
-                                <h3>{{ tutor.name }}</h3>
-                                <div class="rating"><i class="fa-solid fa-star"></i> {{ tutor.rating || '5.0' }}</div>
-                            </div>
-                        </div>
-                        <p class="tagline">{{ tutor.tagline || 'Expert ' + (tutor.subjects?.[0] || 'Tutor') }}</p>
-                        <div class="subjects">
-                            @for (sub of (tutor.subjects || []); track sub) {
-                                <span class="badge">{{ sub }}</span>
-                            }
-                        </div>
-                        <a routerLink="/find-tutors" class="btn btn-outline btn-block mt-1">View Profile</a>
-                    </div>
+              </div>
+              <div class="lpc-subjects">
+                @for (sub of (lead.subjects || []).slice(0, 3); track sub) {
+                  <span class="badge badge-gray">{{ sub }}</span>
                 }
+              </div>
+              <div class="lpc-footer">
+                <span class="lpc-budget">
+                  @if (lead.budgetRange) { <i class="fa-solid fa-lock"></i> Budget hidden }
+                  @else { Flexible budget }
+                </span>
+                <a routerLink="/tutor/leads" class="btn btn-outline btn-sm">Unlock</a>
+              </div>
             </div>
-        </section>
-    }
-
-    <!-- Features -->
-    <section class="features-section container mt-4">
-        <div class="section-header text-center mb-2">
-            <h2 class="animate-delay-1">Why Choose ApnaTution?</h2>
-            <p>The smarter way to manage tuition.</p>
+          }
         </div>
-        <div class="grid grid-cols-3 gap-2">
-            <div class="card feature-card animate-delay-1">
-                <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div>
-                <h3>Verified Tutors</h3>
-                <p>Every tutor profile is reviewed to ensure safety and quality for your children.</p>
-            </div>
-            <div class="card feature-card animate-delay-2">
-                <div class="icon-box"><i class="fa-solid fa-location-dot"></i></div>
-                <h3>Local Matches</h3>
-                <p>Find the best tutors in your neighbourhood or get online sessions from anywhere.</p>
-            </div>
-            <div class="card feature-card animate-delay-3">
-                <div class="icon-box"><i class="fa-solid fa-rupee-sign"></i></div>
-                <h3>Affordable Pricing</h3>
-                <p>Parents post requirements for free. Tutors pay only when they want a lead — fair and transparent.</p>
-            </div>
+        <div class="text-center mt-4">
+          <a routerLink="/tutor/leads" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-search"></i> Browse All Leads
+          </a>
         </div>
+      </div>
     </section>
+  }
 
-    <!-- CTA -->
-    <section class="cta-section mt-4 mb-2">
-        <div class="container">
-            <div class="cta-box glass-panel text-center">
-                <h2>Ready to upgrade your learning journey?</h2>
-                <p>Join thousands of students and tutors on ApnaTution today.</p>
-                <a [routerLink]="userRole ? '/dashboard' : '/register'" class="btn btn-primary mt-1">
-                    {{ userRole ? 'Go to Dashboard' : 'Join Now — It\'s Free' }}
-                </a>
-            </div>
+  <!-- ══════════════════════════════════════════════════════
+       FEATURED TUTORS (parents)
+       ══════════════════════════════════════════════════════ -->
+  @if (userRole === 'PARENT' && tutors.length > 0) {
+    <section class="section bg-white">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Top Rated</div>
+          <h2>Expert Tutors Ready to Help</h2>
+          <p>Connect with the best educators on our platform.</p>
         </div>
+        <div class="tutors-grid">
+          @for (tutor of tutors; track tutor._id) {
+            <div class="tutor-card animate-fade-in">
+              <div class="tc-avatar">{{ tutor.name.charAt(0) }}</div>
+              <div class="tc-info">
+                <h4>{{ tutor.name }}</h4>
+                <p>{{ tutor.tagline || 'Expert ' + (tutor.subjects?.[0] || 'Tutor') }}</p>
+                <div class="tc-rating">
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <i class="fa-solid fa-star"></i>
+                  }
+                  <span>{{ tutor.rating || '5.0' }}</span>
+                </div>
+              </div>
+              <div class="tc-subjects">
+                @for (sub of (tutor.subjects || []).slice(0, 3); track sub) {
+                  <span class="badge badge-primary">{{ sub }}</span>
+                }
+              </div>
+              <a routerLink="/find-tutors" class="btn btn-secondary btn-sm btn-block mt-2">View Profile</a>
+            </div>
+          }
+        </div>
+        <div class="text-center mt-4">
+          <a routerLink="/find-tutors" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-chalkboard-user"></i> View All Tutors
+          </a>
+        </div>
+      </div>
     </section>
+  }
+
+  <!-- ══════════════════════════════════════════════════════
+       TOP CITIES
+       ══════════════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Pan India</div>
+        @if (userRole === 'TUTOR') {
+          <h2>Cities with High Student Demand</h2>
+          <p>Leads pouring in from these cities every day — browse open requirements near you.</p>
+        } @else if (userRole === 'PARENT') {
+          <h2>Find Tutors in Your City</h2>
+          <p>We have top-rated tutors in every major city across India, for home and online sessions.</p>
+        } @else {
+          <h2>Find Tutors in Your City</h2>
+          <p>We have tutors in every major city across India, for home and online sessions.</p>
+        }
+      </div>
+      <div class="cities-grid">
+        @for (city of topCities; track city.name) {
+          <button class="city-card" (click)="userRole === 'TUTOR' ? searchByCity(city.name) : searchByCity(city.name)">
+            <div class="city-icon">
+              <i class="fa-solid {{ city.icon }}"></i>
+            </div>
+            <span>{{ city.name }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       WHY APNATUTION
+       ══════════════════════════════════════════════════════ -->
+  <section class="section bg-white">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Why Us</div>
+        @if (userRole === 'PARENT') {
+          <h2>Why Parents Trust ApnaTutors</h2>
+          <p>Everything you need to find the right tutor — without the hassle.</p>
+        } @else if (userRole === 'TUTOR') {
+          <h2>Why Tutors Grow with ApnaTutors</h2>
+          <p>The smartest way to find genuine students and build a sustainable teaching business.</p>
+        } @else {
+          <h2>Why Thousands Choose ApnaTutors</h2>
+          <p>We built the platform that parents and tutors actually deserve.</p>
+        }
+      </div>
+      <div class="features-grid">
+        @for (f of featureCards; track f.title) {
+          <div class="feature-card">
+            <div class="feature-icon {{ f.cls }}"><i class="fa-solid {{ f.icon }}"></i></div>
+            <h3>{{ f.title }}</h3>
+            <p>{{ f.desc }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       TESTIMONIALS
+       ══════════════════════════════════════════════════════ -->
+  <section class="section testimonials-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Reviews</div>
+        @if (userRole === 'PARENT') {
+          <h2>What Parents Are Saying</h2>
+          <p>Families across India found their perfect tutor on ApnaTutors.</p>
+        } @else if (userRole === 'TUTOR') {
+          <h2>What Tutors Are Saying</h2>
+          <p>Educators growing their business every day with ApnaTutors leads.</p>
+        } @else {
+          <h2>Loved by Parents & Tutors</h2>
+          <p>Real stories from real people who found success on ApnaTutors.</p>
+        }
+      </div>
+
+      <!-- Slider wrapper -->
+      <div class="tslider"
+           (mouseenter)="pauseAutoPlay()"
+           (mouseleave)="resumeAutoPlay()">
+
+        <!-- Overflow viewport -->
+        <div class="tslider-viewport">
+          <div class="tslider-track"
+               [style.transform]="'translateX(-' + activeTestimonial * 100 + '%)'">
+            @for (t of testimonials; track t.name; let i = $index) {
+              <div class="tslide">
+                <div class="tslide-card" [class.tslide-card-active]="i === activeTestimonial">
+
+                  <!-- Role pill -->
+                  <span class="tslide-role-pill"
+                        [class.pill-tutor]="t.forRole === 'TUTOR'"
+                        [class.pill-parent]="t.forRole === 'PARENT'">
+                    @if (t.forRole === 'TUTOR') {
+                      <i class="fa-solid fa-chalkboard-user"></i> Tutor
+                    } @else {
+                      <i class="fa-solid fa-users"></i> Parent
+                    }
+                  </span>
+
+                  <!-- Decorative quote -->
+                  <div class="tslide-quote-icon">
+                    <i class="fa-solid fa-quote-left"></i>
+                  </div>
+
+                  <!-- Stars -->
+                  <div class="tslide-stars">
+                    @for (s of [1,2,3,4,5]; track s) {
+                      <i class="fa-solid fa-star"></i>
+                    }
+                    <span class="tslide-rating">5.0</span>
+                  </div>
+
+                  <!-- Quote text -->
+                  <p class="tslide-text">{{ t.text }}</p>
+
+                  <!-- Author -->
+                  <div class="tslide-divider"></div>
+                  <div class="tslide-author">
+                    <div class="tslide-avatar"
+                         [class.avatar-tutor]="t.forRole === 'TUTOR'">
+                      {{ t.avatar }}
+                    </div>
+                    <div class="tslide-author-info">
+                      <div class="tslide-name">{{ t.name }}</div>
+                      <div class="tslide-location">{{ t.role }}</div>
+                    </div>
+                    <div class="tslide-verified">
+                      <i class="fa-solid fa-circle-check"></i> Verified
+                    </div>
+                  </div>
+
+                  <!-- Progress bar -->
+                  <div class="tslide-progress">
+                    <div class="tslide-progress-bar"
+                         [style.width.%]="i === activeTestimonial ? progressWidth : 0">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Prev / Next arrows -->
+        <button class="tslider-arrow tslider-prev" (click)="prevTestimonial()" aria-label="Previous">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="tslider-arrow tslider-next" (click)="nextTestimonial()" aria-label="Next">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Author strip + dots -->
+      <div class="tslider-footer">
+        <div class="tauthor-strip">
+          @for (t of testimonials; track t.name; let i = $index) {
+            <button class="tauthor-thumb"
+                    [class.tauthor-active]="i === activeTestimonial"
+                    (click)="goToTestimonial(i)">
+              <div class="tauthor-av"
+                   [class.av-tutor]="t.forRole === 'TUTOR'">
+                {{ t.avatar }}
+              </div>
+              <div class="tauthor-meta">
+                <span class="tauthor-name">{{ t.name }}</span>
+                <span class="tauthor-loc">{{ t.role }}</span>
+              </div>
+            </button>
+          }
+        </div>
+
+        <div class="tslider-dots">
+          @for (t of testimonials; track t.name; let i = $index) {
+            <button class="tdot"
+                    [class.tdot-active]="i === activeTestimonial"
+                    (click)="goToTestimonial(i)"
+                    [attr.aria-label]="'Go to review ' + (i + 1)">
+            </button>
+          }
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       CTA
+       ══════════════════════════════════════════════════════ -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <div class="cta-badge">
+          @if (userRole === 'TUTOR') {
+            <i class="fa-solid fa-coins"></i>
+          } @else if (userRole === 'PARENT') {
+            <i class="fa-solid fa-clipboard-list"></i>
+          } @else {
+            <i class="fa-solid fa-rocket"></i>
+          }
+        </div>
+
+        @if (userRole === 'PARENT') {
+          <h2>Looking for a tutor right now?</h2>
+          <p>Post your requirement in 2 minutes — completely free. Tutors will reach out directly.</p>
+          <div class="cta-actions">
+            <a routerLink="/parent/create-lead" class="btn btn-white btn-xl">
+              <i class="fa-solid fa-plus"></i> Post a Requirement
+            </a>
+            <a routerLink="/find-tutors" class="btn btn-outline-white btn-xl">
+              <i class="fa-solid fa-chalkboard-user"></i> Browse Tutors
+            </a>
+          </div>
+        } @else if (userRole === 'TUTOR') {
+          <h2>Ready to unlock your next student?</h2>
+          <p>Fresh leads are posted every day. Spend 1 point to connect directly with a parent.</p>
+          <div class="cta-actions">
+            <a routerLink="/tutor/leads" class="btn btn-white btn-xl">
+              <i class="fa-solid fa-search"></i> Browse Leads
+            </a>
+            <a routerLink="/tutor/buy-points" class="btn btn-outline-white btn-xl">
+              <i class="fa-solid fa-coins"></i> Buy Points
+            </a>
+          </div>
+        } @else {
+          <h2>Ready to find your perfect tutor?</h2>
+          <p>Join 2,000+ families already learning smarter with ApnaTutors. It's free to get started.</p>
+          <div class="cta-actions">
+            <a routerLink="/register" class="btn btn-white btn-xl">
+              <i class="fa-solid fa-user-plus"></i> Sign Up for Free
+            </a>
+            <a routerLink="/find-tutors" class="btn btn-outline-white btn-xl">
+              <i class="fa-solid fa-search"></i> Browse Tutors
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-text" style="font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:0.75rem;">
+            Apna<span style="color:#818cf8;">Tutors</span>
+          </div>
+          <p>India's smartest marketplace connecting parents with qualified tutors across 100+ cities.</p>
+          <div class="footer-social">
+            <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="social-btn"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="social-btn"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a routerLink="/find-tutors">Find Tutors</a>
+          <a routerLink="/find-students">Find Students</a>
+          <a routerLink="/register">Join as Tutor</a>
+          <a routerLink="/register">Post Requirement</a>
+        </div>
+        <div class="footer-col">
+          <h4>Popular Subjects</h4>
+          <a (click)="searchBySubject('Mathematics')">Mathematics</a>
+          <a (click)="searchBySubject('Physics')">Physics</a>
+          <a (click)="searchBySubject('JEE Prep')">JEE Preparation</a>
+          <a (click)="searchBySubject('NEET Prep')">NEET Preparation</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a routerLink="/">About Us</a>
+          <a routerLink="/">Contact</a>
+          <a routerLink="/">Privacy Policy</a>
+          <a routerLink="/">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 ApnaTutors. All rights reserved.</span>
+        <span>Made with <i class="fa-solid fa-heart" style="color:#f59e0b"></i> in India</span>
+      </div>
+    </div>
+  </footer>
+
 </div>

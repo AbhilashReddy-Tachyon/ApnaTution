@@ -10,5 +10,5 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('apna-tution-frontend');
+  protected readonly title = signal('apnatutors');
 }

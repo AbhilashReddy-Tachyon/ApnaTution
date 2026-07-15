@@ -1,98 +1,121 @@
 <div class="auth-page">
-    <div class="auth-card">
-        <div class="auth-header">
-            <a routerLink="/" class="auth-brand">ApnaTution</a>
-            <h2>Create Account</h2>
-            <p>Join thousands of parents and tutors</p>
-        </div>
 
-        <!-- Role Toggle -->
-        <div class="role-toggle">
-            <button type="button"
-                [class.role-active]="selectedRole === 'PARENT'"
-                (click)="registerForm.patchValue({role: 'PARENT'})">
-                <i class="fa-solid fa-users"></i> I'm a Parent
-            </button>
-            <button type="button"
-                [class.role-active]="selectedRole === 'TUTOR'"
-                (click)="registerForm.patchValue({role: 'TUTOR'})">
-                <i class="fa-solid fa-chalkboard-teacher"></i> I'm a Tutor
-            </button>
-        </div>
+  <!-- ── Left Brand Panel ─────────────────────────────────── -->
+  <div class="auth-panel-left">
+    <a routerLink="/" class="auth-brand-logo">
+      <div class="auth-brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+      <span class="auth-brand-text">Apna<span>Tutors</span></span>
+    </a>
+    <h1 class="auth-panel-headline">
+      Start your<br><span>learning journey</span><br>today.
+    </h1>
+    <p class="auth-panel-sub">
+      Join India's smartest tuition platform. Free for parents, affordable for tutors.
+    </p>
+    <ul class="auth-panel-bullets">
+      <li><i class="fa-solid fa-check-circle"></i> Parents post requirements for free</li>
+      <li><i class="fa-solid fa-check-circle"></i> Verified tutors across 100+ cities</li>
+      <li><i class="fa-solid fa-check-circle"></i> CBSE, ICSE, JEE, NEET & more</li>
+      <li><i class="fa-solid fa-check-circle"></i> Home tuition & online sessions</li>
+    </ul>
+  </div>
 
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-            <div class="form-group" [class.has-error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
-                <label>Full Name *</label>
-                <input type="text" formControlName="name" placeholder="e.g. Rahul Sharma">
-                @if (registerForm.get('name')?.hasError('required') && registerForm.get('name')?.touched) {
-                    <span class="field-error">Name is required</span>
-                }
-            </div>
-
-            <div class="form-group" [class.has-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-                <label>Email Address *</label>
-                <input type="email" formControlName="email" placeholder="you@example.com">
-                @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
-                    <span class="field-error">Email is required</span>
-                }
-                @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
-                    <span class="field-error">Enter a valid email address</span>
-                }
-            </div>
-
-            <div class="form-group" [class.has-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
-                <label>Password *</label>
-                <div class="input-with-icon">
-                    <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
-                        placeholder="Minimum 6 characters">
-                    <button type="button" class="toggle-pwd" (click)="togglePassword()">
-                        <i [class]="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                    </button>
-                </div>
-                @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-                    <span class="field-error">Password must be at least 6 characters</span>
-                }
-            </div>
-
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="tel" formControlName="phone" placeholder="+91 9876543210">
-                <span class="field-hint">
-                    @if (selectedRole === 'PARENT') { Shared with tutors who contact you }
-                    @if (selectedRole === 'TUTOR') { Helps parents reach you }
-                </span>
-            </div>
-
-            <!-- Tutor-specific fields -->
-            @if (selectedRole === 'TUTOR') {
-                <div class="form-group">
-                    <label>Subjects You Teach</label>
-                    <input type="text" formControlName="subjects" placeholder="e.g. Mathematics, Physics, Chemistry">
-                    <span class="field-hint">Separate multiple subjects with commas</span>
-                </div>
-                <div class="form-group">
-                    <label>Your City / Location</label>
-                    <input type="text" formControlName="location" placeholder="e.g. Mumbai, Delhi">
-                </div>
-            }
-
-            @if (error) {
-                <div class="error-alert">
-                    <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
-                </div>
-            }
-
-            <button type="submit" class="btn-submit" [disabled]="loading">
-                @if (loading) {
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...
-                } @else {
-                    <i class="fa-solid fa-user-plus"></i> Create Account
-                }
-            </button>
-        </form>
-
-        <p class="auth-footer">
-            Already have an account? <a routerLink="/login">Sign in</a>
-        </p>
+  <!-- ── Right Form Panel ──────────────────────────────────── -->
+  <div class="auth-panel-right">
+    <div class="auth-form-header">
+      <a routerLink="/" class="auth-back-home">
+        <i class="fa-solid fa-arrow-left"></i> Back to home
+      </a>
+      <h2>Create account</h2>
+      <p>Join thousands of parents and tutors on ApnaTutors</p>
     </div>
+
+    <!-- Role Toggle -->
+    <div class="role-toggle">
+      <button type="button"
+        [class.role-active]="selectedRole === 'PARENT'"
+        (click)="registerForm.patchValue({role: 'PARENT'})">
+        <i class="fa-solid fa-users"></i> I'm a Parent
+      </button>
+      <button type="button"
+        [class.role-active]="selectedRole === 'TUTOR'"
+        (click)="registerForm.patchValue({role: 'TUTOR'})">
+        <i class="fa-solid fa-chalkboard-user"></i> I'm a Tutor
+      </button>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group" [class.has-error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+        <label>Full Name *</label>
+        <input type="text" formControlName="name" placeholder="e.g. Rahul Sharma">
+        @if (registerForm.get('name')?.hasError('required') && registerForm.get('name')?.touched) {
+          <span class="field-error">Name is required</span>
+        }
+      </div>
+
+      <div class="form-group" [class.has-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+        <label>Email Address *</label>
+        <input type="email" formControlName="email" placeholder="you@example.com">
+        @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+          <span class="field-error">Email is required</span>
+        }
+        @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+          <span class="field-error">Enter a valid email address</span>
+        }
+      </div>
+
+      <div class="form-group" [class.has-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+        <label>Password *</label>
+        <div class="input-with-icon">
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+            placeholder="Minimum 6 characters">
+          <button type="button" class="toggle-pwd" (click)="togglePassword()">
+            <i [class]="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+          </button>
+        </div>
+        @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
+          <span class="field-error">Password must be at least 6 characters</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" formControlName="phone" placeholder="+91 98765 43210">
+        <span class="field-hint">
+          @if (selectedRole === 'PARENT') { Shared only with tutors who contact you }
+          @if (selectedRole === 'TUTOR') { Helps parents reach you quickly }
+        </span>
+      </div>
+
+      @if (selectedRole === 'TUTOR') {
+        <div class="form-group">
+          <label>Subjects You Teach</label>
+          <input type="text" formControlName="subjects" placeholder="e.g. Mathematics, Physics, Chemistry">
+          <span class="field-hint">Separate multiple subjects with commas</span>
+        </div>
+        <div class="form-group">
+          <label>Your City / Location</label>
+          <input type="text" formControlName="location" placeholder="e.g. Mumbai, Delhi, Bangalore">
+        </div>
+      }
+
+      @if (error) {
+        <div class="error-alert">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+        </div>
+      }
+
+      <button type="submit" class="btn-submit" [disabled]="loading">
+        @if (loading) {
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...
+        } @else {
+          <i class="fa-solid fa-user-plus"></i> Create Free Account
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
 </div>

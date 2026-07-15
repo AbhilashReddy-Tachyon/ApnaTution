@@ -161,7 +161,7 @@ exports.forgotPassword = async (req, res) => {
         const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
             <div style="text-align: center; margin-bottom: 24px;">
-                <h2 style="color: #2563eb; margin: 0;">ApnaTution</h2>
+                <h2 style="color: #2563eb; margin: 0;">ApnaTutors</h2>
                 <p style="color: #64748b; font-size: 14px;">Password Reset Request</p>
             </div>
             <p style="color: #334155;">Hi ${user.name},</p>
@@ -173,11 +173,11 @@ exports.forgotPassword = async (req, res) => {
             </div>
             <p style="color: #64748b; font-size: 14px;">If you didn't request this, you can safely ignore this email. Your password will remain unchanged.</p>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-            <p style="color: #94a3b8; font-size: 12px; text-align: center;">ApnaTution — Your Trusted Tuition Partner</p>
+            <p style="color: #94a3b8; font-size: 12px; text-align: center;">ApnaTutors — Your Trusted Tuition Partner</p>
         </div>`;
 
         try {
-            await sendEmail({ email: user.email, subject: "Reset Your ApnaTution Password", html });
+            await sendEmail({ email: user.email, subject: "Reset Your ApnaTutors Password", html });
             res.status(200).json({ message: "If this email is registered, a reset link has been sent." });
         } catch (emailErr) {
             console.error("Email Error:", emailErr);

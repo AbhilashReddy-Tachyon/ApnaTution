@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "apna-tution-frontend": {
+    "apnatutors": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -43,8 +43,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"
@@ -61,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "apna-tution-frontend:build:production"
+              "buildTarget": "apnatutors:build:production"
             },
             "development": {
-              "buildTarget": "apna-tution-frontend:build:development",
+              "buildTarget": "apnatutors:build:development",
               "proxyConfig": "proxy.conf.json"
             }
           },

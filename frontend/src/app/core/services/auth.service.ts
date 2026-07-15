@@ -36,6 +36,11 @@ export class AuthService {
         this.router.navigate(['/']);
     }
 
+    clearSession() {
+        localStorage.removeItem(this.tokenKey);
+        this.userSubject.next(null);
+    }
+
     getToken(): string | null {
         return localStorage.getItem(this.tokenKey);
     }
@@ -49,8 +54,14 @@ export class AuthService {
         const token = this.getToken();
         if (!token) return null;
         try {
-            return jwtDecode(token);
+            const decoded: any = jwtDecode(token);
+            if (decoded?.exp && decoded.exp * 1000 <= Date.now()) {
+                this.clearSession();
+                return null;
+            }
+            return decoded;
         } catch (e) {
+            this.clearSession();
             return null;
         }
     }
@@ -61,7 +72,7 @@ export class AuthService {
     }
 
     isAuthenticated(): boolean {
-        return !!this.getToken();
+        return !!this.getUserFromToken();
     }
 
     getProfile(): Observable<any> {

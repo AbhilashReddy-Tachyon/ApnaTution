@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, isDevMode } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,7 +18,8 @@ export class BuyPointsComponent implements OnInit {
     plans: any[] = [];
     couponCode = '';
     discountMessage = '';
-    loading = false;
+    paymentError = '';
+    loadingPlanId: string | null = null;
     currentPoints = 0;
 
     constructor(
@@ -55,11 +56,15 @@ export class BuyPointsComponent implements OnInit {
     }
 
     buyPlan(plan: any): void {
-        this.loading = true;
+        if (this.loadingPlanId) return;
+
+        this.loadingPlanId = plan._id;
+        this.paymentError = '';
         this.paymentService.createOrder(plan._id, this.couponCode || undefined).subscribe({
             next: (order) => this.initiateRazorpay(order),
-            error: () => {
-                this.loading = false;
+            error: (err) => {
+                this.paymentError = err.error?.message || 'Could not create payment order. Please try again.';
+                this.loadingPlanId = null;
                 this.cdr.detectChanges();
             }
         });
@@ -68,38 +73,49 @@ export class BuyPointsComponent implements OnInit {
     initiateRazorpay(order: any): void {
         const user = this.authService.getUserFromToken();
 
-        // If Razorpay SDK isn't loaded (dev/testing), simulate payment
         if (typeof Razorpay === 'undefined') {
-            if (confirm(`[DEV] Simulate payment of ₹${order.amount} for ${order.points} points?`)) {
+            if (isDevMode() && confirm(`[DEV] Simulate payment of Rs ${order.amount} for ${order.points} points?`)) {
                 this.verifyPayment({ transactionId: order.transactionId });
             } else {
-                this.loading = false;
+                this.paymentError = 'Payment checkout is not available. Please try again in a few minutes.';
+                this.loadingPlanId = null;
+                this.cdr.detectChanges();
             }
             return;
         }
 
         const options = {
-            key: 'rzp_test_placeholder', // Replace with real Razorpay key from env
+            key: order.key || 'rzp_test_placeholder',
             amount: order.amount * 100,
             currency: order.currency || 'INR',
             name: 'ApnaTutors',
-            description: `${order.planName} — ${order.points} Points`,
-            order_id: order.paymentId,
+            description: `${order.planName} - ${order.points} Points`,
+            order_id: order.order_id,
             handler: (response: any) => {
                 this.verifyPayment({
                     transactionId: order.transactionId,
                     razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
                     razorpay_signature: response.razorpay_signature
                 });
             },
             prefill: { name: user?.name, email: user?.email },
             theme: { color: '#2563eb' },
             modal: {
-                ondismiss: () => { this.loading = false; }
+                ondismiss: () => {
+                    this.paymentError = 'Payment was cancelled before completion.';
+                    this.loadingPlanId = null;
+                    this.cdr.detectChanges();
+                }
             }
         };
 
         const rzp = new Razorpay(options);
+        rzp.on('payment.failed', (response: any) => {
+            this.paymentError = response?.error?.description || 'Payment failed. Please try another method.';
+            this.loadingPlanId = null;
+            this.cdr.detectChanges();
+        });
         rzp.open();
     }
 
@@ -107,12 +123,13 @@ export class BuyPointsComponent implements OnInit {
         this.paymentService.verifyPayment(data).subscribe({
             next: (res) => {
                 this.currentPoints = res.points;
-                this.loading = false;
+                this.loadingPlanId = null;
                 this.cdr.detectChanges();
                 this.router.navigate(['/tutor/leads']);
             },
-            error: () => {
-                this.loading = false;
+            error: (err) => {
+                this.paymentError = err.error?.message || 'Payment verification failed. No points were added.';
+                this.loadingPlanId = null;
                 this.cdr.detectChanges();
             }
         });

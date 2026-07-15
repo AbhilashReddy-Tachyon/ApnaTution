@@ -21,10 +21,10 @@ export class PaymentService {
     }
 
     createOrder(planId: string, couponCode?: string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/create-order`, { planId, couponCode });
+        return this.http.post(`${API_CONFIG.baseUrl}/create-order`, { planId, couponCode });
     }
 
     verifyPayment(paymentData: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/verify`, paymentData);
+        return this.http.post(`${API_CONFIG.baseUrl}/verify-payment`, paymentData);
     }
 }

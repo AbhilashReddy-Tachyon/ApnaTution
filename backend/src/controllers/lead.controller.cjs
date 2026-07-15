@@ -279,7 +279,7 @@ exports.getLeadById = async (req, res) => {
 
 // Cron: auto-close leads older than 30 days
 exports.expireOldLeads = async () => {
-    const cutoff = new Date(Date.now() - 365 * 30 * 24 * 60 * 60 * 1000);
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const result = await TuitionLead.updateMany(
         { status: "OPEN", createdAt: { $lt: cutoff } },
         { $set: { status: "CLOSED" } }

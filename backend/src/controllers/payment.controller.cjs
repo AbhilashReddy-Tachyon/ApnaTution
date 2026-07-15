@@ -1,8 +1,17 @@
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const Razorpay = require("razorpay");
 const User = require("../models/user.model.cjs");
 const SubscriptionPlan = require("../models/SubscriptionPlan.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
 const Coupon = require("../models/Coupon.model.cjs");
+
+const hasRazorpayConfig = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+
+const getRazorpayClient = () => new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 // Run once at startup to seed demo data
 exports.seedPlans = async () => {
@@ -209,6 +218,27 @@ exports.createOrder = async (req, res) => {
             }
         }
 
+        let gatewayOrder = null;
+        if (hasRazorpayConfig()) {
+            const amountInPaise = Math.round(finalAmount * 100);
+            if (amountInPaise < 100) {
+                return res.status(400).json({ message: "Minimum order amount is 100 paise" });
+            }
+
+            gatewayOrder = await getRazorpayClient().orders.create({
+                amount: amountInPaise,
+                currency: "INR",
+                receipt: `txn_${Date.now()}`,
+                notes: {
+                    userId: String(userId),
+                    planId: String(plan._id),
+                    points: String(plan.points)
+                }
+            });
+        } else if (process.env.NODE_ENV === "production") {
+            return res.status(503).json({ message: "Payment gateway is not configured." });
+        }
+
         const transaction = await Transaction.create({
             userId,
             amount: finalAmount,
@@ -218,25 +248,39 @@ exports.createOrder = async (req, res) => {
             planId: plan._id,
             couponCode: appliedCoupon,
             status: "PENDING",
-            paymentId: `ORDER_${Date.now()}`
+            paymentId: gatewayOrder?.id || `DEV_ORDER_${Date.now()}`
         });
 
         res.status(200).json({
             transactionId: transaction._id,
             amount: finalAmount,
+            amount_paise: Math.round(finalAmount * 100),
             points: plan.points,
             planName: plan.name,
             paymentId: transaction.paymentId,
-            currency: "INR"
+            order_id: transaction.paymentId,
+            currency: "INR",
+            key: process.env.RAZORPAY_KEY_ID || null
         });
     } catch (err) {
+        console.error("Create Order Error:", err?.error || err);
         res.status(500).json({ message: "Order creation failed", error: err.message });
     }
 };
 
 exports.verifyPayment = async (req, res) => {
     try {
-        const { transactionId } = req.body;
+        const {
+            transactionId,
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+            payment_id,
+            order_id
+        } = req.body;
+        const paymentId = razorpay_payment_id || payment_id;
+        const orderId = razorpay_order_id || order_id;
+
         if (!transactionId) return res.status(400).json({ message: "Transaction ID required" });
 
         const transaction = await Transaction.findById(transactionId);
@@ -246,6 +290,28 @@ exports.verifyPayment = async (req, res) => {
         }
         if (transaction.status === "SUCCESS") {
             return res.status(200).json({ message: "Already processed" });
+        }
+
+        if (hasRazorpayConfig()) {
+            if (!paymentId || !orderId || !razorpay_signature) {
+                return res.status(400).json({ message: "Payment verification details are required" });
+            }
+            if (orderId !== transaction.paymentId) {
+                return res.status(400).json({ message: "Payment order mismatch" });
+            }
+
+            const expectedSignature = crypto
+                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+                .update(`${orderId}|${paymentId}`)
+                .digest("hex");
+
+            if (expectedSignature !== razorpay_signature) {
+                transaction.status = "FAILED";
+                await transaction.save();
+                return res.status(400).json({ message: "Payment verification failed" });
+            }
+        } else if (process.env.NODE_ENV === "production") {
+            return res.status(503).json({ message: "Payment gateway is not configured." });
         }
 
         // Mark transaction successful

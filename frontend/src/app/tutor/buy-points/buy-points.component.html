@@ -18,6 +18,14 @@
     }
 
     <!-- Pricing Grid -->
+    @if (paymentError) {
+        <div class="payment-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ paymentError }}
+        </div>
+    }
+
+    <!-- Pricing Grid -->
     <div class="pricing-grid">
         @for (plan of plans; track plan._id; let i = $index) {
             <div class="pricing-card"
@@ -49,10 +57,10 @@
                     <li><i class="fa-solid fa-circle-check"></i> Instant access after payment</li>
                 </ul>
 
-                <button (click)="buyPlan(plan)" [disabled]="loading" class="btn-buy"
+                <button (click)="buyPlan(plan)" [disabled]="!!loadingPlanId" class="btn-buy"
                     [class.btn-buy-primary]="plan.name.includes('Growth')"
                     [class.btn-buy-secondary]="!plan.name.includes('Growth')">
-                    @if (loading) {
+                    @if (loadingPlanId === plan._id) {
                         <i class="fa-solid fa-circle-notch fa-spin"></i> Processing...
                     } @else {
                         Buy {{ plan.name }}

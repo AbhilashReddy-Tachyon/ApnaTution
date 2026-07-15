@@ -15,6 +15,9 @@ function sanitizeMongo(val) {
 }
 const connectDB = require("./config/db.cjs");
 const { seedPlans } = require("./controllers/payment.controller.cjs");
+const { createOrder, verifyPayment } = require("./controllers/payment.controller.cjs");
+const auth = require("./middleware/auth.middleware.cjs");
+const role = require("./middleware/role.middleware.cjs");
 const { ROUTES } = require("./utils/startupCheck.cjs");
 const { buildDashboardHtml } = require("./utils/devDashboard.cjs");
 
@@ -81,7 +84,7 @@ app.get("/health", (_req, res) => {
 
 // DB + Seed middleware (serverless safe - reuses connection)
 let seeded = false;
-app.use(async (_req, res, next) => {
+const ensureDatabaseReady = async (_req, res, next) => {
     try {
         await connectDB();
         if (!seeded) {
@@ -97,7 +100,15 @@ app.use(async (_req, res, next) => {
             tip: "Check MONGO_URI environment variable in Vercel settings."
         });
     }
-});
+};
+
+// Standard Razorpay Checkout aliases used by direct clients and the Angular proxy.
+app.post("/api/create-order", auth, role("TUTOR"), ensureDatabaseReady, createOrder);
+app.post("/api/verify-payment", auth, role("TUTOR"), ensureDatabaseReady, verifyPayment);
+app.post("/create-order", auth, role("TUTOR"), ensureDatabaseReady, createOrder);
+app.post("/verify-payment", auth, role("TUTOR"), ensureDatabaseReady, verifyPayment);
+
+app.use(ensureDatabaseReady);
 
 // Routes
 app.use("/auth",       require("./routes/auth.routes.cjs"));

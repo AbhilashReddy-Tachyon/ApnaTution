@@ -16,6 +16,10 @@ export class PaymentService {
         return this.http.get<any[]>(`${this.apiUrl}/plans`);
     }
 
+    getTransactions(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/transactions`);
+    }
+
     validateCoupon(code: string): Observable<any> {
         return this.http.post(`${this.apiUrl}/validate-coupon`, { code });
     }

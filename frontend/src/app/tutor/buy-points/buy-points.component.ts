@@ -21,6 +21,7 @@ export class BuyPointsComponent implements OnInit {
     paymentError = '';
     loadingPlanId: string | null = null;
     currentPoints = 0;
+    transactions: any[] = [];
 
     constructor(
         private paymentService: PaymentService,
@@ -34,8 +35,16 @@ export class BuyPointsComponent implements OnInit {
             next: (data) => { this.plans = data; this.cdr.detectChanges(); },
             error: () => {}
         });
-        this.authService.getProfile().subscribe({
+        this.authService.refreshProfile().subscribe({
             next: (user) => { this.currentPoints = user.points || 0; this.cdr.detectChanges(); },
+            error: () => {}
+        });
+        this.loadTransactions();
+    }
+
+    loadTransactions(): void {
+        this.paymentService.getTransactions().subscribe({
+            next: (data) => { this.transactions = data; this.cdr.detectChanges(); },
             error: () => {}
         });
     }
@@ -124,8 +133,17 @@ export class BuyPointsComponent implements OnInit {
             next: (res) => {
                 this.currentPoints = res.points;
                 this.loadingPlanId = null;
-                this.cdr.detectChanges();
-                this.router.navigate(['/tutor/leads']);
+                this.loadTransactions();
+                this.authService.refreshProfile().subscribe({
+                    next: () => {
+                        this.cdr.detectChanges();
+                        this.router.navigate(['/tutor/leads']);
+                    },
+                    error: () => {
+                        this.cdr.detectChanges();
+                        this.router.navigate(['/tutor/leads']);
+                    }
+                });
             },
             error: (err) => {
                 this.paymentError = err.error?.message || 'Payment verification failed. No points were added.';

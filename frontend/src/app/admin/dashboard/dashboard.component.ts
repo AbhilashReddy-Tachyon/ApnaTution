@@ -11,17 +11,125 @@ import { AdminService } from '../../core/services/admin.service';
 })
 export class AdminDashboardComponent implements OnInit {
     stats: any = null;
+    transactions: any[] = [];
+    reports: any[] = [];
+    transactionStatus = '';
+    reportStatus = 'PENDING';
+    loadingTransactions = false;
+    loadingReports = false;
+    actionId: string | null = null;
+    notice = '';
 
     constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit() {
         this.loadStats();
+        this.loadTransactions();
+        this.loadReports();
     }
 
     loadStats() {
         this.adminService.getStats().subscribe({
             next: (data) => { this.stats = data; this.cdr.detectChanges(); },
             error: (err) => console.error('Failed to load stats', err)
+        });
+    }
+
+    loadTransactions() {
+        this.loadingTransactions = true;
+        this.adminService.getTransactions(this.transactionStatus).subscribe({
+            next: (data) => {
+                this.transactions = data;
+                this.loadingTransactions = false;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.loadingTransactions = false;
+                this.notice = 'Could not load transactions.';
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    setStatus(event: Event) {
+        this.transactionStatus = (event.target as HTMLSelectElement).value;
+        this.loadTransactions();
+    }
+
+    retryCredit(transaction: any) {
+        if (!confirm('Credit points for this pending transaction now? Confirm payment in Razorpay first.')) return;
+        this.actionId = transaction._id;
+        this.adminService.retryPendingCredit(transaction._id).subscribe({
+            next: (res) => {
+                this.notice = res.message || 'Transaction credited.';
+                this.actionId = null;
+                this.loadStats();
+                this.loadTransactions();
+            },
+            error: (err) => {
+                this.notice = err.error?.message || 'Action failed.';
+                this.actionId = null;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    resolveProcessing(transaction: any) {
+        if (!confirm('Mark this processing payment as successful without adding more points? Use only after confirming the user already received points.')) return;
+        this.actionId = transaction._id;
+        this.adminService.resolveProcessing(transaction._id).subscribe({
+            next: (res) => {
+                this.notice = res.message || 'Transaction resolved.';
+                this.actionId = null;
+                this.loadTransactions();
+            },
+            error: (err) => {
+                this.notice = err.error?.message || 'Action failed.';
+                this.actionId = null;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    loadReports() {
+        this.loadingReports = true;
+        this.adminService.getLeadReports(this.reportStatus).subscribe({
+            next: (data) => {
+                this.reports = data;
+                this.loadingReports = false;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.loadingReports = false;
+                this.notice = 'Could not load lead reports.';
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    setReportStatus(event: Event) {
+        this.reportStatus = (event.target as HTMLSelectElement).value;
+        this.loadReports();
+    }
+
+    resolveReport(report: any, action: 'APPROVE_REFUND' | 'REJECT') {
+        const note = prompt(action === 'APPROVE_REFUND' ? 'Admin note for refund approval' : 'Reason for rejection') || '';
+        if (action === 'APPROVE_REFUND' && !confirm('Refund 1 point to this tutor?')) return;
+
+        this.actionId = report._id;
+        this.adminService.resolveLeadReport(report._id, action, note).subscribe({
+            next: (res) => {
+                this.notice = res.message || 'Report updated.';
+                this.actionId = null;
+                this.loadStats();
+                this.loadReports();
+                this.loadTransactions();
+            },
+            error: (err) => {
+                this.notice = err.error?.message || 'Report action failed.';
+                this.actionId = null;
+                this.cdr.detectChanges();
+            }
         });
     }
 }

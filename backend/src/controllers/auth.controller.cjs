@@ -6,6 +6,20 @@ const sendEmail = require("../utils/sendEmail.cjs");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const createOtp = () => String(Math.floor(100000 + Math.random() * 900000));
+const hashOtp = (otp) => crypto.createHash("sha256").update(otp).digest("hex");
+const sanitizeUser = (user) => {
+    const obj = user.toObject ? user.toObject() : { ...user };
+    delete obj.password;
+    delete obj.resetPasswordToken;
+    delete obj.resetPasswordExpire;
+    delete obj.emailOtpHash;
+    delete obj.emailOtpExpire;
+    delete obj.phoneOtpHash;
+    delete obj.phoneOtpExpire;
+    return obj;
+};
+
 exports.register = async (req, res) => {
     try {
         const { role, name, email, password, phone, subjects, location } = req.body;
@@ -92,7 +106,10 @@ exports.login = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                points: user.points
+                points: user.points,
+                emailVerified: user.emailVerified,
+                phoneVerified: user.phoneVerified,
+                isVerified: user.isVerified
             }
         });
     } catch (err) {
@@ -114,13 +131,39 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         // Prevent changing sensitive fields via this endpoint
-        const { role, email, password, points, resetPasswordToken, resetPasswordExpire, ...updateData } = req.body;
+        const {
+            role,
+            email,
+            password,
+            points,
+            isVerified,
+            emailVerified,
+            phoneVerified,
+            resetPasswordToken,
+            resetPasswordExpire,
+            emailOtpHash,
+            emailOtpExpire,
+            phoneOtpHash,
+            phoneOtpExpire,
+            ...updateData
+        } = req.body;
+
+        const existingUser = await User.findById(req.user.id).select("phone");
+        if (!existingUser) return res.status(404).json({ message: "User not found" });
 
         // Clean subjects if provided
         if (updateData.subjects) {
             updateData.subjects = Array.isArray(updateData.subjects)
                 ? updateData.subjects.map(s => s.trim()).filter(Boolean)
                 : updateData.subjects.split(",").map(s => s.trim()).filter(Boolean);
+        }
+
+        if (updateData.phone !== undefined) {
+            updateData.phone = String(updateData.phone || "").trim();
+            if (updateData.phone !== (existingUser.phone || "")) {
+                updateData.phoneVerified = false;
+                updateData.isVerified = false;
+            }
         }
 
         const user = await User.findByIdAndUpdate(
@@ -137,6 +180,95 @@ exports.updateProfile = async (req, res) => {
         }
         console.error("Profile Update Error:", err);
         res.status(500).json({ message: "Profile update failed" });
+    }
+};
+
+exports.requestVerificationOtp = async (req, res) => {
+    try {
+        const { channel } = req.body;
+        if (!["email", "phone"].includes(channel)) {
+            return res.status(400).json({ message: "channel must be email or phone" });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        if (channel === "phone" && !user.phone) {
+            return res.status(400).json({ message: "Add a phone number before phone verification" });
+        }
+
+        const otp = createOtp();
+        const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+        if (channel === "email") {
+            user.emailOtpHash = hashOtp(otp);
+            user.emailOtpExpire = expires;
+        } else {
+            user.phoneOtpHash = hashOtp(otp);
+            user.phoneOtpExpire = expires;
+        }
+        await user.save();
+
+        if (channel === "email") {
+            const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
+                <h2 style="color:#2563eb;">ApnaTutors verification</h2>
+                <p>Hi ${user.name}, use this OTP to verify your email:</p>
+                <div style="font-size:28px; font-weight:700; letter-spacing:6px; padding:16px; background:#f1f5f9; text-align:center;">${otp}</div>
+                <p style="color:#64748b;">This code expires in 10 minutes.</p>
+            </div>`;
+            try {
+                await sendEmail({ email: user.email, subject: "Verify your ApnaTutors email", html });
+            } catch (emailErr) {
+                console.error("Verification Email Error:", emailErr);
+                if (process.env.NODE_ENV === "production") {
+                    return res.status(500).json({ message: "Could not send OTP email. Please try again later." });
+                }
+            }
+        } else {
+            console.log(`[DEV PHONE OTP] ${user.phone}: ${otp}`);
+        }
+
+        const response = { message: `Verification code sent to your ${channel}.` };
+        if (process.env.NODE_ENV !== "production") response.devOtp = otp;
+        res.json(response);
+    } catch (err) {
+        console.error("RequestVerificationOtp Error:", err);
+        res.status(500).json({ message: "Could not send verification code" });
+    }
+};
+
+exports.verifyOtp = async (req, res) => {
+    try {
+        const { channel, otp } = req.body;
+        if (!["email", "phone"].includes(channel) || !otp) {
+            return res.status(400).json({ message: "channel and otp are required" });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const hashField = channel === "email" ? "emailOtpHash" : "phoneOtpHash";
+        const expireField = channel === "email" ? "emailOtpExpire" : "phoneOtpExpire";
+        const verifiedField = channel === "email" ? "emailVerified" : "phoneVerified";
+
+        if (!user[hashField] || !user[expireField] || user[expireField] < new Date()) {
+            return res.status(400).json({ message: "Verification code expired. Request a new one." });
+        }
+        if (user[hashField] !== hashOtp(String(otp).trim())) {
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+
+        user[verifiedField] = true;
+        user[hashField] = undefined;
+        user[expireField] = undefined;
+        user.isVerified = !!(user.emailVerified && (user.phoneVerified || !user.phone));
+        await user.save();
+
+        res.json({ message: `${channel} verified successfully`, user: sanitizeUser(user) });
+    } catch (err) {
+        console.error("VerifyOtp Error:", err);
+        res.status(500).json({ message: "Verification failed" });
     }
 };
 

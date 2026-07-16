@@ -32,14 +32,24 @@ const TransactionSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["PENDING", "SUCCESS", "FAILED"],
+            enum: ["PENDING", "PROCESSING", "SUCCESS", "FAILED"],
             default: "PENDING"
         },
         paymentId: {
             type: String // For Gateway Order ID
+        },
+        gatewayPaymentId: {
+            type: String
+        },
+        processedAt: {
+            type: Date
         }
     },
     { timestamps: true }
 );
+
+TransactionSchema.index({ userId: 1, createdAt: -1 });
+TransactionSchema.index({ paymentId: 1 }, { sparse: true });
+TransactionSchema.index({ gatewayPaymentId: 1 }, { sparse: true });
 
 module.exports = mongoose.model("Transaction", TransactionSchema);

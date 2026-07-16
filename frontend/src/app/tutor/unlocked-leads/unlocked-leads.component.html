@@ -1,0 +1,90 @@
+<div class="unlocked-page container animate-fade-in">
+    <div class="page-header">
+        <div>
+            <h2>My Unlocked Leads</h2>
+            <p>Contacts you have already paid to reveal, ready for follow-up.</p>
+        </div>
+        <a routerLink="/tutor/leads" class="btn-secondary">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            Browse Leads
+        </a>
+    </div>
+
+    @if (loading) {
+        <div class="loading-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Loading unlocked leads...</p>
+        </div>
+    }
+
+    @if (!loading && error) {
+        <div class="error-state">{{ error }}</div>
+    }
+
+    @if (!loading && !error && leads.length === 0) {
+        <div class="empty-state">
+            <i class="fa-solid fa-address-book"></i>
+            <h3>No unlocked leads yet</h3>
+            <p>Unlock a parent requirement to keep its contact details here.</p>
+            <a routerLink="/tutor/leads" class="btn-primary">Find Leads</a>
+        </div>
+    }
+
+    @if (!loading && leads.length > 0) {
+        <div class="lead-grid">
+            @for (lead of leads; track lead._id) {
+                <article class="lead-card">
+                    <div class="card-top">
+                        <span class="mode-badge" [class]="'mode-' + (lead.mode?.toLowerCase() || 'online')">
+                            {{ lead.mode }}
+                        </span>
+                        <span class="date-text">Unlocked {{ lead.unlockedAt | date:'dd MMM yyyy' }}</span>
+                    </div>
+
+                    <h3>{{ lead.title }}</h3>
+                    <div class="meta-grid">
+                        <div>
+                            <span>Class</span>
+                            <strong>{{ lead.classLevel }}</strong>
+                        </div>
+                        <div>
+                            <span>Subjects</span>
+                            <strong>{{ lead.subjects?.join(', ') }}</strong>
+                        </div>
+                        <div>
+                            <span>Location</span>
+                            <strong>{{ lead.location || 'Not specified' }}</strong>
+                        </div>
+                        <div>
+                            <span>Budget</span>
+                            <strong>{{ lead.budgetRange || 'Negotiable' }}</strong>
+                        </div>
+                    </div>
+
+                    @if (lead.description) {
+                        <p class="description">{{ lead.description }}</p>
+                    }
+
+                    @if (lead.parentContact) {
+                        <div class="contact-box">
+                            <div class="contact-row">
+                                <i class="fa-solid fa-user"></i>
+                                <strong>{{ lead.parentContact.name }}</strong>
+                            </div>
+                            @if (lead.parentContact.phone && lead.parentContact.phone !== 'Not provided') {
+                                <a class="contact-row" href="tel:{{ lead.parentContact.phone }}">
+                                    <i class="fa-solid fa-phone"></i>
+                                    {{ lead.parentContact.phone }}
+                                </a>
+                            }
+                            <a class="contact-row" href="mailto:{{ lead.parentContact.email }}">
+                                <i class="fa-solid fa-envelope"></i>
+                                {{ lead.parentContact.email }}
+                            </a>
+                        </div>
+                    }
+                </article>
+            }
+        </div>
+    }
+</div>

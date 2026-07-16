@@ -5,8 +5,19 @@ const auth = require("../middleware/auth.middleware.cjs");
 const role = require("../middleware/role.middleware.cjs");
 const { getAdminStats } = require("../controllers/kpi.controller.cjs");
 const { closeLead, expireOldLeads } = require("../controllers/lead.controller.cjs");
+const {
+    getAdminTransactions,
+    adminRetryPendingCredit,
+    adminMarkProcessingResolved
+} = require("../controllers/payment.controller.cjs");
+const { getLeadReports, resolveLeadReport } = require("../controllers/admin.controller.cjs");
 
 router.get("/stats", auth, role("ADMIN"), getAdminStats);
+router.get("/transactions", auth, role("ADMIN"), getAdminTransactions);
+router.post("/transactions/:id/retry-credit", auth, role("ADMIN"), adminRetryPendingCredit);
+router.post("/transactions/:id/resolve-processing", auth, role("ADMIN"), adminMarkProcessingResolved);
+router.get("/lead-reports", auth, role("ADMIN"), getLeadReports);
+router.post("/lead-reports/:id/resolve", auth, role("ADMIN"), resolveLeadReport);
 router.patch("/leads/:id/close", auth, role("ADMIN"), closeLead);
 
 // Vercel cron endpoint — secured by CRON_SECRET env var

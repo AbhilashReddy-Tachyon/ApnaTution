@@ -52,6 +52,12 @@ export const routes: Routes = [
         data: { role: 'TUTOR' }
     },
     {
+        path: 'tutor/unlocked-leads',
+        loadComponent: () => import('./tutor/unlocked-leads/unlocked-leads.component').then(m => m.UnlockedLeadsComponent),
+        canActivate: [AuthGuard, RoleGuard],
+        data: { role: 'TUTOR' }
+    },
+    {
         path: 'admin',
         component: AdminDashboardComponent,
         canActivate: [AuthGuard, RoleGuard],

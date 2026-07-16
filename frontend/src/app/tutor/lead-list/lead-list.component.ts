@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LeadService } from '../../core/services/lead.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
     selector: 'app-lead-list',
@@ -16,9 +17,17 @@ export class LeadListComponent implements OnInit {
     filters = { location: '', course: '', subject: '', mode: '' };
     loadingLeads = false;
     unlockingId: string | null = null;
+    reportingId: string | null = null;
+    reportReason: Record<string, string> = {};
+    reportDetails: Record<string, string> = {};
     toast: { message: string; type: 'success' | 'error' | 'info' } | null = null;
 
-    constructor(private leadService: LeadService, private router: Router, private cdr: ChangeDetectorRef) {}
+    constructor(
+        private leadService: LeadService,
+        private authService: AuthService,
+        private router: Router,
+        private cdr: ChangeDetectorRef
+    ) {}
 
     ngOnInit() {
         this.loadLeads();
@@ -82,6 +91,7 @@ export class LeadListComponent implements OnInit {
                 lead.isUnlocked = true;
                 lead.parentContact = res.parentContact;
                 this.unlockingId = null;
+                this.authService.refreshProfile().subscribe({ error: () => {} });
                 this.showToast(res.message || 'Lead unlocked! Parent contact revealed.', 'success');
                 this.cdr.detectChanges();
             },
@@ -98,6 +108,32 @@ export class LeadListComponent implements OnInit {
                 } else {
                     this.showToast(err.error?.message || 'Unlock failed. Please try again.', 'error');
                 }
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    reportLead(lead: any) {
+        if (!lead.isUnlocked || this.reportingId) return;
+        const reason = this.reportReason[lead._id];
+        if (!reason) {
+            this.showToast('Choose a report reason first.', 'error');
+            return;
+        }
+        if (!confirm('Submit this lead for admin review?')) return;
+
+        this.reportingId = lead._id;
+        this.leadService.reportLead(lead._id, reason, this.reportDetails[lead._id]).subscribe({
+            next: (res) => {
+                lead.reportSubmitted = true;
+                this.reportingId = null;
+                this.showToast(res.message || 'Report submitted.', 'success');
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                if (err.status === 409) lead.reportSubmitted = true;
+                this.reportingId = null;
+                this.showToast(err.error?.message || 'Could not submit report.', err.status === 409 ? 'info' : 'error');
                 this.cdr.detectChanges();
             }
         });

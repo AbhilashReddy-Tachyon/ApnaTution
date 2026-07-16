@@ -96,4 +96,32 @@
             </div>
         </div>
     </div>
+
+    @if (transactions.length > 0) {
+        <section class="transactions-section">
+            <div class="section-heading">
+                <h3>Recent Point Activity</h3>
+                <button type="button" class="refresh-link" (click)="loadTransactions()">
+                    <i class="fa-solid fa-rotate"></i>
+                    Refresh
+                </button>
+            </div>
+
+            <div class="transaction-list">
+                @for (txn of transactions; track txn._id) {
+                    <div class="transaction-row" [class.credit-row]="txn.type === 'CREDIT'" [class.debit-row]="txn.type === 'DEBIT'">
+                        <div>
+                            <div class="transaction-title">{{ txn.description || (txn.type === 'CREDIT' ? 'Points purchased' : 'Points used') }}</div>
+                            <div class="transaction-meta">
+                                {{ txn.createdAt | date:'dd MMM yyyy, h:mm a' }} · {{ txn.status }}
+                            </div>
+                        </div>
+                        <div class="transaction-points">
+                            {{ txn.type === 'CREDIT' ? '+' : '-' }}{{ txn.points }}
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 </div>

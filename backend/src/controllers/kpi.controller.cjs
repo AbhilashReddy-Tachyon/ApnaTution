@@ -1,6 +1,7 @@
 const KPIEvent = require("../models/KPIEvent.model.cjs");
 const LeadUnlock = require("../models/LeadUnlock.model.cjs");
 const TuitionLead = require("../models/TutionLead.model.cjs");
+const Transaction = require("../models/Transaction.model.cjs");
 
 exports.getAdminStats = async (req, res) => {
     try {
@@ -8,9 +9,17 @@ exports.getAdminStats = async (req, res) => {
         const openLeads = await TuitionLead.countDocuments({ status: "OPEN" });
 
         const totalUnlocks = await LeadUnlock.countDocuments();
-        const revenue = await LeadUnlock.aggregate([
+        const unlockRevenue = await LeadUnlock.aggregate([
             { $group: { _id: null, total: { $sum: "$price" } } }
         ]);
+        const paymentRevenue = await Transaction.aggregate([
+            { $match: { type: "CREDIT", status: "SUCCESS" } },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        const pendingPayments = await Transaction.countDocuments({
+            type: "CREDIT",
+            status: { $in: ["PENDING", "PROCESSING"] }
+        });
 
         const unlockEvents = await KPIEvent.countDocuments({
             eventType: "LEAD_UNLOCK"
@@ -20,7 +29,9 @@ exports.getAdminStats = async (req, res) => {
             totalLeads,
             openLeads,
             totalUnlocks,
-            revenue: revenue[0]?.total || 0,
+            revenue: unlockRevenue[0]?.total || 0,
+            paymentRevenue: paymentRevenue[0]?.total || 0,
+            pendingPayments,
             unlockEvents
         });
     } catch (err) {

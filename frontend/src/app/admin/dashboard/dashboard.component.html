@@ -37,10 +37,162 @@
             <div class="stat-card">
                 <div class="stat-icon orange"><i class="fa-solid fa-rupee-sign"></i></div>
                 <div class="stat-body">
-                    <div class="stat-num">{{ stats.revenue }}</div>
-                    <div class="stat-label">Revenue (Points)</div>
+                    <div class="stat-num">Rs {{ stats.paymentRevenue || 0 }}</div>
+                    <div class="stat-label">Payment Revenue</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warn"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="stat-body">
+                    <div class="stat-num">{{ stats.pendingPayments || 0 }}</div>
+                    <div class="stat-label">Payments To Review</div>
                 </div>
             </div>
         </div>
+
+        <section class="admin-section">
+            <div class="section-toolbar">
+                <div>
+                    <h3>Payment Reconciliation</h3>
+                    <p>Review Razorpay orders and resolve payments that need attention.</p>
+                </div>
+                <select [value]="transactionStatus" (change)="setStatus($event)">
+                    <option value="">All statuses</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="PROCESSING">Processing</option>
+                    <option value="SUCCESS">Success</option>
+                    <option value="FAILED">Failed</option>
+                </select>
+            </div>
+
+            @if (notice) {
+                <div class="admin-notice">{{ notice }}</div>
+            }
+
+            @if (loadingTransactions) {
+                <div class="loading-inline">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    Loading transactions...
+                </div>
+            } @else {
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Points</th>
+                                <th>Status</th>
+                                <th>Order</th>
+                                <th>Date</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (txn of transactions; track txn._id) {
+                                <tr>
+                                    <td>
+                                        <strong>{{ txn.userId?.name || 'Unknown' }}</strong>
+                                        <span>{{ txn.userId?.email }}</span>
+                                    </td>
+                                    <td>Rs {{ txn.amount }}</td>
+                                    <td>{{ txn.type === 'CREDIT' ? '+' : '-' }}{{ txn.points }}</td>
+                                    <td><span class="status-pill" [class]="'status-' + txn.status?.toLowerCase()">{{ txn.status }}</span></td>
+                                    <td class="mono">{{ txn.paymentId || '-' }}</td>
+                                    <td>{{ txn.createdAt | date:'dd MMM, h:mm a' }}</td>
+                                    <td class="actions-cell">
+                                        @if (txn.type === 'CREDIT' && txn.status === 'PENDING') {
+                                            <button type="button" (click)="retryCredit(txn)" [disabled]="actionId === txn._id">
+                                                Credit
+                                            </button>
+                                        }
+                                        @if (txn.type === 'CREDIT' && txn.status === 'PROCESSING') {
+                                            <button type="button" (click)="resolveProcessing(txn)" [disabled]="actionId === txn._id">
+                                                Resolve
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="7" class="empty-cell">No transactions found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <section class="admin-section">
+            <div class="section-toolbar">
+                <div>
+                    <h3>Lead Quality Reports</h3>
+                    <p>Review tutor complaints and refund points when a lead is invalid.</p>
+                </div>
+                <select [value]="reportStatus" (change)="setReportStatus($event)">
+                    <option value="">All statuses</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+            </div>
+
+            @if (loadingReports) {
+                <div class="loading-inline">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    Loading reports...
+                </div>
+            } @else {
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lead</th>
+                                <th>Tutor</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (report of reports; track report._id) {
+                                <tr>
+                                    <td>
+                                        <strong>{{ report.leadId?.title || 'Deleted lead' }}</strong>
+                                        <span>{{ report.leadId?.classLevel }} · {{ report.leadId?.subjects?.join(', ') }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ report.tutorId?.name || 'Unknown' }}</strong>
+                                        <span>{{ report.tutorId?.email }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ report.reason }}</strong>
+                                        <span>{{ report.details || 'No details' }}</span>
+                                    </td>
+                                    <td><span class="status-pill" [class]="'status-' + report.status?.toLowerCase()">{{ report.status }}</span></td>
+                                    <td>{{ report.createdAt | date:'dd MMM, h:mm a' }}</td>
+                                    <td class="actions-cell">
+                                        @if (report.status === 'PENDING') {
+                                            <button type="button" (click)="resolveReport(report, 'APPROVE_REFUND')" [disabled]="actionId === report._id">
+                                                Refund
+                                            </button>
+                                            <button type="button" class="muted-action" (click)="resolveReport(report, 'REJECT')" [disabled]="actionId === report._id">
+                                                Reject
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            } @empty {
+                                <tr>
+                                    <td colspan="6" class="empty-cell">No lead reports found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
     }
 </div>

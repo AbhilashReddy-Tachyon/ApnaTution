@@ -70,11 +70,56 @@
                         <div class="interest-label">
                             {{ (lead.interestCount || 0) === 1 ? 'Tutor Interested' : 'Tutors Interested' }}
                         </div>
+                        @if ((lead.interestCount || 0) > 0) {
+                            <button type="button" class="view-interest-btn" (click)="toggleInterestedTutors(lead)">
+                                {{ openInterestId === lead._id ? 'Hide' : 'View' }}
+                            </button>
+                        }
                     </div>
                 </div>
 
                 @if (lead.description) {
                     <p class="lead-desc">{{ lead.description }}</p>
+                }
+
+                @if (openInterestId === lead._id) {
+                    <div class="interested-panel">
+                        @if (loadingInterestId === lead._id) {
+                            <div class="interest-loading">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                Loading interested tutors...
+                            </div>
+                        } @else {
+                            @for (item of interestedTutors[lead._id]; track item.tutor._id) {
+                                <div class="tutor-interest-card">
+                                    <div class="tutor-main">
+                                        <div class="tutor-name-row">
+                                            <strong>{{ item.tutor.name }}</strong>
+                                            @if (item.tutor.isVerified || item.tutor.emailVerified || item.tutor.phoneVerified) {
+                                                <span class="verified-pill">
+                                                    <i class="fa-solid fa-circle-check"></i> Verified
+                                                </span>
+                                            }
+                                        </div>
+                                        <span>{{ item.tutor.subjects?.join(', ') || 'Subjects not listed' }}</span>
+                                        <span>{{ item.tutor.experience || 'Experience not listed' }} · {{ item.tutor.mode || 'ONLINE' }}</span>
+                                        @if (item.tutor.tagline) {
+                                            <p>{{ item.tutor.tagline }}</p>
+                                        }
+                                    </div>
+                                    <div class="tutor-contact">
+                                        @if (item.tutor.phone) {
+                                            <a href="tel:{{ item.tutor.phone }}"><i class="fa-solid fa-phone"></i> {{ item.tutor.phone }}</a>
+                                        }
+                                        <a href="mailto:{{ item.tutor.email }}"><i class="fa-solid fa-envelope"></i> {{ item.tutor.email }}</a>
+                                        <small>Unlocked {{ item.unlockedAt | date:'dd MMM, h:mm a' }}</small>
+                                    </div>
+                                </div>
+                            } @empty {
+                                <div class="interest-loading">No tutor details available yet.</div>
+                            }
+                        }
+                    </div>
                 }
 
                 <div class="card-actions">

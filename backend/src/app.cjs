@@ -15,7 +15,7 @@ function sanitizeMongo(val) {
 }
 const connectDB = require("./config/db.cjs");
 const { seedPlans } = require("./controllers/payment.controller.cjs");
-const { createOrder, verifyPayment } = require("./controllers/payment.controller.cjs");
+const { createOrder, verifyPayment, handleRazorpayWebhook } = require("./controllers/payment.controller.cjs");
 const auth = require("./middleware/auth.middleware.cjs");
 const role = require("./middleware/role.middleware.cjs");
 const { ROUTES } = require("./utils/startupCheck.cjs");
@@ -74,9 +74,6 @@ const corsOptions = {
 app.options(/.*/, cors(corsOptions));
 app.use(cors(corsOptions));
 
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true }));
-
 // Health check (before DB middleware so it always responds)
 app.get("/health", (_req, res) => {
     res.json({ status: "UP", timestamp: new Date().toISOString() });
@@ -101,6 +98,16 @@ const ensureDatabaseReady = async (_req, res, next) => {
         });
     }
 };
+
+app.post(
+    "/api/razorpay/webhook",
+    express.raw({ type: "application/json", limit: "200kb" }),
+    ensureDatabaseReady,
+    handleRazorpayWebhook
+);
+
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true }));
 
 // Standard Razorpay Checkout aliases used by direct clients and the Angular proxy.
 app.post("/api/create-order", auth, role("TUTOR"), ensureDatabaseReady, createOrder);

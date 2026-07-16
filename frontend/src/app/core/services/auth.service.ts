@@ -79,8 +79,32 @@ export class AuthService {
         return this.http.get(`${this.apiUrl}/profile`);
     }
 
+    refreshProfile(): Observable<any> {
+        return this.getProfile().pipe(
+            tap(profile => {
+                const currentUser = this.userSubject.value || {};
+                this.userSubject.next({ ...currentUser, ...profile });
+            })
+        );
+    }
+
     updateProfile(userData: any): Observable<any> {
         return this.http.put(`${this.apiUrl}/profile`, userData);
+    }
+
+    requestVerification(channel: 'email' | 'phone'): Observable<any> {
+        return this.http.post(`${this.apiUrl}/verification/request`, { channel });
+    }
+
+    verifyOtp(channel: 'email' | 'phone', otp: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/verification/verify`, { channel, otp }).pipe(
+            tap((response: any) => {
+                if (response.user) {
+                    const currentUser = this.userSubject.value || {};
+                    this.userSubject.next({ ...currentUser, ...response.user });
+                }
+            })
+        );
     }
 
     forgotPassword(email: string): Observable<any> {

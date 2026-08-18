@@ -1,16 +1,6 @@
 <div class="page-wrapper">
 
-  <!-- Toast Notification -->
-  @if (toast) {
-    <div class="toast-notification" [class]="'toast-' + toast.type">
-      <i class="fa-solid" [class.fa-circle-check]="toast.type === 'success'"
-         [class.fa-circle-exclamation]="toast.type === 'error'"
-         [class.fa-circle-info]="toast.type === 'info'"></i>
-      <span>{{ toast.message }}</span>
-    </div>
-  }
-
-  <!-- ── Sidebar Filters ─────────────────────────────────���── -->
+  <!--── Sidebar Filters ─────────────────────────────────���── -->
   <aside class="sidebar">
     <div class="filter-card">
       <div class="filter-header">
@@ -130,7 +120,7 @@
 
           <!-- Card Top Bar -->
           <div class="card-top-bar">
-            <span class="mode-badge" [class]="'mode-' + (lead.mode?.toLowerCase() || 'offline')">
+            <span class="mode-badge" [class]="'mode-' + (lead.mode.toLowerCase())">
               {{ lead.mode || 'OFFLINE' }}
             </span>
             <span class="posted-date">
@@ -150,7 +140,7 @@
             </div>
             <div class="spec-item">
               <span class="spec-label">Subjects</span>
-              <span class="spec-value subjects-val">{{ lead.subjects?.join(', ') }}</span>
+              <span class="spec-value subjects-val">{{ lead.subjects.join(', ') }}</span>
             </div>
             <div class="spec-item">
               <span class="spec-label">Location</span>

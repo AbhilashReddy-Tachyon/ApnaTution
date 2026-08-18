@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LeadService } from '../../core/services/lead.service';
+import { UnlockedLead } from '../../core/models';
 
 @Component({
     selector: 'app-unlocked-leads',
@@ -11,7 +12,7 @@ import { LeadService } from '../../core/services/lead.service';
     styleUrl: './unlocked-leads.component.css'
 })
 export class UnlockedLeadsComponent implements OnInit {
-    leads: any[] = [];
+    leads: UnlockedLead[] = [];
     loading = true;
     error = '';
 

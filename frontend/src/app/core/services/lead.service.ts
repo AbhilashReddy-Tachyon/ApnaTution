@@ -3,6 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../api.config';
+import {
+    CreateLeadRequest,
+    InterestedTutor,
+    LeadReportReason,
+    ParentLead,
+    ReportLeadResponse,
+    TuitionLead,
+    TutorLead,
+    UnlockedLead,
+    UnlockLeadResponse,
+    UpdateLeadRequest
+} from '../models';
 
 @Injectable({
     providedIn: 'root'
@@ -12,39 +24,39 @@ export class LeadService {
 
     constructor(private http: HttpClient) { }
 
-    createLead(lead: any): Observable<any> {
-        return this.http.post(this.apiUrl, lead);
+    createLead(lead: CreateLeadRequest): Observable<TuitionLead> {
+        return this.http.post<TuitionLead>(this.apiUrl, lead);
     }
 
-    getLead(id: string): Observable<any> {
-        return this.http.get(`${this.apiUrl}/${id}`);
+    getLead(id: string): Observable<TuitionLead> {
+        return this.http.get<TuitionLead>(`${this.apiUrl}/${id}`);
     }
 
-    updateLead(id: string, lead: any): Observable<any> {
-        return this.http.put(`${this.apiUrl}/${id}`, lead);
+    updateLead(id: string, lead: UpdateLeadRequest): Observable<TuitionLead> {
+        return this.http.put<TuitionLead>(`${this.apiUrl}/${id}`, lead);
     }
 
-    getMyLeads(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/my`);
+    getMyLeads(): Observable<ParentLead[]> {
+        return this.http.get<ParentLead[]>(`${this.apiUrl}/my`);
     }
 
-    getInterestedTutors(leadId: string): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/${leadId}/interested-tutors`);
+    getInterestedTutors(leadId: string): Observable<InterestedTutor[]> {
+        return this.http.get<InterestedTutor[]>(`${this.apiUrl}/${leadId}/interested-tutors`);
     }
 
-    getLeadsForTutor(): Observable<any[]> {
-        return this.http.get<any[]>(this.apiUrl);
+    getLeadsForTutor(): Observable<TutorLead[]> {
+        return this.http.get<TutorLead[]>(this.apiUrl);
     }
 
-    getUnlockedLeads(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/unlocked`);
+    getUnlockedLeads(): Observable<UnlockedLead[]> {
+        return this.http.get<UnlockedLead[]>(`${this.apiUrl}/unlocked`);
     }
 
-    unlockLead(leadId: string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/${leadId}/unlock`, {});
+    unlockLead(leadId: string): Observable<UnlockLeadResponse> {
+        return this.http.post<UnlockLeadResponse>(`${this.apiUrl}/${leadId}/unlock`, {});
     }
 
-    reportLead(leadId: string, reason: string, details?: string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/${leadId}/report`, { reason, details });
+    reportLead(leadId: string, reason: LeadReportReason, details?: string): Observable<ReportLeadResponse> {
+        return this.http.post<ReportLeadResponse>(`${this.apiUrl}/${leadId}/report`, { reason, details });
     }
 }

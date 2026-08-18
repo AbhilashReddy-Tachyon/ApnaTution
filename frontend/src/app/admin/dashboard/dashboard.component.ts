@@ -1,6 +1,15 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../core/services/admin.service';
+import { apiErrorMessage } from '../../core/errors/api-error';
+import {
+    AdminLeadReport,
+    AdminStats,
+    AdminTransaction,
+    LeadReportAction,
+    LeadReportStatus,
+    TransactionStatus,
+} from '../../core/models';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -10,11 +19,11 @@ import { AdminService } from '../../core/services/admin.service';
     styleUrl: './dashboard.component.css'
 })
 export class AdminDashboardComponent implements OnInit {
-    stats: any = null;
-    transactions: any[] = [];
-    reports: any[] = [];
-    transactionStatus = '';
-    reportStatus = 'PENDING';
+    stats: AdminStats | null = null;
+    transactions: AdminTransaction[] = [];
+    reports: AdminLeadReport[] = [];
+    transactionStatus: TransactionStatus | '' = '';
+    reportStatus: LeadReportStatus | '' = 'PENDING';
     loadingTransactions = false;
     loadingReports = false;
     actionId: string | null = null;
@@ -52,11 +61,11 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     setStatus(event: Event) {
-        this.transactionStatus = (event.target as HTMLSelectElement).value;
+        this.transactionStatus = (event.target as HTMLSelectElement).value as TransactionStatus | '';
         this.loadTransactions();
     }
 
-    retryCredit(transaction: any) {
+    retryCredit(transaction: AdminTransaction) {
         if (!confirm('Credit points for this pending transaction now? Confirm payment in Razorpay first.')) return;
         this.actionId = transaction._id;
         this.adminService.retryPendingCredit(transaction._id).subscribe({
@@ -67,14 +76,14 @@ export class AdminDashboardComponent implements OnInit {
                 this.loadTransactions();
             },
             error: (err) => {
-                this.notice = err.error?.message || 'Action failed.';
+                this.notice = apiErrorMessage(err, 'Action failed.');
                 this.actionId = null;
                 this.cdr.detectChanges();
             }
         });
     }
 
-    resolveProcessing(transaction: any) {
+    resolveProcessing(transaction: AdminTransaction) {
         if (!confirm('Mark this processing payment as successful without adding more points? Use only after confirming the user already received points.')) return;
         this.actionId = transaction._id;
         this.adminService.resolveProcessing(transaction._id).subscribe({
@@ -84,7 +93,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.loadTransactions();
             },
             error: (err) => {
-                this.notice = err.error?.message || 'Action failed.';
+                this.notice = apiErrorMessage(err, 'Action failed.');
                 this.actionId = null;
                 this.cdr.detectChanges();
             }
@@ -108,11 +117,11 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     setReportStatus(event: Event) {
-        this.reportStatus = (event.target as HTMLSelectElement).value;
+        this.reportStatus = (event.target as HTMLSelectElement).value as LeadReportStatus | '';
         this.loadReports();
     }
 
-    resolveReport(report: any, action: 'APPROVE_REFUND' | 'REJECT') {
+    resolveReport(report: AdminLeadReport, action: LeadReportAction) {
         const note = prompt(action === 'APPROVE_REFUND' ? 'Admin note for refund approval' : 'Reason for rejection') || '';
         if (action === 'APPROVE_REFUND' && !confirm('Refund 1 point to this tutor?')) return;
 
@@ -126,7 +135,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.loadTransactions();
             },
             error: (err) => {
-                this.notice = err.error?.message || 'Report action failed.';
+                this.notice = apiErrorMessage(err, 'Report action failed.');
                 this.actionId = null;
                 this.cdr.detectChanges();
             }

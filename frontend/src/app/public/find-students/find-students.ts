@@ -1,9 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
-import { API_CONFIG } from '../../core/api.config';
+import { PublicService } from '../../core/services/public.service';
+import { PublicLead } from '../../core/models';
 
 @Component({
     selector: 'app-find-students',
@@ -13,13 +13,13 @@ import { API_CONFIG } from '../../core/api.config';
     styleUrl: './find-students.css',
 })
 export class FindStudentsComponent implements OnInit {
-    leads: any[] = [];
-    filteredLeads: any[] = [];
+    leads: PublicLead[] = [];
+    filteredLeads: PublicLead[] = [];
     loading = true;
     filters = { location: '', subject: '', course: '', mode: '' };
 
     constructor(
-        private http: HttpClient,
+        private publicService: PublicService,
         private authService: AuthService,
         private router: Router,
         private cdr: ChangeDetectorRef,
@@ -35,7 +35,7 @@ export class FindStudentsComponent implements OnInit {
             this.router.navigate(['/tutor/leads']);
             return;
         }
-        this.http.get<any[]>(`${API_CONFIG.baseUrl}/public/leads`).subscribe({
+        this.publicService.getLeads().subscribe({
             next: (data) => {
                 this.leads = data;
                 this.filteredLeads = [...data];

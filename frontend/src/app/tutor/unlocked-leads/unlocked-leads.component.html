@@ -35,7 +35,7 @@
             @for (lead of leads; track lead._id) {
                 <article class="lead-card">
                     <div class="card-top">
-                        <span class="mode-badge" [class]="'mode-' + (lead.mode?.toLowerCase() || 'online')">
+                        <span class="mode-badge" [class]="'mode-' + (lead.mode.toLowerCase())">
                             {{ lead.mode }}
                         </span>
                         <span class="date-text">Unlocked {{ lead.unlockedAt | date:'dd MMM yyyy' }}</span>
@@ -49,7 +49,7 @@
                         </div>
                         <div>
                             <span>Subjects</span>
-                            <strong>{{ lead.subjects?.join(', ') }}</strong>
+                            <strong>{{ lead.subjects.join(', ') }}</strong>
                         </div>
                         <div>
                             <span>Location</span>

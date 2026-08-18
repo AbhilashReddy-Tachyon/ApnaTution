@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/notifications/notification.service';
+import { apiErrorMessage } from '../../core/errors/api-error';
+import { User, UserRole } from '../../core/models';
 
 @Component({
     selector: 'app-profile',
@@ -15,15 +18,18 @@ export class ProfileComponent implements OnInit {
     profileForm: FormGroup;
     loading = true;
     saving = false;
-    userRole: string | null = null;
-    profile: any = null;
+    userRole: UserRole | null = null;
+    profile: User | null = null;
     emailOtp = '';
     phoneOtp = '';
     sendingChannel: 'email' | 'phone' | null = null;
     verifyingChannel: 'email' | 'phone' | null = null;
-    toast: { message: string; type: 'success' | 'error' } | null = null;
 
-    constructor(private fb: FormBuilder, private authService: AuthService , private cdr: ChangeDetectorRef
+    constructor(
+        private fb: FormBuilder,
+        private authService: AuthService,
+        private notifications: NotificationService,
+        private cdr: ChangeDetectorRef
     ) {
         this.profileForm = this.fb.group({
             name:       ['', [Validators.required, Validators.minLength(2)]],
@@ -54,11 +60,12 @@ export class ProfileComponent implements OnInit {
                 const subjectsStr = Array.isArray(user.subjects) ? user.subjects.join(', ') : (user.subjects || '');
                 this.profileForm.patchValue({ ...user, subjects: subjectsStr });
                 this.loading = false;
-                this.cdr.markForCheck();        
+                this.cdr.markForCheck();
             },
             error: () => {
                 this.loading = false;
-                this.showToast('Failed to load profile. Please try again.', 'error');
+                this.notifications.error('Failed to load profile. Please try again.');
+                this.cdr.markForCheck();
             }
         });
     }
@@ -79,12 +86,13 @@ export class ProfileComponent implements OnInit {
         this.authService.updateProfile(raw).subscribe({
             next: () => {
                 this.saving = false;
-                this.showToast('Profile updated successfully!', 'success');
+                this.notifications.success('Profile updated successfully!');
                 this.loadProfile();
             },
             error: (err) => {
                 this.saving = false;
-                this.showToast(err.error?.message || 'Update failed. Please try again.', 'error');
+                this.notifications.error(apiErrorMessage(err, 'Update failed. Please try again.'));
+                this.cdr.markForCheck();
             }
         });
     }
@@ -95,11 +103,13 @@ export class ProfileComponent implements OnInit {
             next: (res) => {
                 this.sendingChannel = null;
                 const devHint = res.devOtp ? ` Dev OTP: ${res.devOtp}` : '';
-                this.showToast(`${res.message}${devHint}`, 'success');
+                this.notifications.success(`${res.message}${devHint}`);
+                this.cdr.markForCheck();
             },
             error: (err) => {
                 this.sendingChannel = null;
-                this.showToast(err.error?.message || 'Could not send verification code.', 'error');
+                this.notifications.error(apiErrorMessage(err, 'Could not send verification code.'));
+                this.cdr.markForCheck();
             }
         });
     }
@@ -107,7 +117,7 @@ export class ProfileComponent implements OnInit {
     verify(channel: 'email' | 'phone') {
         const otp = channel === 'email' ? this.emailOtp : this.phoneOtp;
         if (!otp.trim()) {
-            this.showToast('Enter the verification code first.', 'error');
+            this.notifications.error('Enter the verification code first.');
             return;
         }
 
@@ -118,18 +128,14 @@ export class ProfileComponent implements OnInit {
                 this.emailOtp = channel === 'email' ? '' : this.emailOtp;
                 this.phoneOtp = channel === 'phone' ? '' : this.phoneOtp;
                 this.profile = res.user;
-                this.showToast(res.message || 'Verified successfully.', 'success');
+                this.notifications.success(res.message || 'Verified successfully.');
                 this.loadProfile();
             },
             error: (err) => {
                 this.verifyingChannel = null;
-                this.showToast(err.error?.message || 'Verification failed.', 'error');
+                this.notifications.error(apiErrorMessage(err, 'Verification failed.'));
+                this.cdr.markForCheck();
             }
         });
-    }
-
-    private showToast(message: string, type: 'success' | 'error') {
-        this.toast = { message, type };
-        setTimeout(() => this.toast = null, 4000);
     }
 }

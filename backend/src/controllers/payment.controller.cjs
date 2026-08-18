@@ -264,7 +264,7 @@ exports.createOrder = async (req, res) => {
         });
     } catch (err) {
         console.error("Create Order Error:", err?.error || err);
-        res.status(500).json({ message: "Order creation failed", error: err.message });
+        res.status(500).json({ message: "Order creation failed", error: err?.error?.description || err.message });
     }
 };
 

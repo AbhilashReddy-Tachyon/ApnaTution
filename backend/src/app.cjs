@@ -82,6 +82,28 @@ app.get("/health", (_req, res) => {
     res.json({ status: "UP", timestamp: new Date().toISOString() });
 });
 
+// Payment gateway readiness. Reports whether the Razorpay env vars reached this
+// deployment — useful for diagnosing the "Payment gateway is not configured" 503.
+// Safe to expose: key_id is already public (it is sent to the browser at checkout);
+// the secret is never returned, only its presence and length so typos/truncation show up.
+app.get("/health/payments", (_req, res) => {
+    const keyId = process.env.RAZORPAY_KEY_ID || "";
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+    res.json({
+        nodeEnv: process.env.NODE_ENV || null,
+        configured: !!(keyId && keySecret),
+        keyId: {
+            present: !!keyId,
+            value: keyId || null,
+            mode: keyId.startsWith("rzp_live_") ? "live" : keyId.startsWith("rzp_test_") ? "test" : null
+        },
+        keySecret: {
+            present: !!keySecret,
+            length: keySecret.length
+        }
+    });
+});
+
 // DB + Seed middleware (serverless safe - reuses connection)
 let seeded = false;
 const ensureDatabaseReady = async (_req, res, next) => {

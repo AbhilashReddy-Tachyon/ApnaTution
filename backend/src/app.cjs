@@ -104,6 +104,29 @@ app.get("/health/payments", (_req, res) => {
     });
 });
 
+// Database identity. Reports which cluster/database this deployment is actually
+// connected to — the connection string itself is never exposed, only the host and
+// db name, so a misdirected MONGO_URI can be spotted without leaking credentials.
+app.get("/health/db", async (_req, res) => {
+    const mongoose = require("mongoose");
+    try {
+        await connectDB();
+        const conn = mongoose.connection;
+        const counts = {};
+        for (const name of ["users", "subscriptionplans", "tuitionleads", "transactions"]) {
+            counts[name] = await conn.db.collection(name).countDocuments().catch(() => null);
+        }
+        res.json({
+            connected: conn.readyState === 1,
+            database: conn.name,
+            host: conn.host,
+            counts
+        });
+    } catch (err) {
+        res.status(500).json({ connected: false, error: err.message });
+    }
+});
+
 // DB + Seed middleware (serverless safe - reuses connection)
 let seeded = false;
 const ensureDatabaseReady = async (_req, res, next) => {

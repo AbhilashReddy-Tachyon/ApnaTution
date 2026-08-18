@@ -5,6 +5,7 @@ const KPIEvent = require("../models/KPIEvent.model.cjs");
 const User = require("../models/user.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
 const LeadReport = require("../models/LeadReport.model.cjs");
+const { logger } = require("../utils/logger.cjs");
 
 // Validate MongoDB ObjectId
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -51,7 +52,7 @@ exports.createLead = async (req, res) => {
         if (err.name === "ValidationError") {
             return res.status(400).json({ message: err.message });
         }
-        console.error("Create Lead Error:", err);
+        logger.error({ err: err }, "Create Lead Error");
         res.status(500).json({ message: "Failed to create lead" });
     }
 };
@@ -78,7 +79,7 @@ exports.getMyLeads = async (req, res) => {
 
         res.json(result);
     } catch (err) {
-        console.error("GetMyLeads Error:", err);
+        logger.error({ err: err }, "GetMyLeads Error");
         res.status(500).json({ message: "Failed to fetch leads" });
     }
 };
@@ -123,7 +124,7 @@ exports.getLeadsForTutor = async (req, res) => {
 
         res.json(result);
     } catch (err) {
-        console.error("GetLeadsForTutor Error:", err);
+        logger.error({ err: err }, "GetLeadsForTutor Error");
         res.status(500).json({ message: "Failed to fetch leads" });
     }
 };
@@ -151,7 +152,7 @@ exports.getInterestedTutors = async (req, res) => {
                 tutor: unlock.tutorId
             })));
     } catch (err) {
-        console.error("GetInterestedTutors Error:", err);
+        logger.error({ err: err }, "GetInterestedTutors Error");
         res.status(500).json({ message: "Failed to fetch interested tutors" });
     }
 };
@@ -189,7 +190,7 @@ exports.getMyUnlockedLeads = async (req, res) => {
 
         res.json(result);
     } catch (err) {
-        console.error("GetMyUnlockedLeads Error:", err);
+        logger.error({ err: err }, "GetMyUnlockedLeads Error");
         res.status(500).json({ message: "Failed to fetch unlocked leads" });
     }
 };
@@ -327,7 +328,7 @@ exports.unlockLead = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error("Unlock Error:", err);
+        logger.error({ err: err }, "Unlock Error");
         res.status(500).json({ message: "Unlock failed. Please try again." });
     }
 };
@@ -366,7 +367,7 @@ exports.reportLead = async (req, res) => {
         if (err.code === 11000) {
             return res.status(409).json({ message: "You have already reported this lead" });
         }
-        console.error("ReportLead Error:", err);
+        logger.error({ err: err }, "ReportLead Error");
         res.status(500).json({ message: "Could not submit report" });
     }
 };
@@ -422,7 +423,7 @@ exports.updateLead = async (req, res) => {
         if (err.name === "ValidationError") {
             return res.status(400).json({ message: err.message });
         }
-        console.error("Update Lead Error:", err);
+        logger.error({ err: err }, "Update Lead Error");
         res.status(500).json({ message: "Failed to update lead" });
     }
 };
@@ -440,7 +441,7 @@ exports.getLeadById = async (req, res) => {
         }
         res.json(lead);
     } catch (err) {
-        console.error("GetLeadById Error:", err);
+        logger.error({ err: err }, "GetLeadById Error");
         res.status(500).json({ message: "Failed to fetch lead" });
     }
 };
@@ -452,6 +453,6 @@ exports.expireOldLeads = async () => {
         { status: "OPEN", createdAt: { $lt: cutoff } },
         { $set: { status: "CLOSED" } }
     );
-    console.log(`[expireOldLeads] Closed ${result.modifiedCount} expired lead(s).`);
+    logger.info(`[expireOldLeads] Closed ${result.modifiedCount} expired lead(s).`);
     return result.modifiedCount;
 };

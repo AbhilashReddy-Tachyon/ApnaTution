@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const Razorpay = require("razorpay");
+const { config } = require("../config/env.cjs");
+const { logger } = require("../utils/logger.cjs");
 const User = require("../models/user.model.cjs");
 const SubscriptionPlan = require("../models/SubscriptionPlan.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
@@ -104,7 +106,7 @@ const finalizeCreditTransaction = async ({ transaction, transactionId, orderId, 
             }
         };
     } catch (err) {
-        console.error("Finalize Payment Error:", claimed._id.toString(), err);
+        logger.error({ err, transactionId: claimed._id.toString() }, "failed to finalize payment");
         throw err;
     }
 };
@@ -120,7 +122,7 @@ exports.seedPlans = async () => {
                 { name: "Growth Pack",   price: 2000, points: 50,  discountDescription: "Save 20% (₹40/lead)" },
                 { name: "Pro Pack",      price: 5000, points: 150, discountDescription: "Save 33% (₹33/lead)" }
             ]);
-            console.log("Seeded: subscription plans");
+            logger.info("Seeded: subscription plans");
         }
 
         // Seed Coupons
@@ -132,8 +134,14 @@ exports.seedPlans = async () => {
                 usageLimit: 10000,
                 expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
             });
-            console.log("Seeded: coupons");
+            logger.info("Seeded: coupons");
         }
+
+        // Demo accounts share one published password ("Demo@1234", documented in
+        // the frontend README) and ship with spendable points. Seeding them into
+        // a production database hands anyone a working authenticated account, so
+        // everything below this line is development-only.
+        if (config.isProduction) return;
 
         // Seed Demo Tutors (with hashed passwords)
         const tutorCount = await User.countDocuments({ role: "TUTOR" });
@@ -189,7 +197,7 @@ exports.seedPlans = async () => {
                     points: 20
                 }
             ]);
-            console.log("Seeded: demo tutors");
+            logger.info("Seeded: demo tutors");
         }
 
         // Seed Demo Parent + Leads
@@ -240,10 +248,10 @@ exports.seedPlans = async () => {
                     description: "Need a dedicated tutor for IIT JEE preparation. My son is in Class 12. Looking for someone who can teach both Physics and Chemistry systematically."
                 }
             ]);
-            console.log("Seeded: demo leads");
+            logger.info("Seeded: demo leads");
         }
     } catch (err) {
-        console.error("Seeding error:", err.message);
+        logger.error({ err: err.message }, "Seeding error");
         // Don't throw - seeding failures shouldn't crash the server
     }
 };
@@ -359,7 +367,7 @@ exports.createOrder = async (req, res) => {
             key: process.env.RAZORPAY_KEY_ID || null
         });
     } catch (err) {
-        console.error("Create Order Error:", err?.error || err);
+        logger.error("Create Order Error:", err?.error || err);
         res.status(500).json({ message: "Order creation failed", error: err.message });
     }
 };
@@ -453,7 +461,7 @@ exports.handleRazorpayWebhook = async (req, res) => {
         const result = await finalizeCreditTransaction({ transaction, orderId, paymentId });
         res.status(result.status).json({ received: result.status === 200, ...result.body });
     } catch (err) {
-        console.error("Razorpay Webhook Error:", err);
+        logger.error({ err: err }, "Razorpay Webhook Error");
         res.status(500).json({ message: "Webhook processing failed" });
     }
 };

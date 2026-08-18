@@ -5,6 +5,7 @@ const auth = require("../middleware/auth.middleware.cjs");
 const role = require("../middleware/role.middleware.cjs");
 const { getAdminStats } = require("../controllers/kpi.controller.cjs");
 const { closeLead, expireOldLeads } = require("../controllers/lead.controller.cjs");
+const { logger } = require("../utils/logger.cjs");
 const {
     getAdminTransactions,
     adminRetryPendingCredit,
@@ -32,7 +33,7 @@ router.get("/cron/expire-leads", async (req, res) => {
         const closed = await expireOldLeads();
         res.json({ message: "Done", closedLeads: closed });
     } catch (err) {
-        console.error("Cron expire-leads error:", err);
+        logger.error({ err: err }, "Cron expire-leads error");
         res.status(500).json({ message: "Cron job failed" });
     }
 });

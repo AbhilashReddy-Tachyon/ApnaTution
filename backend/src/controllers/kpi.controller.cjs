@@ -2,6 +2,7 @@ const KPIEvent = require("../models/KPIEvent.model.cjs");
 const LeadUnlock = require("../models/LeadUnlock.model.cjs");
 const TuitionLead = require("../models/TutionLead.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
+const { logger } = require("../utils/logger.cjs");
 
 exports.getAdminStats = async (req, res) => {
     try {
@@ -73,7 +74,7 @@ exports.getTutorDashboard = async (req, res) => {
             points: user?.points || 0
         });
     } catch (err) {
-        console.error(err);
+        logger.error({ err: err });
         res.status(500).json({ message: "Failed to fetch dashboard" });
     }
 };

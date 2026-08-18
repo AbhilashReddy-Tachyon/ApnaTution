@@ -1,7 +1,8 @@
+const { logger } = require("../utils/logger.cjs");
 const User = require("../models/user.model.cjs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const sendEmail = require("../utils/sendEmail.cjs");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,7 +72,7 @@ exports.register = async (req, res) => {
         if (err.name === "ValidationError") {
             return res.status(400).json({ message: err.message });
         }
-        console.error("Registration Error:", err);
+        logger.error({ err: err }, "Registration Error");
         res.status(500).json({ message: "Registration failed. Please try again." });
     }
 };
@@ -113,7 +114,7 @@ exports.login = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error("Login Error:", err);
+        logger.error({ err: err }, "Login Error");
         res.status(500).json({ message: "Login failed. Please try again." });
     }
 };
@@ -128,25 +129,29 @@ exports.getProfile = async (req, res) => {
     }
 };
 
+// An allowlist, not a denylist: a denylist silently grants write access to
+// every field added to the schema later. `rating` and `reviewsCount` were
+// missing from the old denylist, which let any tutor set their own rating and —
+// since /public/tutors sorts by rating — pin themselves to the top of the
+// marketplace. Credentials, points, role and verification state are all owned
+// by other flows and are absent here by design.
+const SELF_EDITABLE_PROFILE_FIELDS = [
+    "name",
+    "phone",
+    "subjects",
+    "tagline",
+    "location",
+    "experience",
+    "mode",
+    "hourlyRate",
+];
+
 exports.updateProfile = async (req, res) => {
     try {
-        // Prevent changing sensitive fields via this endpoint
-        const {
-            role,
-            email,
-            password,
-            points,
-            isVerified,
-            emailVerified,
-            phoneVerified,
-            resetPasswordToken,
-            resetPasswordExpire,
-            emailOtpHash,
-            emailOtpExpire,
-            phoneOtpHash,
-            phoneOtpExpire,
-            ...updateData
-        } = req.body;
+        const updateData = {};
+        for (const field of SELF_EDITABLE_PROFILE_FIELDS) {
+            if (req.body[field] !== undefined) updateData[field] = req.body[field];
+        }
 
         const existingUser = await User.findById(req.user.id).select("phone");
         if (!existingUser) return res.status(404).json({ message: "User not found" });
@@ -178,7 +183,7 @@ exports.updateProfile = async (req, res) => {
         if (err.name === "ValidationError") {
             return res.status(400).json({ message: err.message });
         }
-        console.error("Profile Update Error:", err);
+        logger.error({ err: err }, "Profile Update Error");
         res.status(500).json({ message: "Profile update failed" });
     }
 };
@@ -220,20 +225,20 @@ exports.requestVerificationOtp = async (req, res) => {
             try {
                 await sendEmail({ email: user.email, subject: "Verify your ApnaTutors email", html });
             } catch (emailErr) {
-                console.error("Verification Email Error:", emailErr);
+                logger.error({ err: emailErr }, "Verification Email Error");
                 if (process.env.NODE_ENV === "production") {
                     return res.status(500).json({ message: "Could not send OTP email. Please try again later." });
                 }
             }
         } else {
-            console.log(`[DEV PHONE OTP] ${user.phone}: ${otp}`);
+            logger.info(`[DEV PHONE OTP] ${user.phone}: ${otp}`);
         }
 
         const response = { message: `Verification code sent to your ${channel}.` };
         if (process.env.NODE_ENV !== "production") response.devOtp = otp;
         res.json(response);
     } catch (err) {
-        console.error("RequestVerificationOtp Error:", err);
+        logger.error({ err: err }, "RequestVerificationOtp Error");
         res.status(500).json({ message: "Could not send verification code" });
     }
 };
@@ -267,7 +272,7 @@ exports.verifyOtp = async (req, res) => {
 
         res.json({ message: `${channel} verified successfully`, user: sanitizeUser(user) });
     } catch (err) {
-        console.error("VerifyOtp Error:", err);
+        logger.error({ err: err }, "VerifyOtp Error");
         res.status(500).json({ message: "Verification failed" });
     }
 };
@@ -312,14 +317,14 @@ exports.forgotPassword = async (req, res) => {
             await sendEmail({ email: user.email, subject: "Reset Your ApnaTutors Password", html });
             res.status(200).json({ message: "If this email is registered, a reset link has been sent." });
         } catch (emailErr) {
-            console.error("Email Error:", emailErr);
+            logger.error({ err: emailErr }, "Email Error");
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
             await user.save();
             res.status(500).json({ message: "Could not send reset email. Please try again later." });
         }
     } catch (err) {
-        console.error("ForgotPassword Error:", err);
+        logger.error({ err: err }, "ForgotPassword Error");
         res.status(500).json({ message: "Request failed. Please try again." });
     }
 };
@@ -352,7 +357,7 @@ exports.resetPassword = async (req, res) => {
 
         res.status(200).json({ message: "Password updated successfully. Please login." });
     } catch (err) {
-        console.error("ResetPassword Error:", err);
+        logger.error({ err: err }, "ResetPassword Error");
         res.status(500).json({ message: "Password reset failed. Please try again." });
     }
 };

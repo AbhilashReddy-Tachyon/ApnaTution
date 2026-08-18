@@ -1,3 +1,4 @@
+const { logger } = require("../utils/logger.cjs");
 const nodemailer = require("nodemailer");
 
 const sendEmail = async (options) => {
@@ -23,7 +24,7 @@ const sendEmail = async (options) => {
     };
 
     const info = await transporter.sendMail(message);
-    console.log("Message sent: %s", info.messageId);
+    logger.info("Message sent: %s", info.messageId);
 };
 
 module.exports = sendEmail;

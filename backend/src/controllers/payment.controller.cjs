@@ -367,7 +367,7 @@ exports.createOrder = async (req, res) => {
             key: process.env.RAZORPAY_KEY_ID || null
         });
     } catch (err) {
-        logger.error("Create Order Error:", err?.error || err);
+        logger.error({ err: err?.error || err }, "Create Order Error");
         res.status(500).json({ message: "Order creation failed", error: err.message });
     }
 };

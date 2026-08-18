@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../api.config';
+import { ParentDashboardStats, TutorDashboardStats } from '../models';
 
 @Injectable({
     providedIn: 'root'
@@ -12,11 +13,11 @@ export class DashboardService {
 
     constructor(private http: HttpClient) { }
 
-    getParentStats(): Observable<any> {
-        return this.http.get(`${this.apiUrl}/parent`);
+    getParentStats(): Observable<ParentDashboardStats> {
+        return this.http.get<ParentDashboardStats>(`${this.apiUrl}/parent`);
     }
 
-    getTutorStats(): Observable<any> {
-        return this.http.get(`${this.apiUrl}/tutor`);
+    getTutorStats(): Observable<TutorDashboardStats> {
+        return this.http.get<TutorDashboardStats>(`${this.apiUrl}/tutor`);
     }
 }

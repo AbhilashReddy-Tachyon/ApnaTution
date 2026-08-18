@@ -1,17 +1,115 @@
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const Razorpay = require("razorpay");
+const { config } = require("../config/env.cjs");
+const { logger } = require("../utils/logger.cjs");
 const User = require("../models/user.model.cjs");
 const SubscriptionPlan = require("../models/SubscriptionPlan.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
 const Coupon = require("../models/Coupon.model.cjs");
 
 const hasRazorpayConfig = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+const hasWebhookConfig = () => !!process.env.RAZORPAY_WEBHOOK_SECRET;
 
 const getRazorpayClient = () => new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
+
+const isSameSignature = (left, right) => {
+    if (!left || !right) return false;
+    const leftBuffer = Buffer.from(String(left), "hex");
+    const rightBuffer = Buffer.from(String(right), "hex");
+    return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const paymentSignatureFor = (orderId, paymentId) => crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(`${orderId}|${paymentId}`)
+    .digest("hex");
+
+const webhookSignatureFor = (rawBody) => crypto
+    .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
+    .update(rawBody)
+    .digest("hex");
+
+const finalizeCreditTransaction = async ({ transaction, transactionId, orderId, paymentId }) => {
+    const query = transaction
+        ? { _id: transaction._id, userId: transaction.userId, status: "PENDING" }
+        : { _id: transactionId, paymentId: orderId, status: "PENDING" };
+
+    const claimed = await Transaction.findOneAndUpdate(
+        query,
+        {
+            $set: {
+                status: "PROCESSING",
+                gatewayPaymentId: paymentId || undefined
+            }
+        },
+        { new: true }
+    );
+
+    if (!claimed) {
+        const existing = transaction || await Transaction.findById(transactionId);
+        if (!existing) return { status: 404, body: { message: "Transaction not found" } };
+        if (existing.status === "SUCCESS") {
+            const user = await User.findById(existing.userId).select("points name");
+            return {
+                status: 200,
+                body: { message: "Already processed", points: user?.points || 0 }
+            };
+        }
+        return {
+            status: 409,
+            body: { message: "Payment is already being processed. Please refresh in a moment." }
+        };
+    }
+
+    try {
+        const user = await User.findByIdAndUpdate(
+            claimed.userId,
+            { $inc: { points: claimed.points } },
+            { new: true }
+        ).select("points name");
+
+        if (!user) {
+            await Transaction.updateOne(
+                { _id: claimed._id, status: "PROCESSING" },
+                { $set: { status: "FAILED" } }
+            );
+            return { status: 404, body: { message: "User not found for transaction" } };
+        }
+
+        await Transaction.updateOne(
+            { _id: claimed._id, status: "PROCESSING" },
+            {
+                $set: {
+                    status: "SUCCESS",
+                    gatewayPaymentId: paymentId || claimed.gatewayPaymentId,
+                    processedAt: new Date()
+                }
+            }
+        );
+
+        if (claimed.couponCode) {
+            await Coupon.updateOne(
+                { code: claimed.couponCode },
+                { $inc: { usedCount: 1 } }
+            );
+        }
+
+        return {
+            status: 200,
+            body: {
+                message: `Payment successful! ${claimed.points} points added.`,
+                points: user.points
+            }
+        };
+    } catch (err) {
+        logger.error({ err, transactionId: claimed._id.toString() }, "failed to finalize payment");
+        throw err;
+    }
+};
 
 // Run once at startup to seed demo data
 exports.seedPlans = async () => {
@@ -24,7 +122,7 @@ exports.seedPlans = async () => {
                 { name: "Growth Pack",   price: 2000, points: 50,  discountDescription: "Save 20% (₹40/lead)" },
                 { name: "Pro Pack",      price: 5000, points: 150, discountDescription: "Save 33% (₹33/lead)" }
             ]);
-            console.log("Seeded: subscription plans");
+            logger.info("Seeded: subscription plans");
         }
 
         // Seed Coupons
@@ -36,8 +134,14 @@ exports.seedPlans = async () => {
                 usageLimit: 10000,
                 expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
             });
-            console.log("Seeded: coupons");
+            logger.info("Seeded: coupons");
         }
+
+        // Demo accounts share one published password ("Demo@1234", documented in
+        // the frontend README) and ship with spendable points. Seeding them into
+        // a production database hands anyone a working authenticated account, so
+        // everything below this line is development-only.
+        if (config.isProduction) return;
 
         // Seed Demo Tutors (with hashed passwords)
         const tutorCount = await User.countDocuments({ role: "TUTOR" });
@@ -93,7 +197,7 @@ exports.seedPlans = async () => {
                     points: 20
                 }
             ]);
-            console.log("Seeded: demo tutors");
+            logger.info("Seeded: demo tutors");
         }
 
         // Seed Demo Parent + Leads
@@ -144,10 +248,10 @@ exports.seedPlans = async () => {
                     description: "Need a dedicated tutor for IIT JEE preparation. My son is in Class 12. Looking for someone who can teach both Physics and Chemistry systematically."
                 }
             ]);
-            console.log("Seeded: demo leads");
+            logger.info("Seeded: demo leads");
         }
     } catch (err) {
-        console.error("Seeding error:", err.message);
+        logger.error({ err: err.message }, "Seeding error");
         // Don't throw - seeding failures shouldn't crash the server
     }
 };
@@ -263,7 +367,7 @@ exports.createOrder = async (req, res) => {
             key: process.env.RAZORPAY_KEY_ID || null
         });
     } catch (err) {
-        console.error("Create Order Error:", err?.error || err);
+        logger.error({ err: err?.error || err }, "Create Order Error");
         res.status(500).json({ message: "Order creation failed", error: err.message });
     }
 };
@@ -289,7 +393,8 @@ exports.verifyPayment = async (req, res) => {
             return res.status(403).json({ message: "Unauthorized transaction" });
         }
         if (transaction.status === "SUCCESS") {
-            return res.status(200).json({ message: "Already processed" });
+            const user = await User.findById(transaction.userId).select("points name");
+            return res.status(200).json({ message: "Already processed", points: user?.points || 0 });
         }
 
         if (hasRazorpayConfig()) {
@@ -300,44 +405,136 @@ exports.verifyPayment = async (req, res) => {
                 return res.status(400).json({ message: "Payment order mismatch" });
             }
 
-            const expectedSignature = crypto
-                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-                .update(`${orderId}|${paymentId}`)
-                .digest("hex");
+            const expectedSignature = paymentSignatureFor(orderId, paymentId);
 
-            if (expectedSignature !== razorpay_signature) {
-                transaction.status = "FAILED";
-                await transaction.save();
+            if (!isSameSignature(expectedSignature, razorpay_signature)) {
+                await Transaction.updateOne(
+                    { _id: transaction._id, status: "PENDING" },
+                    { $set: { status: "FAILED" } }
+                );
                 return res.status(400).json({ message: "Payment verification failed" });
             }
         } else if (process.env.NODE_ENV === "production") {
             return res.status(503).json({ message: "Payment gateway is not configured." });
         }
 
-        // Mark transaction successful
-        transaction.status = "SUCCESS";
-        await transaction.save();
-
-        // Credit points to user
-        const user = await User.findByIdAndUpdate(
-            transaction.userId,
-            { $inc: { points: transaction.points } },
-            { new: true }
-        ).select("points name");
-
-        // Increment coupon usage
-        if (transaction.couponCode) {
-            await Coupon.updateOne(
-                { code: transaction.couponCode },
-                { $inc: { usedCount: 1 } }
-            );
-        }
-
-        res.status(200).json({
-            message: `Payment successful! ${transaction.points} points added.`,
-            points: user.points
-        });
+        const result = await finalizeCreditTransaction({ transaction, orderId, paymentId });
+        res.status(result.status).json(result.body);
     } catch (err) {
         res.status(500).json({ message: "Payment verification failed", error: err.message });
+    }
+};
+
+exports.handleRazorpayWebhook = async (req, res) => {
+    try {
+        if (!hasWebhookConfig()) {
+            return res.status(503).json({ message: "Razorpay webhook secret is not configured" });
+        }
+
+        const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body || {}));
+        const signature = req.get("x-razorpay-signature");
+        const expectedSignature = webhookSignatureFor(rawBody);
+
+        if (!isSameSignature(expectedSignature, signature)) {
+            return res.status(400).json({ message: "Invalid webhook signature" });
+        }
+
+        const event = JSON.parse(rawBody.toString("utf8"));
+        if (event.event !== "payment.captured" && event.event !== "order.paid") {
+            return res.status(200).json({ received: true, ignored: event.event });
+        }
+
+        const payment = event.payload?.payment?.entity;
+        const order = event.payload?.order?.entity;
+        const orderId = payment?.order_id || order?.id;
+        const paymentId = payment?.id;
+
+        if (!orderId) {
+            return res.status(400).json({ message: "Webhook missing Razorpay order id" });
+        }
+
+        const transaction = await Transaction.findOne({ paymentId: orderId, type: "CREDIT" });
+        if (!transaction) {
+            return res.status(404).json({ message: "No matching transaction for webhook order" });
+        }
+
+        const result = await finalizeCreditTransaction({ transaction, orderId, paymentId });
+        res.status(result.status).json({ received: result.status === 200, ...result.body });
+    } catch (err) {
+        logger.error({ err: err }, "Razorpay Webhook Error");
+        res.status(500).json({ message: "Webhook processing failed" });
+    }
+};
+
+exports.getMyTransactions = async (req, res) => {
+    try {
+        const transactions = await Transaction.find({ userId: req.user.id })
+            .populate("planId", "name points")
+            .sort({ createdAt: -1 })
+            .limit(50);
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch transactions", error: err.message });
+    }
+};
+
+exports.getAdminTransactions = async (req, res) => {
+    try {
+        const { status, type } = req.query;
+        const filter = {};
+        if (status) filter.status = String(status).toUpperCase();
+        if (type) filter.type = String(type).toUpperCase();
+
+        const transactions = await Transaction.find(filter)
+            .populate("userId", "name email role phone points")
+            .populate("planId", "name points")
+            .sort({ createdAt: -1 })
+            .limit(100);
+
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch transactions", error: err.message });
+    }
+};
+
+exports.adminRetryPendingCredit = async (req, res) => {
+    try {
+        const transaction = await Transaction.findOne({
+            _id: req.params.id,
+            type: "CREDIT",
+            status: "PENDING"
+        });
+        if (!transaction) {
+            return res.status(404).json({ message: "Pending credit transaction not found" });
+        }
+
+        const result = await finalizeCreditTransaction({
+            transaction,
+            orderId: transaction.paymentId,
+            paymentId: transaction.gatewayPaymentId || `ADMIN_${Date.now()}`
+        });
+        res.status(result.status).json(result.body);
+    } catch (err) {
+        res.status(500).json({ message: "Could not retry transaction", error: err.message });
+    }
+};
+
+exports.adminMarkProcessingResolved = async (req, res) => {
+    try {
+        const transaction = await Transaction.findOneAndUpdate(
+            { _id: req.params.id, type: "CREDIT", status: "PROCESSING" },
+            { $set: { status: "SUCCESS", processedAt: new Date() } },
+            { new: true }
+        );
+        if (!transaction) {
+            return res.status(404).json({ message: "Processing credit transaction not found" });
+        }
+
+        res.json({
+            message: "Transaction marked successful. Confirm in Razorpay before using this action.",
+            transaction
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Could not resolve transaction", error: err.message });
     }
 };

@@ -97,7 +97,7 @@
                         }
                     </div>
 
-                    @if (tutor.subjects?.length > 0) {
+                    @if ((tutor.subjects?.length ?? 0) > 0) {
                         <div class="subject-tags">
                             @for (sub of tutor.subjects; track sub) {
                                 <span class="badge">{{ sub }}</span>

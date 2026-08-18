@@ -7,10 +7,12 @@ const {
     createOrder,
     verifyPayment,
     getPlans,
-    validateCoupon
+    validateCoupon,
+    getMyTransactions
 } = require("../controllers/payment.controller.cjs");
 
 router.get("/plans", auth, role("TUTOR"), getPlans);
+router.get("/transactions", auth, role("TUTOR"), getMyTransactions);
 router.post("/validate-coupon", auth, role("TUTOR"), validateCoupon);
 router.post("/create-order", auth, role("TUTOR"), createOrder);
 router.post("/verify", auth, role("TUTOR"), verifyPayment);

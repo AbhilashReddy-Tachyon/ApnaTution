@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
-import { API_CONFIG } from '../../core/api.config';
+import { PublicService } from '../../core/services/public.service';
+import { PublicTutor } from '../../core/models';
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
@@ -14,13 +14,13 @@ import { ChangeDetectorRef } from '@angular/core';
   styleUrl: './find-tutors.css',
 })
 export class FindTutors implements OnInit {
-  tutors: any[] = [];
-  filteredTutors: any[] = [];
+  tutors: PublicTutor[] = [];
+  filteredTutors: PublicTutor[] = [];
   loading = true;
   filters = { location: '', subject: '', class: '', mode: '' };
 
   constructor(
-    private http: HttpClient,
+    private publicService: PublicService,
     private authService: AuthService,
     private router: Router,
     private cdr:ChangeDetectorRef,
@@ -31,7 +31,7 @@ export class FindTutors implements OnInit {
       this.router.navigate(['/tutor/leads']);
       return;
     }
-    this.http.get<any[]>(`${API_CONFIG.baseUrl}/public/tutors`).subscribe({
+    this.publicService.getTutors().subscribe({
       next: (data) => {
         this.tutors = data;
         this.filteredTutors = [...data];

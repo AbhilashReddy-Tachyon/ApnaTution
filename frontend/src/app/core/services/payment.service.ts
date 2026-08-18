@@ -3,6 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../api.config';
+import {
+    CouponValidationResponse,
+    CreateOrderResponse,
+    MyTransaction,
+    SubscriptionPlan,
+    VerifyPaymentRequest,
+    VerifyPaymentResponse
+} from '../models';
 
 @Injectable({
     providedIn: 'root'
@@ -12,19 +20,23 @@ export class PaymentService {
 
     constructor(private http: HttpClient) { }
 
-    getPlans(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/plans`);
+    getPlans(): Observable<SubscriptionPlan[]> {
+        return this.http.get<SubscriptionPlan[]>(`${this.apiUrl}/plans`);
     }
 
-    validateCoupon(code: string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/validate-coupon`, { code });
+    getTransactions(): Observable<MyTransaction[]> {
+        return this.http.get<MyTransaction[]>(`${this.apiUrl}/transactions`);
     }
 
-    createOrder(planId: string, couponCode?: string): Observable<any> {
-        return this.http.post(`${API_CONFIG.baseUrl}/create-order`, { planId, couponCode });
+    validateCoupon(code: string): Observable<CouponValidationResponse> {
+        return this.http.post<CouponValidationResponse>(`${this.apiUrl}/validate-coupon`, { code });
     }
 
-    verifyPayment(paymentData: any): Observable<any> {
-        return this.http.post(`${API_CONFIG.baseUrl}/verify-payment`, paymentData);
+    createOrder(planId: string, couponCode?: string): Observable<CreateOrderResponse> {
+        return this.http.post<CreateOrderResponse>(`${API_CONFIG.baseUrl}/create-order`, { planId, couponCode });
+    }
+
+    verifyPayment(paymentData: VerifyPaymentRequest): Observable<VerifyPaymentResponse> {
+        return this.http.post<VerifyPaymentResponse>(`${API_CONFIG.baseUrl}/verify-payment`, paymentData);
     }
 }

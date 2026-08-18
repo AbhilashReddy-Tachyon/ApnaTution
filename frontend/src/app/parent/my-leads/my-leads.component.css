@@ -152,6 +152,17 @@
     white-space: nowrap;
 }
 
+.view-interest-btn {
+    margin-top: 0.55rem;
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    background: white;
+    color: var(--primary);
+    border-radius: 8px;
+    padding: 0.35rem 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
 .lead-desc {
     font-size: 0.88rem;
     color: var(--text-secondary);
@@ -159,6 +170,84 @@
     margin: 0 0 1rem 0;
     padding-top: 0.75rem;
     border-top: 1px solid var(--border-light);
+}
+
+.interested-panel {
+    border-top: 1px solid var(--border-light);
+    padding-top: 1rem;
+    margin-bottom: 1rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.interest-loading {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.tutor-interest-card {
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #f8fafc;
+}
+
+.tutor-main {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.tutor-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tutor-main span,
+.tutor-contact small {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.tutor-main p {
+    margin: 0.35rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+}
+
+.verified-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #166534;
+    background: #dcfce7;
+    border-radius: 99px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.tutor-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: flex-end;
+}
+
+.tutor-contact a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
 }
 
 .card-actions {
@@ -203,4 +292,6 @@
     .card-top    { flex-direction: column; }
     .interest-counter { align-self: flex-start; flex-direction: row; gap: 0.5rem; padding: 0.5rem 1rem; }
     .interest-num { font-size: 1.3rem; }
+    .tutor-interest-card { flex-direction: column; }
+    .tutor-contact { align-items: flex-start; }
 }

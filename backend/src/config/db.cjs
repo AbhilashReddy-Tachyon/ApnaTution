@@ -1,3 +1,4 @@
+const { logger } = require("../utils/logger.cjs");
 const mongoose = require("mongoose");
 const dns = require("dns");
 
@@ -27,7 +28,7 @@ const connectDB = async () => {
     }
 
     try {
-        console.log("Connecting to MongoDB...");
+        logger.info("Connecting to MongoDB...");
 
         await mongoose.connect(process.env.MONGO_URI, {
             serverSelectionTimeoutMS: 10000,
@@ -35,18 +36,21 @@ const connectDB = async () => {
         });
 
         isConnected = true;
-        console.log("MongoDB connected:", mongoose.connection.name);
+        logger.info({ database: mongoose.connection.name }, "MongoDB connected");
 
     } catch (error) {
         isConnected = false;
-        console.error("DB connection failed:", error.name, "-", error.message);
+
+        // The remediation for a failed connection is almost always one of two
+        // Atlas settings, so name it rather than making the reader guess.
+        let hint;
         if (error.code === "ECONNREFUSED" || error.message.includes("querySrv")) {
-            console.error("TIP: DNS lookup for MongoDB Atlas failed.");
-            console.error("     → Go to MongoDB Atlas → Network Access → allow 0.0.0.0/0 for local dev.");
-            console.error("     → Or check your internet / VPN connection.");
-        } else if (error.message.includes("IP") || error.message.includes("whitelist") || error.message.includes("selection timeout")) {
-            console.error("TIP: Go to MongoDB Atlas → Network Access → Add your server IP to the whitelist.");
+            hint = "DNS lookup for Atlas failed — allow 0.0.0.0/0 under Network Access, or check your VPN.";
+        } else if (/IP|whitelist|selection timeout/.test(error.message)) {
+            hint = "Add this server's IP to Atlas → Network Access.";
         }
+
+        logger.error({ err: error, ...(hint && { hint }) }, "MongoDB connection failed");
         throw error;
     }
 };

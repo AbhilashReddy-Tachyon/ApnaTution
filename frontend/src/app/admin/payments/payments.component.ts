@@ -44,9 +44,9 @@ export class AdminPaymentsComponent implements OnInit {
         this.txError = '';
         this.adminService.getTransactions({ status: this.txStatus, type: this.txType, page: this.txPage, limit: 20 }).subscribe({
             next: (data) => {
-                this.transactions = data.transactions;
-                this.txTotal = data.total;
-                this.txPages = data.pages;
+                this.transactions = data?.transactions ?? [];
+                this.txTotal = data?.total ?? 0;
+                this.txPages = data?.pages ?? 1;
                 this.txLoading = false;
                 this.cdr.detectChanges();
             },
@@ -74,7 +74,7 @@ export class AdminPaymentsComponent implements OnInit {
         this.couponsError = '';
         this.adminService.getCoupons().subscribe({
             next: (data) => {
-                this.coupons = data;
+                this.coupons = data ?? [];
                 this.couponsLoading = false;
                 this.cdr.detectChanges();
             },

@@ -67,7 +67,7 @@ export class BuyPointsComponent implements OnInit {
 
     ngOnInit(): void {
         this.paymentService.getPlans().subscribe({
-            next: (data) => { this.plans = data; this.cdr.detectChanges(); },
+            next: (data) => { this.plans = data ?? []; this.cdr.detectChanges(); },
             error: () => {}
         });
         this.authService.refreshProfile().subscribe({
@@ -79,7 +79,7 @@ export class BuyPointsComponent implements OnInit {
 
     loadTransactions(): void {
         this.paymentService.getTransactions().subscribe({
-            next: (data) => { this.transactions = data; this.cdr.detectChanges(); },
+            next: (data) => { this.transactions = data ?? []; this.cdr.detectChanges(); },
             error: () => {}
         });
     }

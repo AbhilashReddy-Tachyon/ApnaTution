@@ -20,7 +20,7 @@ export class FindStudentsComponent implements OnInit {
     filters = { location: '', subject: '', course: '', mode: '' };
 
     filterFields: FilterFieldConfig[] = [
-        { key: 'location', label: 'Location / City', type: 'text', placeholder: 'e.g. Mumbai, Delhi' },
+        { key: 'location', label: 'Location / Area', type: 'text', placeholder: 'e.g. Gachibowli, Kukatpally' },
         { key: 'course', label: 'Class / Course', type: 'text', placeholder: 'e.g. Class 10, JEE' },
         { key: 'subject', label: 'Subject', type: 'text', placeholder: 'e.g. Mathematics, Physics' },
         {

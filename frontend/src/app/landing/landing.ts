@@ -50,20 +50,20 @@ export class Landing implements OnInit, OnDestroy {
   ];
 
   readonly topCities = [
-    { name: 'Delhi',       icon: 'fa-monument' },
-    { name: 'Mumbai',      icon: 'fa-city' },
-    { name: 'Bangalore',   icon: 'fa-building' },
-    { name: 'Hyderabad',   icon: 'fa-mosque' },
-    { name: 'Chennai',     icon: 'fa-umbrella-beach' },
-    { name: 'Pune',        icon: 'fa-mountain-sun' },
-    { name: 'Kolkata',     icon: 'fa-archway' },
-    { name: 'Jaipur',      icon: 'fa-fort-awesome' },
+    { name: 'Banjara Hills',  icon: 'fa-mountain-sun' },
+    { name: 'Jubilee Hills',  icon: 'fa-city' },
+    { name: 'Gachibowli',     icon: 'fa-building' },
+    { name: 'Madhapur',       icon: 'fa-laptop-code' },
+    { name: 'Kukatpally',     icon: 'fa-archway' },
+    { name: 'Secunderabad',   icon: 'fa-monument' },
+    { name: 'Kondapur',       icon: 'fa-fort-awesome' },
+    { name: 'Miyapur',        icon: 'fa-umbrella-beach' },
   ];
 
   private readonly allTestimonials = [
     {
       name:    'Priya Sharma',
-      role:    'Parent, Delhi',
+      role:    'Parent, Banjara Hills',
       avatar:  'PS',
       forRole: 'PARENT',
       rating:  5,
@@ -71,7 +71,7 @@ export class Landing implements OnInit, OnDestroy {
     },
     {
       name:    'Rohit Verma',
-      role:    'Tutor, Mumbai',
+      role:    'Tutor, Gachibowli',
       avatar:  'RV',
       forRole: 'TUTOR',
       rating:  5,
@@ -79,7 +79,7 @@ export class Landing implements OnInit, OnDestroy {
     },
     {
       name:    'Ananya Singh',
-      role:    'Parent, Bangalore',
+      role:    'Parent, Jubilee Hills',
       avatar:  'AS',
       forRole: 'PARENT',
       rating:  5,
@@ -87,7 +87,7 @@ export class Landing implements OnInit, OnDestroy {
     },
     {
       name:    'Kiran Patel',
-      role:    'Tutor, Ahmedabad',
+      role:    'Tutor, Kukatpally',
       avatar:  'KP',
       forRole: 'TUTOR',
       rating:  5,
@@ -99,7 +99,7 @@ export class Landing implements OnInit, OnDestroy {
     { icon: 'fa-shield-halved', cls: 'fi-blue',   title: 'Verified Tutors',    desc: 'Every tutor profile is reviewed for quality. You only connect with qualified educators.' },
     { icon: 'fa-rupee-sign',    cls: 'fi-green',  title: 'Free for Parents',   desc: 'Post any requirement at zero cost. Tutors pay a small unlock fee — you never pay anything.' },
     { icon: 'fa-bolt',          cls: 'fi-orange', title: 'Fast Connections',   desc: 'No slow agencies or long waits. Tutors reach out directly within hours of your post.' },
-    { icon: 'fa-location-dot',  cls: 'fi-purple', title: 'Local or Online',    desc: 'Choose home tuition nearby or online sessions from top tutors across India.' },
+    { icon: 'fa-location-dot',  cls: 'fi-purple', title: 'Local or Online',    desc: 'Choose home tuition nearby or online sessions from top tutors across Hyderabad.' },
     { icon: 'fa-star',          cls: 'fi-red',    title: 'All Boards & Exams', desc: 'CBSE, ICSE, State Boards, IB, JEE, NEET, UPSC — we cover every curriculum and exam.' },
     { icon: 'fa-lock',          cls: 'fi-teal',   title: '100% Privacy',       desc: 'Your contact details stay private until a tutor pays to unlock — no cold calls or spam.' },
   ];
@@ -109,7 +109,7 @@ export class Landing implements OnInit, OnDestroy {
     { icon: 'fa-coins',            cls: 'fi-orange', title: 'Pay Only to Connect',   desc: 'Spend 1 point to unlock a lead. No monthly fee, no commission — pay only when you connect.' },
     { icon: 'fa-mobile-screen',    cls: 'fi-green',  title: 'Direct Parent Contact', desc: 'Get the parent\'s phone and email instantly. No middlemen — talk directly to families.' },
     { icon: 'fa-chart-line',       cls: 'fi-purple', title: 'Grow Your Business',    desc: 'Build a steady roster of students. Tutors on our platform grow their income by 3× in 6 months.' },
-    { icon: 'fa-location-dot',     cls: 'fi-red',    title: 'Pan India Reach',       desc: 'Access leads from your city or go online and reach students from across the country.' },
+    { icon: 'fa-location-dot',     cls: 'fi-red',    title: 'City-Wide Reach',       desc: 'Access leads from your area or go online and reach students from across Hyderabad.' },
     { icon: 'fa-star',             cls: 'fi-teal',   title: 'All Boards & Exams',    desc: 'CBSE, ICSE, JEE, NEET, State Boards — we have requirements for every subject you teach.' },
   ];
 
@@ -117,7 +117,7 @@ export class Landing implements OnInit, OnDestroy {
     { icon: 'fa-shield-halved', cls: 'fi-blue',   title: 'Verified Tutors',    desc: 'Every tutor profile is reviewed for quality. You only connect with qualified educators.' },
     { icon: 'fa-rupee-sign',    cls: 'fi-green',  title: 'Free for Parents',   desc: 'Post any requirement at zero cost. Tutors pay a small unlock fee — you never pay anything.' },
     { icon: 'fa-bolt',          cls: 'fi-orange', title: 'Fast Connections',   desc: 'No slow agencies or long waits. Tutors reach out directly within hours of your post.' },
-    { icon: 'fa-location-dot',  cls: 'fi-purple', title: 'Local or Online',    desc: 'Choose home tuition nearby or online sessions from top tutors across India.' },
+    { icon: 'fa-location-dot',  cls: 'fi-purple', title: 'Local or Online',    desc: 'Choose home tuition nearby or online sessions from top tutors across Hyderabad.' },
     { icon: 'fa-star',          cls: 'fi-red',    title: 'All Boards & Exams', desc: 'CBSE, ICSE, State Boards, IB, JEE, NEET, UPSC — we cover every curriculum and exam.' },
     { icon: 'fa-lock',          cls: 'fi-teal',   title: '100% Privacy',       desc: 'Parent contact details stay private until a tutor pays to unlock — no cold calls or spam.' },
   ];

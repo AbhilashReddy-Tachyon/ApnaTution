@@ -15,7 +15,7 @@
 
         <div class="hero-badge">
           <i class="fa-solid fa-star"></i>
-          India's #1 Tuition Marketplace
+          Hyderabad's #1 Tuition Marketplace
         </div>
 
         @if (!userRole) {
@@ -51,7 +51,7 @@
               <input
                 type="text"
                 [(ngModel)]="searchCity"
-                placeholder="City (e.g. Delhi, Mumbai)"
+                placeholder="Area (e.g. Gachibowli, Kukatpally)"
                 (keyup.enter)="onSearch()"
               >
             </div>
@@ -121,8 +121,8 @@
           </div>
           <div class="hstat-sep"></div>
           <div class="hstat">
-            <span class="hstat-num">100+</span>
-            <span class="hstat-label">Cities Covered</span>
+            <span class="hstat-num">30+</span>
+            <span class="hstat-label">Areas Covered</span>
           </div>
         </div>
       </div>
@@ -133,7 +133,7 @@
           <div class="hcard-icon"><i class="fa-solid fa-graduation-cap"></i></div>
           <div>
             <div class="hcard-title">Math Expert</div>
-            <div class="hcard-sub">IIT Delhi Graduate</div>
+            <div class="hcard-sub">IIT Hyderabad Graduate</div>
           </div>
           <div class="hcard-rating"><i class="fa-solid fa-star"></i> 4.9</div>
         </div>
@@ -163,11 +163,11 @@
        ══════════════════════════════════════════════════════ -->
   <div class="trust-bar">
     <div class="container trust-bar-inner">
-      <span class="trust-label">Trusted by students in</span>
+      <span class="trust-label">Trusted by students across</span>
       @for (city of topCities.slice(0, 6); track city.name) {
         <span class="trust-city">{{ city.name }}</span>
       }
-      <span class="trust-more">& 90+ more cities</span>
+      <span class="trust-more">& more areas in Hyderabad</span>
     </div>
   </div>
 
@@ -377,21 +377,21 @@
   }
 
   <!-- ══════════════════════════════════════════════════════
-       TOP CITIES
+       TOP AREAS
        ══════════════════════════════════════════════════════ -->
   <section class="section">
     <div class="container">
       <div class="section-header">
-        <div class="section-tag">Pan India</div>
+        <div class="section-tag">Hyderabad</div>
         @if (userRole === 'TUTOR') {
-          <h2>Cities with High Student Demand</h2>
-          <p>Leads pouring in from these cities every day — browse open requirements near you.</p>
+          <h2>Areas with High Student Demand</h2>
+          <p>Leads pouring in from these areas every day — browse open requirements near you.</p>
         } @else if (userRole === 'PARENT') {
-          <h2>Find Tutors in Your City</h2>
-          <p>We have top-rated tutors in every major city across India, for home and online sessions.</p>
+          <h2>Find Tutors in Your Area</h2>
+          <p>We have top-rated tutors across every major area of Hyderabad, for home and online sessions.</p>
         } @else {
-          <h2>Find Tutors in Your City</h2>
-          <p>We have tutors in every major city across India, for home and online sessions.</p>
+          <h2>Find Tutors in Your Area</h2>
+          <p>We have tutors across every major area of Hyderabad, for home and online sessions.</p>
         }
       </div>
       <div class="cities-grid">
@@ -446,7 +446,7 @@
         <div class="section-tag">Reviews</div>
         @if (userRole === 'PARENT') {
           <h2>What Parents Are Saying</h2>
-          <p>Families across India found their perfect tutor on ApnaTutors.</p>
+          <p>Families across Hyderabad found their perfect tutor on ApnaTutors.</p>
         } @else if (userRole === 'TUTOR') {
           <h2>What Tutors Are Saying</h2>
           <p>Educators growing their business every day with ApnaTutors leads.</p>
@@ -631,7 +631,8 @@
           <div class="brand-text" style="font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:0.75rem;">
             Apna<span style="color:#818cf8;">Tutors</span>
           </div>
-          <p>India's smartest marketplace connecting parents with qualified tutors across 100+ cities.</p>
+          <p>Hyderabad's smartest marketplace connecting parents with qualified tutors across the city.</p>
+          <p class="footer-address"><i class="fa-solid fa-location-dot"></i> Plot 12, Road No. 36, Jubilee Hills, Hyderabad, Telangana 500033</p>
           <div class="footer-social">
             <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
             <a href="#" class="social-btn"><i class="fa-brands fa-twitter"></i></a>
@@ -663,7 +664,7 @@
       </div>
       <div class="footer-bottom">
         <span>© 2025 ApnaTutors. All rights reserved.</span>
-        <span>Made with <i class="fa-solid fa-heart" style="color:#f59e0b"></i> in India</span>
+        <span>Made with <i class="fa-solid fa-heart" style="color:#f59e0b"></i> in Hyderabad</span>
       </div>
     </div>
   </footer>

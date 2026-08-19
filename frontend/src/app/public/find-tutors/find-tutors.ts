@@ -21,7 +21,7 @@ export class FindTutors implements OnInit {
   filters = { location: '', subject: '', class: '', mode: '' };
 
   filterFields: FilterFieldConfig[] = [
-    { key: 'location', label: 'Location / City', type: 'text', placeholder: 'e.g. Mumbai, Delhi' },
+    { key: 'location', label: 'Location / Area', type: 'text', placeholder: 'e.g. Gachibowli, Kukatpally' },
     { key: 'subject', label: 'Subject', type: 'text', placeholder: 'e.g. Mathematics, Physics' },
     { key: 'class', label: 'Class Level', type: 'text', placeholder: 'e.g. Class 10, JEE' },
     {

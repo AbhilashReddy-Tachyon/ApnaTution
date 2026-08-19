@@ -1,0 +1,34 @@
+.filter-card {
+    background: white; border: 1px solid var(--border-light);
+    border-radius: 12px; padding: 1.5rem;
+}
+.filter-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem;
+}
+.filter-header h3 { font-size: 1.1rem; margin: 0; color: var(--text-main); }
+.clear-btn {
+    background: none; border: none; font-size: 0.8rem; color: var(--primary);
+    cursor: pointer; font-weight: 600; padding: 0;
+}
+.clear-btn:hover { text-decoration: underline; }
+
+.filter-group { margin-bottom: 1.25rem; }
+.filter-group:last-of-type { margin-bottom: 0; }
+.filter-group label {
+    font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: block;
+}
+.filter-group input,
+.filter-group select {
+    background: #f8fafc; border: 1px solid var(--border-light); border-radius: 8px;
+    padding: 0.6rem 0.9rem; font-size: 0.9rem; width: 100%;
+    transition: border-color 0.2s; color: var(--text-main);
+}
+.filter-group input:focus,
+.filter-group select:focus { outline: none; border-color: var(--primary); background: white; }
+
+.results-count {
+    margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light);
+    font-size: 0.83rem; color: var(--text-muted); text-align: center;
+}

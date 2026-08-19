@@ -5,11 +5,12 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { API_CONFIG } from '../../core/api.config';
 import { ChangeDetectorRef } from '@angular/core';
+import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
 
 @Component({
   selector: 'app-find-tutors',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FilterSidebarComponent],
   templateUrl: './find-tutors.html',
   styleUrl: './find-tutors.css',
 })
@@ -18,6 +19,20 @@ export class FindTutors implements OnInit {
   filteredTutors: any[] = [];
   loading = true;
   filters = { location: '', subject: '', class: '', mode: '' };
+
+  filterFields: FilterFieldConfig[] = [
+    { key: 'location', label: 'Location / City', type: 'text', placeholder: 'e.g. Mumbai, Delhi' },
+    { key: 'subject', label: 'Subject', type: 'text', placeholder: 'e.g. Mathematics, Physics' },
+    { key: 'class', label: 'Class Level', type: 'text', placeholder: 'e.g. Class 10, JEE' },
+    {
+      key: 'mode', label: 'Teaching Mode', type: 'select', options: [
+        { value: '', label: 'All Modes' },
+        { value: 'online', label: 'Online' },
+        { value: 'home', label: 'Home Tuition' },
+        { value: 'both', label: 'Both' },
+      ]
+    },
+  ];
 
   constructor(
     private http: HttpClient,
@@ -44,10 +59,14 @@ export class FindTutors implements OnInit {
     });
   }
 
-  onFilterChange(field: string, event: Event) {
-    const value = (event.target as HTMLInputElement | HTMLSelectElement).value.toLowerCase();
-    this.filters[field as keyof typeof this.filters] = value;
+  onFilterChange(field: string, value: string) {
+    this.filters[field as keyof typeof this.filters] = value.toLowerCase();
     this.applyFilters();
+  }
+
+  clearFilters() {
+    this.filters = { location: '', subject: '', class: '', mode: '' };
+    this.filteredTutors = [...this.tutors];
   }
 
   applyFilters() {

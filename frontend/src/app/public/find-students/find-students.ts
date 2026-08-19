@@ -4,11 +4,12 @@ import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { API_CONFIG } from '../../core/api.config';
+import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
 
 @Component({
     selector: 'app-find-students',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule, RouterLink, FilterSidebarComponent],
     templateUrl: './find-students.html',
     styleUrl: './find-students.css',
 })
@@ -17,6 +18,24 @@ export class FindStudentsComponent implements OnInit {
     filteredLeads: any[] = [];
     loading = true;
     filters = { location: '', subject: '', course: '', mode: '' };
+
+    filterFields: FilterFieldConfig[] = [
+        { key: 'location', label: 'Location / City', type: 'text', placeholder: 'e.g. Mumbai, Delhi' },
+        { key: 'course', label: 'Class / Course', type: 'text', placeholder: 'e.g. Class 10, JEE' },
+        { key: 'subject', label: 'Subject', type: 'text', placeholder: 'e.g. Mathematics, Physics' },
+        {
+            key: 'mode', label: 'Teaching Mode', type: 'select', options: [
+                { value: '', label: 'All Modes' },
+                { value: 'online', label: 'Online' },
+                { value: 'home', label: 'Home Tuition' },
+                { value: 'both', label: 'Both' },
+            ]
+        },
+    ];
+
+    get resultsLabel(): string {
+        return `${this.filteredLeads.length} requirement${this.filteredLeads.length !== 1 ? 's' : ''} found`;
+    }
 
     constructor(
         private http: HttpClient,
@@ -48,9 +67,8 @@ export class FindStudentsComponent implements OnInit {
         });
     }
 
-    onFilterChange(field: string, event: Event) {
-        const value = (event.target as HTMLInputElement | HTMLSelectElement).value.toLowerCase();
-        this.filters[field as keyof typeof this.filters] = value;
+    onFilterChange(field: string, value: string) {
+        this.filters[field as keyof typeof this.filters] = value.toLowerCase();
         this.applyFilters();
     }
 

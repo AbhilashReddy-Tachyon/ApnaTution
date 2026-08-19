@@ -1,36 +1,13 @@
 <div class="page-wrapper">
     <!-- Sidebar Filters -->
     <aside class="sidebar">
-        <div class="filter-card">
-            <div class="filter-header">
-                <h3>Filter Tutors</h3>
-            </div>
-
-            <div class="filter-group">
-                <label>Location / City</label>
-                <input type="text" placeholder="e.g. Mumbai, Delhi" (input)="onFilterChange('location', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Subject</label>
-                <input type="text" placeholder="e.g. Mathematics, Physics" (input)="onFilterChange('subject', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Class Level</label>
-                <input type="text" placeholder="e.g. Class 10, JEE" (input)="onFilterChange('class', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Teaching Mode</label>
-                <select (change)="onFilterChange('mode', $event)">
-                    <option value="">All Modes</option>
-                    <option value="online">Online</option>
-                    <option value="home">Home Tuition</option>
-                    <option value="both">Both</option>
-                </select>
-            </div>
-        </div>
+        <app-filter-sidebar
+            title="Filter Tutors"
+            [fields]="filterFields"
+            [filters]="filters"
+            (filterChange)="onFilterChange($event.key, $event.value)"
+            (clear)="clearFilters()">
+        </app-filter-sidebar>
     </aside>
 
     <!-- Main Content -->

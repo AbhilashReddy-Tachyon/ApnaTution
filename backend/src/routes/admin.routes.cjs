@@ -5,9 +5,37 @@ const auth = require("../middleware/auth.middleware.cjs");
 const role = require("../middleware/role.middleware.cjs");
 const { getAdminStats } = require("../controllers/kpi.controller.cjs");
 const { closeLead, expireOldLeads } = require("../controllers/lead.controller.cjs");
+const {
+    listUsers,
+    getUserById,
+    setUserStatus,
+    listLeadsAdmin,
+    deleteLeadAdmin,
+    listTransactions,
+    listCoupons,
+    createCoupon,
+    updateCoupon
+} = require("../controllers/admin.controller.cjs");
 
 router.get("/stats", auth, role("ADMIN"), getAdminStats);
+
+// Users
+router.get("/users",            auth, role("ADMIN"), listUsers);
+router.get("/users/:id",        auth, role("ADMIN"), getUserById);
+router.patch("/users/:id/status", auth, role("ADMIN"), setUserStatus);
+
+// Leads
+router.get("/leads",            auth, role("ADMIN"), listLeadsAdmin);
 router.patch("/leads/:id/close", auth, role("ADMIN"), closeLead);
+router.delete("/leads/:id",     auth, role("ADMIN"), deleteLeadAdmin);
+
+// Transactions
+router.get("/transactions",     auth, role("ADMIN"), listTransactions);
+
+// Coupons
+router.get("/coupons",          auth, role("ADMIN"), listCoupons);
+router.post("/coupons",         auth, role("ADMIN"), createCoupon);
+router.patch("/coupons/:id",    auth, role("ADMIN"), updateCoupon);
 
 // Vercel cron endpoint — secured by CRON_SECRET env var
 // Vercel calls: GET /admin/cron/expire-leads

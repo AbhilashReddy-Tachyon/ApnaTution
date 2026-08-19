@@ -144,6 +144,10 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
+        if (user.isActive === false) {
+            return res.status(403).json({ message: "This account has been deactivated. Please contact support." });
+        }
+
         sendAuthResponse(res, user);
     } catch (err) {
         console.error("Login Error:", err);
@@ -178,6 +182,10 @@ exports.googleAuth = async (req, res) => {
             name: payload.name,
             role,
         });
+
+        if (user.isActive === false) {
+            return res.status(403).json({ message: "This account has been deactivated. Please contact support." });
+        }
 
         sendAuthResponse(res, user, created ? 201 : 200);
     } catch (err) {

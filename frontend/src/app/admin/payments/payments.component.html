@@ -1,0 +1,163 @@
+<div class="admin-page container animate-fade-in">
+    <div class="admin-header">
+        <h2>Payments &amp; Coupons</h2>
+        <p>View transactions and manage discount coupons</p>
+    </div>
+
+    <app-admin-nav></app-admin-nav>
+
+    <!-- Coupons -->
+    <section class="section-block">
+        <h3>Coupons</h3>
+
+        <form class="coupon-form glass-panel" (ngSubmit)="createCoupon()">
+            <input type="text" class="form-input" placeholder="CODE" [(ngModel)]="newCoupon.code" name="code" maxlength="20" />
+            <input type="number" class="form-input" placeholder="Discount %" [(ngModel)]="newCoupon.discountPercentage" name="discountPercentage" min="0" max="100" />
+            <input type="number" class="form-input" placeholder="Usage limit" [(ngModel)]="newCoupon.usageLimit" name="usageLimit" min="1" />
+            <input type="date" class="form-input" [(ngModel)]="newCoupon.expiryDate" name="expiryDate" />
+            <button type="submit" class="btn btn-primary btn-sm" [disabled]="creatingCoupon">
+                <i class="fa-solid fa-plus"></i> Add Coupon
+            </button>
+        </form>
+        @if (createCouponError) {
+            <div class="alert alert-error">{{ createCouponError }}</div>
+        }
+
+        @if (couponsLoading) {
+            <div class="loading-state">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Loading coupons...</p>
+            </div>
+        }
+        @if (couponsError) {
+            <div class="alert alert-error">{{ couponsError }}</div>
+        }
+
+        @if (!couponsLoading && coupons.length > 0) {
+            <div class="table-wrap glass-panel">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Discount</th>
+                            <th>Usage</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (coupon of coupons; track coupon._id) {
+                            <tr>
+                                <td class="mono">{{ coupon.code }}</td>
+                                <td>{{ coupon.discountPercentage }}%</td>
+                                <td>{{ coupon.usedCount }} / {{ coupon.usageLimit }}</td>
+                                <td>{{ coupon.expiryDate ? (coupon.expiryDate | date:'dd MMM yyyy') : 'No expiry' }}</td>
+                                <td>
+                                    <span class="badge" [class.badge-success]="coupon.isActive" [class.badge-danger]="!coupon.isActive">
+                                        {{ coupon.isActive ? 'Active' : 'Disabled' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button
+                                        class="btn btn-sm"
+                                        [class.btn-danger]="coupon.isActive"
+                                        [class.btn-success]="!coupon.isActive"
+                                        [disabled]="couponBusyId === coupon._id"
+                                        (click)="toggleCoupon(coupon)"
+                                    >
+                                        {{ coupon.isActive ? 'Disable' : 'Enable' }}
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (!couponsLoading && coupons.length === 0) {
+            <div class="empty-state glass-panel">
+                <p>No coupons yet.</p>
+            </div>
+        }
+    </section>
+
+    <!-- Transactions -->
+    <section class="section-block">
+        <h3>Transactions</h3>
+
+        <div class="filters-bar">
+            <select class="form-input" [(ngModel)]="txStatus" (change)="onTxFilterChange()">
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="SUCCESS">Success</option>
+                <option value="FAILED">Failed</option>
+            </select>
+            <select class="form-input" [(ngModel)]="txType" (change)="onTxFilterChange()">
+                <option value="">All Types</option>
+                <option value="CREDIT">Credit (purchase)</option>
+                <option value="DEBIT">Debit (unlock)</option>
+            </select>
+        </div>
+
+        @if (txLoading) {
+            <div class="loading-state">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Loading transactions...</p>
+            </div>
+        }
+        @if (txError) {
+            <div class="alert alert-error">{{ txError }}</div>
+        }
+
+        @if (!txLoading && transactions.length === 0) {
+            <div class="empty-state glass-panel">
+                <p>No transactions found.</p>
+            </div>
+        }
+
+        @if (!txLoading && transactions.length > 0) {
+            <div class="table-wrap glass-panel">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Points</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (tx of transactions; track tx._id) {
+                            <tr>
+                                <td>{{ tx.userId?.name || '—' }}</td>
+                                <td>{{ tx.type }}</td>
+                                <td>₹{{ tx.amount }}</td>
+                                <td>{{ tx.points }}</td>
+                                <td class="desc-cell">{{ tx.description }}</td>
+                                <td>
+                                    <span class="badge"
+                                        [class.badge-success]="tx.status === 'SUCCESS'"
+                                        [class.badge-danger]="tx.status === 'FAILED'"
+                                    >
+                                        {{ tx.status }}
+                                    </span>
+                                </td>
+                                <td>{{ tx.createdAt | date:'dd MMM yyyy' }}</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <button class="btn btn-outline-sm" [disabled]="txPage <= 1" (click)="goToTxPage(txPage - 1)">Previous</button>
+                <span>Page {{ txPage }} of {{ txPages }} ({{ txTotal }} transactions)</span>
+                <button class="btn btn-outline-sm" [disabled]="txPage >= txPages" (click)="goToTxPage(txPage + 1)">Next</button>
+            </div>
+        }
+    </section>
+</div>

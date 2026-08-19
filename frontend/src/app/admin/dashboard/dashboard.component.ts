@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../core/services/admin.service';
+import { AdminNavComponent } from '../admin-nav/admin-nav.component';
 
 @Component({
     selector: 'app-admin-dashboard',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, AdminNavComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })

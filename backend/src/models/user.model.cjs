@@ -71,6 +71,10 @@ const UserSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        isActive: {
+            type: Boolean,
+            default: true
+        },
         points: {
             type: Number,
             default: 0

@@ -11,6 +11,7 @@
     "start": "node --dns-result-order=ipv4first src/server.cjs",
     "build": "echo 'No build step required for backend'",
     "dev": "nodemon --exec \"node --dns-result-order=ipv4first\" src/server.cjs",
+    "create-admin": "node src/scripts/createAdmin.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

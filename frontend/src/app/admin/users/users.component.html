@@ -1,0 +1,100 @@
+<div class="admin-page container animate-fade-in">
+    <div class="admin-header">
+        <h2>Users</h2>
+        <p>Manage parent, tutor and admin accounts</p>
+    </div>
+
+    <app-admin-nav></app-admin-nav>
+
+    <div class="filters-bar">
+        <input
+            type="text"
+            class="form-input"
+            placeholder="Search by name, email or phone..."
+            [(ngModel)]="search"
+            (keyup.enter)="onFilterChange()"
+        />
+        <select class="form-input" [(ngModel)]="role" (change)="onFilterChange()">
+            <option value="">All Roles</option>
+            <option value="PARENT">Parent</option>
+            <option value="TUTOR">Tutor</option>
+            <option value="ADMIN">Admin</option>
+        </select>
+        <button class="btn btn-outline-sm" (click)="onFilterChange()">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+        </button>
+    </div>
+
+    @if (error) {
+        <div class="alert alert-error">{{ error }}</div>
+    }
+
+    @if (loading) {
+        <div class="loading-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Loading users...</p>
+        </div>
+    }
+
+    @if (!loading && users.length === 0) {
+        <div class="empty-state glass-panel">
+            <i class="fa-solid fa-user-slash"></i>
+            <h3>No users found</h3>
+        </div>
+    }
+
+    @if (!loading && users.length > 0) {
+        <div class="table-wrap glass-panel">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Points</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (user of users; track user._id) {
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td><span class="role-badge" [class]="'role-' + user.role.toLowerCase()">{{ user.role }}</span></td>
+                            <td>{{ user.points ?? '—' }}</td>
+                            <td>
+                                <span class="badge" [class.badge-success]="user.isActive" [class.badge-danger]="!user.isActive">
+                                    {{ user.isActive ? 'Active' : 'Deactivated' }}
+                                </span>
+                            </td>
+                            <td>{{ user.createdAt | date:'dd MMM yyyy' }}</td>
+                            <td>
+                                @if (user._id !== currentUserId) {
+                                    <button
+                                        class="btn btn-sm"
+                                        [class.btn-danger]="user.isActive"
+                                        [class.btn-success]="!user.isActive"
+                                        [disabled]="updatingId === user._id"
+                                        (click)="toggleStatus(user)"
+                                    >
+                                        {{ user.isActive ? 'Deactivate' : 'Activate' }}
+                                    </button>
+                                } @else {
+                                    <span class="text-muted">You</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="btn btn-outline-sm" [disabled]="page <= 1" (click)="goToPage(page - 1)">Previous</button>
+            <span>Page {{ page }} of {{ pages }} ({{ total }} users)</span>
+            <button class="btn btn-outline-sm" [disabled]="page >= pages" (click)="goToPage(page + 1)">Next</button>
+        </div>
+    }
+</div>

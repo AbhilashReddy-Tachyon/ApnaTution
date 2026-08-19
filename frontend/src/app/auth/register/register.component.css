@@ -158,6 +158,33 @@
   color: #4f46e5;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+.role-error { display: block; margin: -0.75rem 0 1rem; }
+.role-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.social-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #9ca3af;
+  font-size: 0.82rem;
+}
+.social-divider::before,
+.social-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+.social-divider span { padding: 0 0.75rem; }
 
 /* Form */
 .form-group {

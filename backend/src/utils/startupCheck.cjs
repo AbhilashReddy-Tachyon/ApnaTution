@@ -19,6 +19,7 @@ const ROUTES = [
     { group: "Health",    method: "GET",   path: "/health",                     auth: false, role: null,      envVars: [],                                                   note: "Always available" },
     { group: "Auth",      method: "POST",  path: "/auth/register",              auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Auth",      method: "POST",  path: "/auth/login",                 auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
+    { group: "Auth",      method: "POST",  path: "/auth/google",                auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET", "GOOGLE_CLIENT_ID"],       note: "Verifies a Google ID token" },
     { group: "Auth",      method: "GET",   path: "/auth/profile",               auth: true,  role: "ANY",     envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "Bearer token required" },
     { group: "Auth",      method: "PUT",   path: "/auth/profile",               auth: true,  role: "ANY",     envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "Bearer token required" },
     { group: "Auth",      method: "POST",  path: "/auth/forgot-password",       auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET", "EMAIL_USER", "EMAIL_PASSWORD"], note: "Sends email" },
@@ -45,7 +46,7 @@ const ROUTES = [
 
 // Env vars to surface in the table
 const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
-const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL"];
+const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL", "GOOGLE_CLIENT_ID"];
 
 function pad(str, len) {
     const s = String(str ?? "");

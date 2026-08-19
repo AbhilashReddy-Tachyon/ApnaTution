@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
-const { register, login, getProfile, updateProfile, forgotPassword, resetPassword } = require("../controllers/auth.controller.cjs");
+const { register, login, googleAuth, getProfile, updateProfile, forgotPassword, resetPassword } = require("../controllers/auth.controller.cjs");
 const auth = require("../middleware/auth.middleware.cjs");
 
 // 5 attempts per 15 minutes for sensitive auth actions
@@ -24,6 +24,7 @@ const registerLimiter = rateLimit({
 
 router.post("/register", registerLimiter, register);
 router.post("/login", authLimiter, login);
+router.post("/google", authLimiter, googleAuth);
 router.get("/profile", auth, getProfile);
 router.put("/profile", auth, updateProfile);
 router.post("/forgot-password", authLimiter, forgotPassword);

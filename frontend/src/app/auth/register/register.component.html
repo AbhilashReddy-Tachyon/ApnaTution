@@ -43,6 +43,18 @@
         <i class="fa-solid fa-chalkboard-user"></i> I'm a Tutor
       </button>
     </div>
+    @if (registerForm.get('role')?.invalid && registerForm.get('role')?.touched) {
+      <span class="field-error role-error">Please select Parent or Tutor</span>
+    }
+
+    @if (selectedRole) {
+      <app-social-login #social [role]="selectedRole" (authError)="onSocialAuthError($event)"></app-social-login>
+      @if (social.googleEnabled) {
+        <div class="social-divider"><span>or sign up with email</span></div>
+      }
+    } @else {
+      <p class="role-hint">Choose Parent or Tutor above to sign up with Google, or fill in the form below.</p>
+    }
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group" [class.has-error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">

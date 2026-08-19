@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SocialLoginComponent } from '../../shared/social-login/social-login.component';
 
 @Component({
     selector: 'app-register',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, SocialLoginComponent],
     templateUrl: './register.component.html',
     styleUrls: ['./register.component.css']
 })
@@ -23,7 +24,7 @@ export class RegisterComponent {
         private router: Router
     ) {
         this.registerForm = this.fb.group({
-            role:     ['PARENT', Validators.required],
+            role:     ['', Validators.required],
             name:     ['', [Validators.required, Validators.minLength(2)]],
             email:    ['', [Validators.required, Validators.email]],
             password: ['', [Validators.required, Validators.minLength(6)]],
@@ -39,6 +40,10 @@ export class RegisterComponent {
 
     togglePassword() {
         this.showPassword = !this.showPassword;
+    }
+
+    onSocialAuthError(message: string) {
+        this.error = message;
     }
 
     onSubmit() {

@@ -176,6 +176,22 @@
 
 .field-error { font-size: 0.8rem; color: #ef4444; margin-top: 0.3rem; display: block; }
 
+.social-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #9ca3af;
+  font-size: 0.82rem;
+}
+.social-divider::before,
+.social-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+.social-divider span { padding: 0 0.75rem; }
+
 /* Alerts */
 .success-alert {
   background: #d1fae5;

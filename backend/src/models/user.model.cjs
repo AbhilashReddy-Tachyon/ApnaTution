@@ -22,8 +22,17 @@ const UserSchema = new mongoose.Schema(
             type: String
         },
         password: {
+            type: String
+        },
+        googleId: {
             type: String,
-            required: true
+            index: true,
+            sparse: true
+        },
+        authProvider: {
+            type: String,
+            enum: ["LOCAL", "GOOGLE"],
+            default: "LOCAL"
         },
         subjects: {
             type: [String], // only for tutors

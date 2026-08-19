@@ -2,9 +2,65 @@ const User = require("../models/user.model.cjs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { OAuth2Client } = require("google-auth-library");
 const sendEmail = require("../utils/sendEmail.cjs");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
+
+function issueToken(user) {
+    return jwt.sign(
+        { id: user._id, role: user.role, name: user.name },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+}
+
+function sendAuthResponse(res, user, status = 200) {
+    res.status(status).json({
+        token: issueToken(user),
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            points: user.points
+        }
+    });
+}
+
+// Finds the user already linked to this Google account, links Google to a matching-email
+// account created via password signup, or creates a brand-new account (which requires a
+// role — the register page's social button sends one, the login page doesn't, so a
+// first-time Google login there fails with ROLE_REQUIRED).
+async function findOrCreateGoogleUser({ googleId, email, name, role }) {
+    let user = await User.findOne({ googleId });
+    if (user) return { user, created: false };
+
+    user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (user) {
+        user.googleId = googleId;
+        await user.save();
+        return { user, created: false };
+    }
+
+    if (!role || !["PARENT", "TUTOR"].includes(role)) {
+        const err = new Error("New account — role required");
+        err.code = "ROLE_REQUIRED";
+        throw err;
+    }
+
+    user = await User.create({
+        role,
+        name: (name || "").trim() || email.split("@")[0],
+        email: email.toLowerCase().trim(),
+        authProvider: "GOOGLE",
+        isVerified: true,
+        googleId,
+    });
+    return { user, created: true };
+}
 
 exports.register = async (req, res) => {
     try {
@@ -74,30 +130,60 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
+        if (!user.password) {
+            return res.status(401).json({ message: 'This account signs in with Google. Please use "Continue with Google".' });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const token = jwt.sign(
-            { id: user._id, role: user.role, name: user.name },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
-
-        res.json({
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                points: user.points
-            }
-        });
+        sendAuthResponse(res, user);
     } catch (err) {
         console.error("Login Error:", err);
         res.status(500).json({ message: "Login failed. Please try again." });
+    }
+};
+
+exports.googleAuth = async (req, res) => {
+    try {
+        if (!googleClient) {
+            return res.status(503).json({ message: "Google sign-in is not configured on this server." });
+        }
+
+        const { idToken, role } = req.body;
+        if (!idToken) {
+            return res.status(400).json({ message: "idToken is required" });
+        }
+
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+
+        if (!payload?.email_verified) {
+            return res.status(401).json({ message: "Your Google email is not verified." });
+        }
+
+        const { user, created } = await findOrCreateGoogleUser({
+            googleId: payload.sub,
+            email: payload.email,
+            name: payload.name,
+            role,
+        });
+
+        sendAuthResponse(res, user, created ? 201 : 200);
+    } catch (err) {
+        if (err.code === "ROLE_REQUIRED") {
+            return res.status(422).json({
+                message: "No account found for this Google login. Choose Parent or Tutor on the sign-up page to create one.",
+                code: "ROLE_REQUIRED",
+            });
+        }
+        console.error("Google Auth Error:", err);
+        res.status(401).json({ message: "Google sign-in failed. Please try again." });
     }
 };
 
@@ -114,7 +200,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         // Prevent changing sensitive fields via this endpoint
-        const { role, email, password, points, resetPasswordToken, resetPasswordExpire, ...updateData } = req.body;
+        const { role, email, password, points, resetPasswordToken, resetPasswordExpire, googleId, authProvider, ...updateData } = req.body;
 
         // Clean subjects if provided
         if (updateData.subjects) {

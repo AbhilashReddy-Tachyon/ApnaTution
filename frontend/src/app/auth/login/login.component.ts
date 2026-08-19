@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { SocialLoginComponent } from '../../shared/social-login/social-login.component';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, SocialLoginComponent],
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.css']
 })
@@ -39,6 +40,10 @@ export class LoginComponent implements OnInit {
 
     togglePassword() {
         this.showPassword = !this.showPassword;
+    }
+
+    onSocialAuthError(message: string) {
+        this.error = message;
     }
 
     onSubmit() {

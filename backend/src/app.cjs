@@ -167,7 +167,7 @@ app.use("/dashboard",  require("./routes/dashboard.routes.cjs"));
 if (process.env.NODE_ENV !== "production") {
     app.get("/debug/routes", (_req, res) => {
         const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
-        const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL"];
+        const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL", "GOOGLE_CLIENT_ID"];
 
         const routes = ROUTES.map((r) => {
             const missing = r.envVars.filter((v) => !process.env[v]);

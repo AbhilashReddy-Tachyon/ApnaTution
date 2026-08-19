@@ -158,6 +158,24 @@
             </span>
           </div>
 
+          <!-- Verification Status -->
+          <div class="verification-badge"
+            [class.verification-verified]="lead.verificationStatus === 'VERIFIED'"
+            [class.verification-not-verified]="lead.verificationStatus === 'NOT_VERIFIED'"
+            [class.verification-pending]="!lead.verificationStatus || lead.verificationStatus === 'PENDING'"
+          >
+            @if (lead.verificationStatus === 'VERIFIED') {
+              <i class="fa-solid fa-shield-check"></i> Verified by ApnaTutors
+            } @else if (lead.verificationStatus === 'NOT_VERIFIED') {
+              <i class="fa-solid fa-triangle-exclamation"></i> Not Verified — please check the verified tuitions
+            } @else {
+              <i class="fa-solid fa-hourglass-half"></i> Verification Pending
+            }
+          </div>
+          @if (lead.verificationStatus === 'NOT_VERIFIED' && lead.verificationNote) {
+            <p class="verification-note-text">{{ lead.verificationNote }}</p>
+          }
+
           <!-- Lead Title -->
           <h3 class="lead-title">{{ lead.title }}</h3>
 

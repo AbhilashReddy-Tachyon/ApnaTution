@@ -89,6 +89,30 @@
     font-size: 0.75rem;
     font-weight: 700;
 }
+.badge-pending { background: rgba(234, 179, 8, 0.12); color: #a16207; }
+
+.verification-cell { white-space: normal; max-width: 200px; }
+.verification-note {
+    margin-top: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.verify-editor-row td { padding: 0; background: rgba(37, 99, 235, 0.03); }
+.verify-editor { padding: 1rem 1.1rem; }
+.verify-editor-title { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+.verify-editor-fields {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.verify-editor-fields select.form-input { flex: 0 0 160px; }
+.verify-editor-fields .note-input { flex: 1; min-width: 220px; }
 
 .actions-cell { display: flex; gap: 0.5rem; }
 .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.82rem; }

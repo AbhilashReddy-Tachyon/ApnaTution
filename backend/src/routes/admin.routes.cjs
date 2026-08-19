@@ -11,6 +11,7 @@ const {
     setUserStatus,
     listLeadsAdmin,
     deleteLeadAdmin,
+    setLeadVerification,
     listTransactions,
     listCoupons,
     createCoupon,
@@ -27,6 +28,7 @@ router.patch("/users/:id/status", auth, role("ADMIN"), setUserStatus);
 // Leads
 router.get("/leads",            auth, role("ADMIN"), listLeadsAdmin);
 router.patch("/leads/:id/close", auth, role("ADMIN"), closeLead);
+router.patch("/leads/:id/verification", auth, role("ADMIN"), setLeadVerification);
 router.delete("/leads/:id",     auth, role("ADMIN"), deleteLeadAdmin);
 
 // Transactions

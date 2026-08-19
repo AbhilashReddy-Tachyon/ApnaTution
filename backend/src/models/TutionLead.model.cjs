@@ -41,6 +41,22 @@ const TuitionLeadSchema = new mongoose.Schema(
             type: String,
             enum: ["OPEN", "CLOSED"],
             default: "OPEN"
+        },
+        // Set by an admin after manually calling the parent to confirm the requirement is real
+        verificationStatus: {
+            type: String,
+            enum: ["PENDING", "VERIFIED", "NOT_VERIFIED"],
+            default: "PENDING"
+        },
+        verificationNote: {
+            type: String
+        },
+        verifiedAt: {
+            type: Date
+        },
+        verifiedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
         }
     },
     { timestamps: true }

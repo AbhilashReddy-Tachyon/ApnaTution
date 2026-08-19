@@ -133,6 +133,37 @@ exports.listLeadsAdmin = async (req, res) => {
     }
 };
 
+// Admin: record the outcome of a manual verification call to the parent
+exports.setLeadVerification = async (req, res) => {
+    try {
+        if (!isValidId(req.params.id)) {
+            return res.status(400).json({ message: "Invalid lead ID" });
+        }
+        const { status, note } = req.body;
+        if (!["PENDING", "VERIFIED", "NOT_VERIFIED"].includes(status)) {
+            return res.status(400).json({ message: "status must be PENDING, VERIFIED or NOT_VERIFIED" });
+        }
+
+        const lead = await TuitionLead.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    verificationStatus: status,
+                    verificationNote: note ? note.trim() : "",
+                    verifiedAt: new Date(),
+                    verifiedBy: req.user.id
+                }
+            },
+            { new: true }
+        );
+        if (!lead) return res.status(404).json({ message: "Lead not found" });
+        res.json(lead);
+    } catch (err) {
+        console.error("SetLeadVerification Error:", err);
+        res.status(500).json({ message: "Failed to update verification status" });
+    }
+};
+
 exports.deleteLeadAdmin = async (req, res) => {
     try {
         if (!isValidId(req.params.id)) {

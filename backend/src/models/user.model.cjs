@@ -75,6 +75,10 @@ const UserSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
+        phoneVerified: {
+            type: Boolean,
+            default: false
+        },
         points: {
             type: Number,
             default: 0

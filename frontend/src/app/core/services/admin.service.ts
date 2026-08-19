@@ -50,6 +50,10 @@ export class AdminService {
         return this.http.delete(`${this.apiUrl}/leads/${leadId}`);
     }
 
+    setLeadVerification(leadId: string, status: 'PENDING' | 'VERIFIED' | 'NOT_VERIFIED', note: string): Observable<any> {
+        return this.http.patch(`${this.apiUrl}/leads/${leadId}/verification`, { status, note });
+    }
+
     // Transactions
     getTransactions(params: { status?: string; type?: string; search?: string; page?: number; limit?: number } = {}): Observable<any> {
         let httpParams = new HttpParams();

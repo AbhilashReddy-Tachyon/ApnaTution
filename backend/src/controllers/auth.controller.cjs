@@ -7,6 +7,7 @@ const sendEmail = require("../utils/sendEmail.cjs");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PINCODE_RE = /^\d{6}$/;
+const PHONE_RE = /^[6-9]\d{9}$/;
 
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
 
@@ -65,7 +66,7 @@ async function findOrCreateGoogleUser({ googleId, email, name, role }) {
 
 exports.register = async (req, res) => {
     try {
-        const { role, name, email, password, phone, subjects, location, pincode } = req.body;
+        const { role, name, email, password, phone, phoneToken, subjects, location, pincode } = req.body;
 
         if (!role || !name || !email || !password) {
             return res.status(400).json({ message: "role, name, email and password are required" });
@@ -86,6 +87,25 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: "Name must be at least 2 characters" });
         }
 
+        let phoneVerified = false;
+        if (role === "PARENT") {
+            if (!phone || !PHONE_RE.test(phone.trim())) {
+                return res.status(400).json({ message: "A valid 10-digit mobile number is required" });
+            }
+            if (!phoneToken) {
+                return res.status(400).json({ message: "Please verify your mobile number via OTP before registering" });
+            }
+            try {
+                const decoded = jwt.verify(phoneToken, process.env.JWT_SECRET);
+                if (decoded.purpose !== "PHONE_VERIFIED" || decoded.phone !== phone.trim()) {
+                    throw new Error("Phone/token mismatch");
+                }
+            } catch (e) {
+                return res.status(400).json({ message: "Mobile verification expired or invalid. Please verify again." });
+            }
+            phoneVerified = true;
+        }
+
         const existing = await User.findOne({ email: email.toLowerCase().trim() });
         if (existing) {
             return res.status(409).json({ message: "An account with this email already exists" });
@@ -98,6 +118,7 @@ exports.register = async (req, res) => {
             name: name.trim(),
             email: email.toLowerCase().trim(),
             password: hashedPassword,
+            phoneVerified,
         };
 
         if (phone) userData.phone = phone.trim();

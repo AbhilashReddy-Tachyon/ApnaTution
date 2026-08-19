@@ -24,6 +24,11 @@ export class AdminLeadsComponent implements OnInit {
 
     busyId: string | null = null;
 
+    // Inline verification editor
+    verifyingId: string | null = null;
+    verifyDraft: { status: 'PENDING' | 'VERIFIED' | 'NOT_VERIFIED'; note: string } = { status: 'PENDING', note: '' };
+    savingVerification = false;
+
     constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit() {
@@ -72,6 +77,36 @@ export class AdminLeadsComponent implements OnInit {
             error: (err) => {
                 alert(err?.error?.message || 'Failed to close lead');
                 this.busyId = null;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    openVerification(lead: any) {
+        this.verifyingId = lead._id;
+        this.verifyDraft = {
+            status: lead.verificationStatus || 'PENDING',
+            note: lead.verificationNote || ''
+        };
+    }
+
+    cancelVerification() {
+        this.verifyingId = null;
+    }
+
+    saveVerification(lead: any) {
+        this.savingVerification = true;
+        this.adminService.setLeadVerification(lead._id, this.verifyDraft.status, this.verifyDraft.note).subscribe({
+            next: (updated) => {
+                lead.verificationStatus = updated.verificationStatus;
+                lead.verificationNote = updated.verificationNote;
+                this.savingVerification = false;
+                this.verifyingId = null;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                alert(err?.error?.message || 'Failed to update verification status');
+                this.savingVerification = false;
                 this.cdr.detectChanges();
             }
         });

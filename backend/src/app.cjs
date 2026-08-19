@@ -157,6 +157,7 @@ app.use(ensureDatabaseReady);
 
 // Routes
 app.use("/auth",       require("./routes/auth.routes.cjs"));
+app.use("/otp",        require("./routes/otp.routes.cjs"));
 app.use("/leads",      require("./routes/lead.routes.cjs"));
 app.use("/admin",      require("./routes/admin.routes.cjs"));
 app.use("/payments",   require("./routes/payment.routes.cjs"));
@@ -167,7 +168,7 @@ app.use("/dashboard",  require("./routes/dashboard.routes.cjs"));
 if (process.env.NODE_ENV !== "production") {
     app.get("/debug/routes", (_req, res) => {
         const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
-        const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL", "GOOGLE_CLIENT_ID"];
+        const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL", "GOOGLE_CLIENT_ID", "MSG91_AUTH_KEY", "MSG91_TEMPLATE_ID"];
 
         const routes = ROUTES.map((r) => {
             const missing = r.envVars.filter((v) => !process.env[v]);

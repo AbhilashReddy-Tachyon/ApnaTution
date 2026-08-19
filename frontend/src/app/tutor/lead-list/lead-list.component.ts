@@ -2,6 +2,10 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LeadService } from '../../core/services/lead.service';
+import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/notifications/notification.service';
+import { apiErrorMessage } from '../../core/errors/api-error';
+import { LeadReportReason, ResolvedArea, TutorLead } from '../../core/models';
 
 const PINCODE_RE = /^\d{6}$/;
 
@@ -13,19 +17,27 @@ const PINCODE_RE = /^\d{6}$/;
     styleUrl: './lead-list.component.css'
 })
 export class LeadListComponent implements OnInit {
-    allLeads: any[] = [];
-    filteredLeads: any[] = [];
+    allLeads: TutorLead[] = [];
+    filteredLeads: TutorLead[] = [];
     filters = { location: '', pincode: '', course: '', subject: '', mode: '' };
     loadingLeads = false;
     unlockingId: string | null = null;
-    toast: { message: string; type: 'success' | 'error' | 'info' } | null = null;
+    reportingId: string | null = null;
+    reportReason: Record<string, LeadReportReason> = {};
+    reportDetails: Record<string, string> = {};
 
     // Set once a valid pincode resolves to an area — while active, allLeads
     // itself is scoped to that area/pincode instead of every open lead.
-    resolvedArea: { name: string; district: string; state: string } | null = null;
+    resolvedArea: ResolvedArea | null = null;
     nearbyError = '';
 
-    constructor(private leadService: LeadService, private router: Router, private cdr: ChangeDetectorRef) {}
+    constructor(
+        private leadService: LeadService,
+        private authService: AuthService,
+        private notifications: NotificationService,
+        private router: Router,
+        private cdr: ChangeDetectorRef
+    ) {}
 
     ngOnInit() {
         this.loadLeads();
@@ -44,7 +56,7 @@ export class LeadListComponent implements OnInit {
             },
             error: () => {
                 this.loadingLeads = false;
-                this.showToast('Failed to load leads. Please refresh.', 'error');
+                this.notifications.error('Failed to load leads. Please refresh.');
                 this.cdr.detectChanges();
             }
         });
@@ -95,7 +107,7 @@ export class LeadListComponent implements OnInit {
         this.loadLeads();
     }
 
-    unlockLead(lead: any) {
+    unlockLead(lead: TutorLead) {
         if (lead.isUnlocked) return;
         if (this.unlockingId) return; // Prevent double-click
 
@@ -107,29 +119,53 @@ export class LeadListComponent implements OnInit {
                 lead.isUnlocked = true;
                 lead.parentContact = res.parentContact;
                 this.unlockingId = null;
-                this.showToast(res.message || 'Lead unlocked! Parent contact revealed.', 'success');
+                this.authService.refreshProfile().subscribe({ error: () => {} });
+                this.notifications.success(res.message || 'Lead unlocked! Parent contact revealed.');
                 this.cdr.detectChanges();
             },
             error: (err) => {
                 this.unlockingId = null;
-                if (err.status === 403 || err.error?.code === 'INSUFFICIENT_POINTS') {
-                    this.showToast('Not enough points. Redirecting to buy points...', 'info');
+                if (err.status === 403 || err.error?.error?.code === 'INSUFFICIENT_POINTS') {
+                    this.notifications.info('Not enough points. Redirecting to buy points...');
                     setTimeout(() => this.router.navigate(['/tutor/buy-points']), 1500);
                 } else if (err.status === 409) {
                     // Already unlocked - refresh to get parent contact
                     lead.isUnlocked = true;
                     if (err.error?.parentContact) lead.parentContact = err.error.parentContact;
-                    this.showToast('Already unlocked!', 'info');
+                    this.notifications.info('Already unlocked!');
                 } else {
-                    this.showToast(err.error?.message || 'Unlock failed. Please try again.', 'error');
+                    this.notifications.error(apiErrorMessage(err, 'Unlock failed. Please try again.'));
                 }
                 this.cdr.detectChanges();
             }
         });
     }
 
-    private showToast(message: string, type: 'success' | 'error' | 'info') {
-        this.toast = { message, type };
-        setTimeout(() => this.toast = null, 4000);
+    reportLead(lead: TutorLead) {
+        if (!lead.isUnlocked || this.reportingId) return;
+        const reason = this.reportReason[lead._id];
+        if (!reason) {
+            this.notifications.error('Choose a report reason first.');
+            return;
+        }
+        if (!confirm('Submit this lead for admin review?')) return;
+
+        this.reportingId = lead._id;
+        this.leadService.reportLead(lead._id, reason, this.reportDetails[lead._id]).subscribe({
+            next: (res) => {
+                lead.reportSubmitted = true;
+                this.reportingId = null;
+                this.notifications.success(res.message || 'Report submitted.');
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                if (err.status === 409) lead.reportSubmitted = true;
+                this.reportingId = null;
+                const message = apiErrorMessage(err, 'Could not submit report.');
+                if (err.status === 409) this.notifications.info(message);
+                else this.notifications.error(message);
+                this.cdr.detectChanges();
+            }
+        });
     }
 }

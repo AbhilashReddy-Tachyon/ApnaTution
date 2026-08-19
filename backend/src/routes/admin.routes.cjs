@@ -5,6 +5,11 @@ const auth = require("../middleware/auth.middleware.cjs");
 const role = require("../middleware/role.middleware.cjs");
 const { getAdminStats } = require("../controllers/kpi.controller.cjs");
 const { closeLead, expireOldLeads } = require("../controllers/lead.controller.cjs");
+const { logger } = require("../utils/logger.cjs");
+const {
+    adminRetryPendingCredit,
+    adminMarkProcessingResolved
+} = require("../controllers/payment.controller.cjs");
 const {
     listUsers,
     getUserById,
@@ -15,7 +20,9 @@ const {
     listTransactions,
     listCoupons,
     createCoupon,
-    updateCoupon
+    updateCoupon,
+    getLeadReports,
+    resolveLeadReport
 } = require("../controllers/admin.controller.cjs");
 
 router.get("/stats", auth, role("ADMIN"), getAdminStats);
@@ -31,8 +38,14 @@ router.patch("/leads/:id/close", auth, role("ADMIN"), closeLead);
 router.patch("/leads/:id/verification", auth, role("ADMIN"), setLeadVerification);
 router.delete("/leads/:id",     auth, role("ADMIN"), deleteLeadAdmin);
 
+// Lead reports (tutor-submitted reports of bad/spam leads)
+router.get("/lead-reports", auth, role("ADMIN"), getLeadReports);
+router.post("/lead-reports/:id/resolve", auth, role("ADMIN"), resolveLeadReport);
+
 // Transactions
 router.get("/transactions",     auth, role("ADMIN"), listTransactions);
+router.post("/transactions/:id/retry-credit", auth, role("ADMIN"), adminRetryPendingCredit);
+router.post("/transactions/:id/resolve-processing", auth, role("ADMIN"), adminMarkProcessingResolved);
 
 // Coupons
 router.get("/coupons",          auth, role("ADMIN"), listCoupons);
@@ -51,7 +64,7 @@ router.get("/cron/expire-leads", async (req, res) => {
         const closed = await expireOldLeads();
         res.json({ message: "Done", closedLeads: closed });
     } catch (err) {
-        console.error("Cron expire-leads error:", err);
+        logger.error({ err: err }, "Cron expire-leads error");
         res.status(500).json({ message: "Cron job failed" });
     }
 });

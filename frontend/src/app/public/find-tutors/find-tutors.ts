@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
+import { PublicService } from '../../core/services/public.service';
 import { API_CONFIG } from '../../core/api.config';
+import { PublicTutor, ResolvedArea } from '../../core/models';
 import { ChangeDetectorRef } from '@angular/core';
 import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
 
@@ -17,15 +19,15 @@ const PINCODE_RE = /^\d{6}$/;
   styleUrl: './find-tutors.css',
 })
 export class FindTutors implements OnInit {
-  tutors: any[] = [];
-  filteredTutors: any[] = [];
+  tutors: PublicTutor[] = [];
+  filteredTutors: PublicTutor[] = [];
   loading = true;
   filters = { location: '', pincode: '', subject: '', class: '', mode: '' };
 
   // Set once a valid pincode resolves to nearby results — non-null means the
   // base list below is scoped to that area instead of every tutor.
-  nearbyTutors: any[] | null = null;
-  resolvedArea: { name: string; district: string; state: string } | null = null;
+  nearbyTutors: PublicTutor[] | null = null;
+  resolvedArea: ResolvedArea | null = null;
   nearbySearching = false;
   nearbyError = '';
 
@@ -45,6 +47,7 @@ export class FindTutors implements OnInit {
   ];
 
   constructor(
+    private publicService: PublicService,
     private http: HttpClient,
     private authService: AuthService,
     private router: Router,
@@ -56,7 +59,7 @@ export class FindTutors implements OnInit {
       this.router.navigate(['/tutor/leads']);
       return;
     }
-    this.http.get<any[]>(`${API_CONFIG.baseUrl}/public/tutors`).subscribe({
+    this.publicService.getTutors().subscribe({
       next: (data) => {
         this.tutors = data;
         this.filteredTutors = [...data];
@@ -90,7 +93,7 @@ export class FindTutors implements OnInit {
   fetchNearby(pincode: string) {
     this.nearbySearching = true;
     this.nearbyError = '';
-    this.http.get<any>(`${API_CONFIG.baseUrl}/public/tutors/nearby?pincode=${pincode}`).subscribe({
+    this.http.get<{ tutors: PublicTutor[]; area: ResolvedArea | null }>(`${API_CONFIG.baseUrl}/public/tutors/nearby?pincode=${pincode}`).subscribe({
       next: (res) => {
         this.nearbyTutors = res.tutors || [];
         this.resolvedArea = res.area || null;

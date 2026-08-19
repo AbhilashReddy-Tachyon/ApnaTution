@@ -350,7 +350,7 @@
               <div class="tc-avatar">{{ tutor.name.charAt(0) }}</div>
               <div class="tc-info">
                 <h4>{{ tutor.name }}</h4>
-                <p>{{ tutor.tagline || 'Expert ' + (tutor.subjects?.[0] || 'Tutor') }}</p>
+                <p>{{ tutor.tagline || 'Expert ' + (tutor.subjects[0] || 'Tutor') }}</p>
                 <div class="tc-rating">
                   @for (i of [1,2,3,4,5]; track i) {
                     <i class="fa-solid fa-star"></i>

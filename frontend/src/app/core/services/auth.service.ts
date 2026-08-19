@@ -5,6 +5,20 @@ import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 
 import { API_CONFIG } from '../api.config';
+import {
+    JwtPayload,
+    LoginRequest,
+    LoginResponse,
+    MessageResponse,
+    OtpChannel,
+    RegisterRequest,
+    SessionUser,
+    UpdateProfileRequest,
+    User,
+    UserRole,
+    VerificationRequestResponse,
+    VerifyOtpResponse
+} from '../models';
 
 @Injectable({
     providedIn: 'root'
@@ -13,17 +27,17 @@ export class AuthService {
     private apiUrl = `${API_CONFIG.baseUrl}/auth`;
     private tokenKey = 'apna_tution_token';
 
-    private userSubject = new BehaviorSubject<any>(this.getUserFromToken());
+    private userSubject = new BehaviorSubject<SessionUser | null>(this.getUserFromToken());
     public user$ = this.userSubject.asObservable();
 
     constructor(private http: HttpClient, private router: Router) { }
 
-    register(user: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/register`, user);
+    register(user: RegisterRequest): Observable<MessageResponse> {
+        return this.http.post<MessageResponse>(`${this.apiUrl}/register`, user);
     }
 
-    login(credentials: any): Observable<any> {
-        return this.http.post<{ token: string }>(`${this.apiUrl}/login`, credentials).pipe(
+    login(credentials: LoginRequest): Observable<LoginResponse> {
+        return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
             tap(response => {
                 this.storeToken(response.token);
             })
@@ -58,11 +72,11 @@ export class AuthService {
         this.userSubject.next(this.getUserFromToken());
     }
 
-    getUserFromToken(): any {
+    getUserFromToken(): SessionUser | null {
         const token = this.getToken();
         if (!token) return null;
         try {
-            const decoded: any = jwtDecode(token);
+            const decoded = jwtDecode<JwtPayload>(token);
             if (decoded?.exp && decoded.exp * 1000 <= Date.now()) {
                 this.clearSession();
                 return null;
@@ -74,7 +88,7 @@ export class AuthService {
         }
     }
 
-    getRole(): string | null {
+    getRole(): UserRole | null {
         const user = this.userSubject.value;
         return user ? user.role : null;
     }
@@ -83,19 +97,45 @@ export class AuthService {
         return !!this.getUserFromToken();
     }
 
-    getProfile(): Observable<any> {
-        return this.http.get(`${this.apiUrl}/profile`);
+    getProfile(): Observable<User> {
+        return this.http.get<User>(`${this.apiUrl}/profile`);
     }
 
-    updateProfile(userData: any): Observable<any> {
-        return this.http.put(`${this.apiUrl}/profile`, userData);
+    refreshProfile(): Observable<User> {
+        return this.getProfile().pipe(
+            tap(profile => {
+                const currentUser = this.userSubject.value;
+                if (!currentUser) return;
+                this.userSubject.next({ ...currentUser, ...profile });
+            })
+        );
     }
 
-    forgotPassword(email: string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+    updateProfile(userData: UpdateProfileRequest): Observable<User> {
+        return this.http.put<User>(`${this.apiUrl}/profile`, userData);
     }
 
-    resetPassword(token: string, password: string): Observable<any> {
-        return this.http.put(`${this.apiUrl}/reset-password/${token}`, { password });
+    requestVerification(channel: OtpChannel): Observable<VerificationRequestResponse> {
+        return this.http.post<VerificationRequestResponse>(`${this.apiUrl}/verification/request`, { channel });
+    }
+
+    verifyOtp(channel: OtpChannel, otp: string): Observable<VerifyOtpResponse> {
+        return this.http.post<VerifyOtpResponse>(`${this.apiUrl}/verification/verify`, { channel, otp }).pipe(
+            tap(response => {
+                if (response.user) {
+                    const currentUser = this.userSubject.value;
+                    if (!currentUser) return;
+                    this.userSubject.next({ ...currentUser, ...response.user });
+                }
+            })
+        );
+    }
+
+    forgotPassword(email: string): Observable<MessageResponse> {
+        return this.http.post<MessageResponse>(`${this.apiUrl}/forgot-password`, { email });
+    }
+
+    resetPassword(token: string, password: string): Observable<MessageResponse> {
+        return this.http.put<MessageResponse>(`${this.apiUrl}/reset-password/${token}`, { password });
     }
 }

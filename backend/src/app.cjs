@@ -1,7 +1,15 @@
-require("dotenv").config();
+// `env.cjs` loads dotenv and validates configuration — require it before
+// anything that reads process.env.
+const { config, validateEnv } = require("./config/env.cjs");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const { logger } = require("./utils/logger.cjs");
+const requestLogger = require("./middleware/requestLogger.cjs");
+const { errorHandler, notFoundHandler } = require("./middleware/errorHandler.cjs");
+
+// Fails fast in production, warns in development.
+validateEnv({ logger });
 // express-mongo-sanitize is incompatible with Express v5 (req.query is read-only).
 // Inline sanitizer: strips keys starting with $ or containing . from body/params.
 function sanitizeMongo(val) {
@@ -15,7 +23,7 @@ function sanitizeMongo(val) {
 }
 const connectDB = require("./config/db.cjs");
 const { seedPlans } = require("./controllers/payment.controller.cjs");
-const { createOrder, verifyPayment } = require("./controllers/payment.controller.cjs");
+const { createOrder, verifyPayment, handleRazorpayWebhook } = require("./controllers/payment.controller.cjs");
 const auth = require("./middleware/auth.middleware.cjs");
 const role = require("./middleware/role.middleware.cjs");
 const { ROUTES } = require("./utils/startupCheck.cjs");
@@ -23,12 +31,19 @@ const { buildDashboardHtml } = require("./utils/devDashboard.cjs");
 
 const app = express();
 
+// Behind Vercel/any proxy, req.ip is the proxy's address unless we trust the
+// forwarding headers — which rate limiting and audit logs both depend on.
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
+
+// First in the chain so every subsequent log line carries the request id.
+app.use(requestLogger);
+
 // Dev dashboard at / — registered BEFORE helmet so its CSP doesn't block inline styles
-if (process.env.NODE_ENV !== "production") {
+if (!config.isProduction) {
     app.get("/", (_req, res) => {
-        const port = process.env.PORT || 5000;
         res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.send(buildDashboardHtml(port));
+        res.send(buildDashboardHtml(config.port));
     });
 }
 
@@ -52,7 +67,6 @@ const allowedOrigins = [
 const vercelPreviewPattern = /^https:\/\/(?:apna-tution-frontend|apnatutors|apnatutors-frontend)(-[a-z0-9-]+)?\.vercel\.app$/;
 
 app.use(helmet());
-app.use((req, _res, next) => { sanitizeMongo(req.body); sanitizeMongo(req.params); next(); });
 
 const corsOptions = {
     origin: (origin, callback) => {
@@ -61,7 +75,7 @@ const corsOptions = {
         if (allowedOrigins.includes(origin) || vercelPreviewPattern.test(origin)) {
             return callback(null, true);
         }
-        console.warn("CORS blocked for origin:", origin);
+        logger.warn({ origin }, "CORS blocked for origin");
         return callback(null, false);
     },
     credentials: true,
@@ -74,13 +88,9 @@ const corsOptions = {
 app.options(/.*/, cors(corsOptions));
 app.use(cors(corsOptions));
 
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true }));
-
-// Health check (before DB middleware so it always responds)
-app.get("/health", (_req, res) => {
-    res.json({ status: "UP", timestamp: new Date().toISOString() });
-});
+// Probes mount before the DB middleware so they answer during an outage —
+// that is precisely when you need them.
+app.use(require("./routes/health.routes.cjs"));
 
 // Payment gateway readiness. Reports whether the Razorpay env vars reached this
 // deployment — useful for diagnosing the "Payment gateway is not configured" 503.
@@ -129,7 +139,7 @@ app.get("/health/db", async (_req, res) => {
 
 // DB + Seed middleware (serverless safe - reuses connection)
 let seeded = false;
-const ensureDatabaseReady = async (_req, res, next) => {
+const ensureDatabaseReady = async (_req, _res, next) => {
     try {
         await connectDB();
         if (!seeded) {
@@ -138,14 +148,41 @@ const ensureDatabaseReady = async (_req, res, next) => {
         }
         next();
     } catch (err) {
-        console.error("Startup Error:", err.name, "-", err.message);
-        res.status(500).json({
-            message: "Service temporarily unavailable",
-            error: err.message,
-            tip: "Check MONGO_URI environment variable in Vercel settings."
-        });
+        // errorHandler maps Mongo connection failures to a 503 without leaking
+        // the connection string that a raw err.message would expose.
+        next(err);
     }
 };
+
+app.post(
+    "/api/razorpay/webhook",
+    express.raw({ type: "application/json", limit: "200kb" }),
+    ensureDatabaseReady,
+    handleRazorpayWebhook
+);
+
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+
+// Must run AFTER the body parsers: mounted before them (as it previously was)
+// `req.body` is still undefined and the sanitizer silently does nothing.
+app.use((req, _res, next) => {
+    sanitizeMongo(req.body);
+
+    // Express 5 exposes `req.query` as a getter that re-parses the URL on every
+    // access, so mutating it in place is discarded. Replace the property with a
+    // sanitized snapshot instead.
+    const query = { ...req.query };
+    sanitizeMongo(query);
+    Object.defineProperty(req, "query", {
+        value: query,
+        writable: false,
+        configurable: true,
+        enumerable: true,
+    });
+
+    next();
+});
 
 // Standard Razorpay Checkout aliases used by direct clients and the Angular proxy.
 app.post("/api/create-order", auth, role("TUTOR"), ensureDatabaseReady, createOrder);
@@ -186,15 +223,11 @@ if (process.env.NODE_ENV !== "production") {
     });
 }
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ message: `Route ${req.method} ${req.originalUrl} not found` });
-});
+// Anything no route claimed becomes a 404 ApiError...
+app.use(notFoundHandler);
 
-// Global error handler
-app.use((err, _req, res, _next) => {
-    console.error("Unhandled Error:", err);
-    res.status(500).json({ message: "Internal server error" });
-});
+// ...and every failure, thrown or forwarded, lands here for one consistent
+// response shape. Must be registered last.
+app.use(errorHandler);
 
 module.exports = app;

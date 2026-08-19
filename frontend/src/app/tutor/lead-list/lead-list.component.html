@@ -1,16 +1,6 @@
 <div class="page-wrapper">
 
-  <!-- Toast Notification -->
-  @if (toast) {
-    <div class="toast-notification" [class]="'toast-' + toast.type">
-      <i class="fa-solid" [class.fa-circle-check]="toast.type === 'success'"
-         [class.fa-circle-exclamation]="toast.type === 'error'"
-         [class.fa-circle-info]="toast.type === 'info'"></i>
-      <span>{{ toast.message }}</span>
-    </div>
-  }
-
-  <!-- ── Sidebar Filters ─────────────────────────────────���── -->
+  <!--── Sidebar Filters ─────────────────────────────────���── -->
   <aside class="sidebar">
     <div class="filter-card">
       <div class="filter-header">
@@ -149,7 +139,7 @@
 
           <!-- Card Top Bar -->
           <div class="card-top-bar">
-            <span class="mode-badge" [class]="'mode-' + (lead.mode?.toLowerCase() || 'offline')">
+            <span class="mode-badge" [class]="'mode-' + (lead.mode.toLowerCase())">
               {{ lead.mode || 'OFFLINE' }}
             </span>
             <span class="posted-date">
@@ -187,7 +177,7 @@
             </div>
             <div class="spec-item">
               <span class="spec-label">Subjects</span>
-              <span class="spec-value subjects-val">{{ lead.subjects?.join(', ') }}</span>
+              <span class="spec-value subjects-val">{{ lead.subjects.join(', ') }}</span>
             </div>
             <div class="spec-item">
               <span class="spec-label">Location</span>
@@ -254,6 +244,32 @@
                   </a>
                 </div>
               </div>
+            </div>
+
+            <div class="report-card" [class.report-submitted]="lead.reportSubmitted">
+              @if (lead.reportSubmitted) {
+                <div class="report-done">
+                  <i class="fa-solid fa-flag"></i>
+                  Report submitted for review
+                </div>
+              } @else {
+                <div class="report-title">Problem with this lead?</div>
+                <div class="report-controls">
+                  <select [value]="reportReason[lead._id] || ''" (change)="reportReason[lead._id] = $any($event.target).value">
+                    <option value="">Select reason</option>
+                    <option value="NO_RESPONSE">No response</option>
+                    <option value="WRONG_CONTACT">Wrong contact</option>
+                    <option value="DUPLICATE">Duplicate lead</option>
+                    <option value="ALREADY_FILLED">Already hired/filled</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                  <input type="text" placeholder="Optional note" [value]="reportDetails[lead._id] || ''"
+                    (input)="reportDetails[lead._id] = $any($event.target).value">
+                  <button type="button" (click)="reportLead(lead)" [disabled]="reportingId === lead._id">
+                    {{ reportingId === lead._id ? 'Sending...' : 'Report' }}
+                  </button>
+                </div>
+              }
             </div>
           }
 

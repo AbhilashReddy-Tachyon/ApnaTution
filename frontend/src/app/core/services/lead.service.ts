@@ -3,6 +3,19 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../api.config';
+import {
+    CreateLeadRequest,
+    InterestedTutor,
+    LeadReportReason,
+    ParentLead,
+    ReportLeadResponse,
+    ResolvedArea,
+    TuitionLead,
+    TutorLead,
+    UnlockedLead,
+    UnlockLeadResponse,
+    UpdateLeadRequest
+} from '../models';
 
 @Injectable({
     providedIn: 'root'
@@ -12,46 +25,40 @@ export class LeadService {
 
     constructor(private http: HttpClient) { }
 
-    createLead(lead: any): Observable<any> {
-        return this.http.post(this.apiUrl, lead);
+    createLead(lead: CreateLeadRequest): Observable<TuitionLead> {
+        return this.http.post<TuitionLead>(this.apiUrl, lead);
     }
 
-    getLead(id: string): Observable<any> {
-        return this.http.get(`${this.apiUrl}/${id}`);
+    getLead(id: string): Observable<TuitionLead> {
+        return this.http.get<TuitionLead>(`${this.apiUrl}/${id}`);
     }
 
-    updateLead(id: string, lead: any): Observable<any> {
-        return this.http.put(`${this.apiUrl}/${id}`, lead);
+    updateLead(id: string, lead: UpdateLeadRequest): Observable<TuitionLead> {
+        return this.http.put<TuitionLead>(`${this.apiUrl}/${id}`, lead);
     }
 
-    getMyLeads(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/my`);
+    getMyLeads(): Observable<ParentLead[]> {
+        return this.http.get<ParentLead[]>(`${this.apiUrl}/my`);
     }
 
-    getLeadsForTutor(pincode?: string): Observable<{ leads: any[]; area: { name: string; district: string; state: string } | null }> {
+    getInterestedTutors(leadId: string): Observable<InterestedTutor[]> {
+        return this.http.get<InterestedTutor[]>(`${this.apiUrl}/${leadId}/interested-tutors`);
+    }
+
+    getLeadsForTutor(pincode?: string): Observable<{ leads: TutorLead[]; area: ResolvedArea | null }> {
         const url = pincode ? `${this.apiUrl}?pincode=${pincode}` : this.apiUrl;
-        return this.http.get<{ leads: any[]; area: any }>(url);
+        return this.http.get<{ leads: TutorLead[]; area: ResolvedArea | null }>(url);
     }
 
-    unlockLead(leadId: string): Observable<any> {
-        // This calls the zero-cost unlock (for testing) or the payment flow triggers this?
-        // In our backend: POST /leads/:id/unlock calls the unlock logic
-        // But Step 8 said "Frontend never decides... Payment verified server side"
-        // So the UNLOCK happens via Payment Verify.
-        // However, we might need a direct unlock for free stuff? No, Step 8 says "Tutor pays".
-        // So this method might be redundant IF payment handles it?
-        // Actually, Step 6 had an "unlock API". Step 8 calls /payments/create-order and /payments/verify.
-        // /payments/verify DOES the unlocking.
-        // We'll keep this if we need to check status or something, but unlocking is via payment.
-        // Let's leave it as a placeholder or remove it.
-        // Wait, Step 6 defined `POST /leads/:id/unlock` but Step 8 seemingly replaced/augmented it with Payment?
-        // Step 8's `verifyPayment` does `LeadUnlock.create`.
-        // So `POST /leads/:id/unlock` from Step 6 is for "Manual/Free/Different" unlock?
-        // Step 6 controller: `unlockLead` creates `LeadUnlock` with dummy price 99.
-        // Step 8 controller: `verifyPayment` creates `LeadUnlock` with price 99 after verify.
-        // So Step 6's endpoint is the "insecure" or "dev" unlock.
-        // We should probably NOT use it in production frontend if we want real payments.
-        // But for now I'll include it just in case.
-        return this.http.post(`${this.apiUrl}/${leadId}/unlock`, {});
+    getUnlockedLeads(): Observable<UnlockedLead[]> {
+        return this.http.get<UnlockedLead[]>(`${this.apiUrl}/unlocked`);
+    }
+
+    unlockLead(leadId: string): Observable<UnlockLeadResponse> {
+        return this.http.post<UnlockLeadResponse>(`${this.apiUrl}/${leadId}/unlock`, {});
+    }
+
+    reportLead(leadId: string, reason: LeadReportReason, details?: string): Observable<ReportLeadResponse> {
+        return this.http.post<ReportLeadResponse>(`${this.apiUrl}/${leadId}/report`, { reason, details });
     }
 }

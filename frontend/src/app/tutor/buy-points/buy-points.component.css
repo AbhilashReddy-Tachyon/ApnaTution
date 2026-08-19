@@ -177,6 +177,79 @@
     border-radius: 16px;
 }
 
+.transactions-section {
+    max-width: 760px;
+    margin: 2rem auto 0;
+    padding: 1.25rem 0 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.section-heading h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.refresh-link {
+    border: 1px solid var(--border-light);
+    background: white;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.transaction-list {
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+}
+
+.transaction-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.transaction-row:last-child { border-bottom: 0; }
+
+.transaction-title {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.92rem;
+}
+
+.transaction-meta {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+}
+
+.transaction-points {
+    font-size: 1rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.credit-row .transaction-points { color: #16a34a; }
+.debit-row .transaction-points { color: #dc2626; }
+
 .coupon-content { display: flex; align-items: flex-start; gap: 1.25rem; }
 
 .coupon-icon {
@@ -230,4 +303,11 @@
 @media (max-width: 640px) {
     .pricing-grid { grid-template-columns: 1fr; }
     .coupon-content { flex-direction: column; }
+    .section-heading,
+    .transaction-row {
+        align-items: flex-start;
+    }
+    .transaction-row {
+        flex-direction: column;
+    }
 }

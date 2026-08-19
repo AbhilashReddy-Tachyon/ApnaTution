@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
+import { PublicService } from '../../core/services/public.service';
 import { API_CONFIG } from '../../core/api.config';
 import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
+import { PublicLead, ResolvedArea } from '../../core/models';
 
 const PINCODE_RE = /^\d{6}$/;
 
@@ -16,15 +18,15 @@ const PINCODE_RE = /^\d{6}$/;
     styleUrl: './find-students.css',
 })
 export class FindStudentsComponent implements OnInit {
-    leads: any[] = [];
-    filteredLeads: any[] = [];
+    leads: PublicLead[] = [];
+    filteredLeads: PublicLead[] = [];
     loading = true;
     filters = { location: '', pincode: '', subject: '', course: '', mode: '' };
 
     // Set once a valid pincode resolves to nearby results — non-null means the
     // base list below is scoped to that area instead of every open lead.
-    nearbyLeads: any[] | null = null;
-    resolvedArea: { name: string; district: string; state: string } | null = null;
+    nearbyLeads: PublicLead[] | null = null;
+    resolvedArea: ResolvedArea | null = null;
     nearbySearching = false;
     nearbyError = '';
 
@@ -48,6 +50,7 @@ export class FindStudentsComponent implements OnInit {
     }
 
     constructor(
+        private publicService: PublicService,
         private http: HttpClient,
         private authService: AuthService,
         private router: Router,
@@ -64,7 +67,7 @@ export class FindStudentsComponent implements OnInit {
             this.router.navigate(['/tutor/leads']);
             return;
         }
-        this.http.get<any[]>(`${API_CONFIG.baseUrl}/public/leads`).subscribe({
+        this.publicService.getLeads().subscribe({
             next: (data) => {
                 this.leads = data;
                 this.filteredLeads = [...data];
@@ -98,7 +101,7 @@ export class FindStudentsComponent implements OnInit {
     fetchNearby(pincode: string) {
         this.nearbySearching = true;
         this.nearbyError = '';
-        this.http.get<any>(`${API_CONFIG.baseUrl}/public/leads/nearby?pincode=${pincode}`).subscribe({
+        this.http.get<{ leads: PublicLead[]; area: ResolvedArea | null }>(`${API_CONFIG.baseUrl}/public/leads/nearby?pincode=${pincode}`).subscribe({
             next: (res) => {
                 this.nearbyLeads = res.leads || [];
                 this.resolvedArea = res.area || null;

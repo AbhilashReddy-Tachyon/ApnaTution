@@ -4,8 +4,43 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PaymentService } from '../../core/services/payment.service';
 import { AuthService } from '../../core/services/auth.service';
+import {
+    CreateOrderResponse,
+    MyTransaction,
+    SubscriptionPlan,
+    VerifyPaymentRequest
+} from '../../core/models';
 
-declare var Razorpay: any;
+/** The slice of Razorpay Checkout this page uses; the script is loaded in index.html. */
+interface RazorpayHandlerResponse {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+}
+
+interface RazorpayFailureResponse {
+    error?: { description?: string };
+}
+
+interface RazorpayOptions {
+    key: string;
+    amount: number;
+    currency: string;
+    name: string;
+    description: string;
+    order_id: string;
+    handler: (response: RazorpayHandlerResponse) => void;
+    prefill: { name?: string; email?: string };
+    theme: { color: string };
+    modal: { ondismiss: () => void };
+}
+
+interface RazorpayCheckout {
+    on(event: 'payment.failed', handler: (response: RazorpayFailureResponse) => void): void;
+    open(): void;
+}
+
+declare var Razorpay: new (options: RazorpayOptions) => RazorpayCheckout;
 
 @Component({
     selector: 'app-buy-points',
@@ -15,12 +50,13 @@ declare var Razorpay: any;
     styleUrls: ['./buy-points.component.css']
 })
 export class BuyPointsComponent implements OnInit {
-    plans: any[] = [];
+    plans: SubscriptionPlan[] = [];
     couponCode = '';
     discountMessage = '';
     paymentError = '';
     loadingPlanId: string | null = null;
     currentPoints = 0;
+    transactions: MyTransaction[] = [];
 
     constructor(
         private paymentService: PaymentService,
@@ -34,8 +70,16 @@ export class BuyPointsComponent implements OnInit {
             next: (data) => { this.plans = data; this.cdr.detectChanges(); },
             error: () => {}
         });
-        this.authService.getProfile().subscribe({
+        this.authService.refreshProfile().subscribe({
             next: (user) => { this.currentPoints = user.points || 0; this.cdr.detectChanges(); },
+            error: () => {}
+        });
+        this.loadTransactions();
+    }
+
+    loadTransactions(): void {
+        this.paymentService.getTransactions().subscribe({
+            next: (data) => { this.transactions = data; this.cdr.detectChanges(); },
             error: () => {}
         });
     }
@@ -55,7 +99,7 @@ export class BuyPointsComponent implements OnInit {
         });
     }
 
-    buyPlan(plan: any): void {
+    buyPlan(plan: SubscriptionPlan): void {
         if (this.loadingPlanId) return;
 
         this.loadingPlanId = plan._id;
@@ -70,7 +114,7 @@ export class BuyPointsComponent implements OnInit {
         });
     }
 
-    initiateRazorpay(order: any): void {
+    initiateRazorpay(order: CreateOrderResponse): void {
         const user = this.authService.getUserFromToken();
 
         if (typeof Razorpay === 'undefined') {
@@ -91,7 +135,7 @@ export class BuyPointsComponent implements OnInit {
             name: 'ApnaTutors',
             description: `${order.planName} - ${order.points} Points`,
             order_id: order.order_id,
-            handler: (response: any) => {
+            handler: (response: RazorpayHandlerResponse) => {
                 this.verifyPayment({
                     transactionId: order.transactionId,
                     razorpay_payment_id: response.razorpay_payment_id,
@@ -111,7 +155,7 @@ export class BuyPointsComponent implements OnInit {
         };
 
         const rzp = new Razorpay(options);
-        rzp.on('payment.failed', (response: any) => {
+        rzp.on('payment.failed', (response: RazorpayFailureResponse) => {
             this.paymentError = response?.error?.description || 'Payment failed. Please try another method.';
             this.loadingPlanId = null;
             this.cdr.detectChanges();
@@ -119,13 +163,22 @@ export class BuyPointsComponent implements OnInit {
         rzp.open();
     }
 
-    verifyPayment(data: any): void {
+    verifyPayment(data: VerifyPaymentRequest): void {
         this.paymentService.verifyPayment(data).subscribe({
             next: (res) => {
                 this.currentPoints = res.points;
                 this.loadingPlanId = null;
-                this.cdr.detectChanges();
-                this.router.navigate(['/tutor/leads']);
+                this.loadTransactions();
+                this.authService.refreshProfile().subscribe({
+                    next: () => {
+                        this.cdr.detectChanges();
+                        this.router.navigate(['/tutor/leads']);
+                    },
+                    error: () => {
+                        this.cdr.detectChanges();
+                        this.router.navigate(['/tutor/leads']);
+                    }
+                });
             },
             error: (err) => {
                 this.paymentError = err.error?.message || 'Payment verification failed. No points were added.';

@@ -90,7 +90,7 @@
 
                         <!-- Card Top Bar -->
                         <div class="card-top-bar">
-                            <span class="mode-badge" [class]="'mode-' + lead.mode?.toLowerCase()">
+                            <span class="mode-badge" [class]="'mode-' + lead.mode.toLowerCase()">
                                 {{ lead.mode }}
                             </span>
                             <span class="posted-date">
@@ -121,7 +121,7 @@
                         </div>
 
                         <!-- Subjects -->
-                        @if (lead.subjects?.length > 0) {
+                        @if (lead.subjects.length > 0) {
                             <div class="subject-tags">
                                 @for (sub of lead.subjects; track sub) {
                                     <span class="badge">{{ sub }}</span>

@@ -75,10 +75,18 @@ const UserSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
+        emailVerified: {
+            type: Boolean,
+            default: false
+        },
         phoneVerified: {
             type: Boolean,
             default: false
         },
+        emailOtpHash: String,
+        emailOtpExpire: Date,
+        phoneOtpHash: String,
+        phoneOtpExpire: Date,
         points: {
             type: Number,
             default: 0

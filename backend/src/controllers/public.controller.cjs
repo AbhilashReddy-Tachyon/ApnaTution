@@ -1,15 +1,26 @@
+const { logger } = require("../utils/logger.cjs");
 const User = require("../models/user.model.cjs");
 const { resolvePincode, PINCODE_RE, buildProximityOr, rankByProximity } = require("../utils/pincode.cjs");
+
+// This endpoint is public and unauthenticated, so the projection is an explicit
+// allowlist. The previous `-password` exclusion published every other field —
+// including email, phone, password-reset tokens and OTP hashes — which both
+// leaked PII and gave away the contact details tutors are supposed to pay for.
+const PUBLIC_TUTOR_FIELDS =
+    "name subjects location experience mode hourlyRate tagline rating reviewsCount isVerified createdAt";
+
+const MAX_PUBLIC_TUTORS = 100;
 
 exports.getTutors = async (req, res) => {
     try {
         const tutors = await User.find({ role: 'TUTOR' })
-            .select("-password")
+            .select(PUBLIC_TUTOR_FIELDS)
             .sort({ rating: -1 })
+            .limit(MAX_PUBLIC_TUTORS)
             .lean();
         res.json(tutors);
     } catch (err) {
-        console.error("Get Tutors Error:", err.name, "-", err.message);
+        logger.error({ err }, "failed to fetch public tutors");
         res.status(500).json({ message: "Failed to fetch tutors" });
     }
 };
@@ -52,7 +63,7 @@ exports.getPublicStats = async (req, res) => {
             activeLeads: activeLeads
         });
     } catch (err) {
-        console.error("Public Stats Error:", err);
+        logger.error({ err: err }, "Public Stats Error");
         res.status(500).json({ message: "Failed to fetch public stats" });
     }
 };
@@ -66,7 +77,7 @@ exports.getPublicLeads = async (req, res) => {
             .limit(50);
         res.json(leads);
     } catch (err) {
-        console.error("Get Public Leads Error:", err);
+        logger.error({ err: err }, "Get Public Leads Error");
         res.status(500).json({ message: "Failed to fetch public leads" });
     }
 };

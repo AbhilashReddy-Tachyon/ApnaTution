@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
-import { HttpClient } from '@angular/common/http';
-import { API_CONFIG } from '../core/api.config';
+import { PublicService } from '../core/services/public.service';
+import { PublicLead, PublicStats, PublicTutor } from '../core/models';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -27,9 +27,9 @@ export class Landing implements OnInit, OnDestroy {
   private autoPlayTimer: ReturnType<typeof setInterval> | null = null;
   private progressTimer: ReturnType<typeof setInterval> | null = null;
 
-  stats = { tutors: 0, students: 0, activeLeads: 0 };
-  leads:  any[] = [];
-  tutors: any[] = [];
+  stats: PublicStats = { tutors: 0, students: 0, activeLeads: 0 };
+  leads:  PublicLead[] = [];
+  tutors: PublicTutor[] = [];
 
   searchCity    = '';
   searchSubject = '';
@@ -124,7 +124,7 @@ export class Landing implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient,
+    private publicService: PublicService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
@@ -191,9 +191,9 @@ export class Landing implements OnInit, OnDestroy {
 
   fetchPublicData() {
     forkJoin({
-      stats:  this.http.get<any>(`${API_CONFIG.baseUrl}/public/stats`),
-      leads:  this.http.get<any[]>(`${API_CONFIG.baseUrl}/public/leads`),
-      tutors: this.http.get<any[]>(`${API_CONFIG.baseUrl}/public/tutors`),
+      stats:  this.publicService.getStats(),
+      leads:  this.publicService.getLeads(),
+      tutors: this.publicService.getTutors(),
     }).subscribe({
       next: ({ stats, leads, tutors }) => {
         this.stats  = stats;

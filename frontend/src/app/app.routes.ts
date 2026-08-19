@@ -1,88 +1,194 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
-import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
-import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
-import { MyLeadsComponent } from './parent/my-leads/my-leads.component';
-import { CreateLeadComponent } from './parent/create-lead/create-lead.component';
-import { LeadListComponent } from './tutor/lead-list/lead-list.component';
-import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
-import { AuthGuard } from './core/guards/auth.guard';
-import { RoleGuard } from './core/guards/role.guard';
+
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 import { blockAdminGuard } from './core/guards/block-admin.guard';
 
-import { Landing } from './landing/landing';
-
+/**
+ * Every route is lazy. Eagerly importing components here put them in the
+ * initial bundle regardless of whether a visitor ever reached them — the admin
+ * dashboard and the whole landing stylesheet shipped to anonymous users.
+ */
 export const routes: Routes = [
-    { path: '', component: Landing, canActivate: [blockAdminGuard] },
-    { path: 'find-tutors', canActivate: [blockAdminGuard], loadComponent: () => import('./public/find-tutors/find-tutors').then(m => m.FindTutors) },
-    { path: 'find-students', canActivate: [blockAdminGuard], loadComponent: () => import('./public/find-students/find-students').then(m => m.FindStudentsComponent) },
-    { path: 'terms', canActivate: [blockAdminGuard], loadComponent: () => import('./public/terms/terms').then(m => m.TermsComponent) },
-    { path: 'dashboard', canActivate: [AuthGuard, blockAdminGuard], loadComponent: () => import('./shared/dashboard/dashboard.component').then(m => m.DashboardComponent) },
-    { path: 'login', component: LoginComponent, canActivate: [blockAdminGuard] },
-    { path: 'register', component: RegisterComponent, canActivate: [blockAdminGuard] },
-    { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [blockAdminGuard] },
-    { path: 'reset-password/:token', component: ResetPasswordComponent, canActivate: [blockAdminGuard] },
+    {
+        path: '',
+        title: 'ApnaTutors — Find the Perfect Tutor Near You',
+        canActivate: [blockAdminGuard],
+        loadComponent: () => import('./landing/landing').then(m => m.Landing),
+    },
+    {
+        path: 'find-tutors',
+        title: 'Find Tutors — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () => import('./public/find-tutors/find-tutors').then(m => m.FindTutors),
+    },
+    {
+        path: 'find-students',
+        title: 'Find Students — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () =>
+            import('./public/find-students/find-students').then(m => m.FindStudentsComponent),
+    },
+    {
+        path: 'terms',
+        title: 'Terms & Conditions — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () => import('./public/terms/terms').then(m => m.TermsComponent),
+    },
+    {
+        path: 'login',
+        title: 'Sign In — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent),
+    },
+    {
+        path: 'register',
+        title: 'Create Account — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () =>
+            import('./auth/register/register.component').then(m => m.RegisterComponent),
+    },
+    {
+        path: 'forgot-password',
+        title: 'Reset Password — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () =>
+            import('./auth/forgot-password/forgot-password.component').then(
+                m => m.ForgotPasswordComponent
+            ),
+    },
+    {
+        path: 'reset-password/:token',
+        title: 'Set a New Password — ApnaTutors',
+        canActivate: [blockAdminGuard],
+        loadComponent: () =>
+            import('./auth/reset-password/reset-password.component').then(
+                m => m.ResetPasswordComponent
+            ),
+    },
+    {
+        path: 'dashboard',
+        title: 'Dashboard — ApnaTutors',
+        canActivate: [authGuard, blockAdminGuard],
+        loadComponent: () =>
+            import('./shared/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    },
+    {
+        path: 'profile',
+        title: 'My Profile — ApnaTutors',
+        canActivate: [authGuard],
+        loadComponent: () =>
+            import('./shared/profile/profile.component').then(m => m.ProfileComponent),
+    },
+
+    // ── Parent ───────────────────────────────────────────────────────────────
     {
         path: 'parent/my-leads',
-        component: MyLeadsComponent,
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'PARENT' }
+        title: 'My Requirements — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['PARENT'] },
+        loadComponent: () =>
+            import('./parent/my-leads/my-leads.component').then(m => m.MyLeadsComponent),
     },
     {
         path: 'parent/create-lead',
-        component: CreateLeadComponent,
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'PARENT' }
+        title: 'Post a Requirement — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['PARENT'] },
+        loadComponent: () =>
+            import('./parent/create-lead/create-lead.component').then(m => m.CreateLeadComponent),
     },
     {
         path: 'parent/edit-lead/:id',
-        component: CreateLeadComponent,
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'PARENT' }
+        title: 'Edit Requirement — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['PARENT'] },
+        loadComponent: () =>
+            import('./parent/create-lead/create-lead.component').then(m => m.CreateLeadComponent),
     },
+
+    // ── Tutor ────────────────────────────────────────────────────────────────
     {
         path: 'tutor/leads',
-        component: LeadListComponent,
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'TUTOR' }
+        title: 'Browse Leads — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['TUTOR'] },
+        loadComponent: () =>
+            import('./tutor/lead-list/lead-list.component').then(m => m.LeadListComponent),
     },
     {
         path: 'tutor/buy-points',
-        loadComponent: () => import('./tutor/buy-points/buy-points.component').then(m => m.BuyPointsComponent),
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'TUTOR' }
+        title: 'Buy Points — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['TUTOR'] },
+        loadComponent: () =>
+            import('./tutor/buy-points/buy-points.component').then(m => m.BuyPointsComponent),
     },
     {
+        path: 'tutor/unlocked-leads',
+        title: 'Unlocked Leads — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['TUTOR'] },
+        loadComponent: () =>
+            import('./tutor/unlocked-leads/unlocked-leads.component').then(
+                m => m.UnlockedLeadsComponent
+            ),
+    },
+
+    // ── Admin ────────────────────────────────────────────────────────────────
+    {
         path: 'admin',
-        component: AdminDashboardComponent,
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'ADMIN' }
+        title: 'Admin — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+            import('./admin/dashboard/dashboard.component').then(m => m.AdminDashboardComponent),
     },
     {
         path: 'admin/users',
+        title: 'Manage Users — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['ADMIN'] },
         loadComponent: () => import('./admin/users/users.component').then(m => m.AdminUsersComponent),
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'ADMIN' }
     },
     {
         path: 'admin/leads',
+        title: 'Manage Leads — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['ADMIN'] },
         loadComponent: () => import('./admin/leads/leads.component').then(m => m.AdminLeadsComponent),
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'ADMIN' }
     },
     {
         path: 'admin/payments',
-        loadComponent: () => import('./admin/payments/payments.component').then(m => m.AdminPaymentsComponent),
-        canActivate: [AuthGuard, RoleGuard],
-        data: { role: 'ADMIN' }
+        title: 'Manage Payments — ApnaTutors',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: ['ADMIN'] },
+        loadComponent: () =>
+            import('./admin/payments/payments.component').then(m => m.AdminPaymentsComponent),
     },
 
+    // ── Terminal states ──────────────────────────────────────────────────────
     {
-        path: 'profile',
-        loadComponent: () => import('./shared/profile/profile.component').then(m => m.ProfileComponent),
-        canActivate: [AuthGuard]
+        path: 'forbidden',
+        title: 'Access Denied — ApnaTutors',
+        loadComponent: () =>
+            import('./shared/status-page/status-page.component').then(m => m.StatusPageComponent),
+        // Bound to the component's inputs by withComponentInputBinding().
+        data: {
+            code: '403',
+            heading: 'Access denied',
+            body: 'Your account does not have permission to view this page.',
+        },
     },
-
-    { path: '**', redirectTo: '' }
+    {
+        path: '**',
+        title: 'Page Not Found — ApnaTutors',
+        loadComponent: () =>
+            import('./shared/status-page/status-page.component').then(m => m.StatusPageComponent),
+        data: {
+            code: '404',
+            heading: 'Page not found',
+            body: 'The page you were looking for does not exist or has moved.',
+        },
+    },
 ];

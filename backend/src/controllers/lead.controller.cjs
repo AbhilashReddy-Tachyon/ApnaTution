@@ -5,11 +5,17 @@ const KPIEvent = require("../models/KPIEvent.model.cjs");
 const User = require("../models/user.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
 const { resolvePincode, PINCODE_RE, buildProximityOr, rankByProximity } = require("../utils/pincode.cjs");
+const LeadReport = require("../models/LeadReport.model.cjs");
+const { logger } = require("../utils/logger.cjs");
 
 // Validate MongoDB ObjectId
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const OPEN_LEAD_CAP = 5;
+
+const isTransactionUnsupported = (err) =>
+    err?.code === 20 ||
+    /Transaction numbers are only allowed|replica set member|transactions are not supported/i.test(err?.message || "");
 
 // Parent: create a new lead
 exports.createLead = async (req, res) => {
@@ -51,7 +57,7 @@ exports.createLead = async (req, res) => {
         if (err.name === "ValidationError") {
             return res.status(400).json({ message: err.message });
         }
-        console.error("Create Lead Error:", err);
+        logger.error({ err: err }, "Create Lead Error");
         res.status(500).json({ message: "Failed to create lead" });
     }
 };
@@ -78,7 +84,7 @@ exports.getMyLeads = async (req, res) => {
 
         res.json(result);
     } catch (err) {
-        console.error("GetMyLeads Error:", err);
+        logger.error({ err: err }, "GetMyLeads Error");
         res.status(500).json({ message: "Failed to fetch leads" });
     }
 };
@@ -141,8 +147,74 @@ exports.getLeadsForTutor = async (req, res) => {
             area
         });
     } catch (err) {
-        console.error("GetLeadsForTutor Error:", err);
+        logger.error({ err: err }, "GetLeadsForTutor Error");
         res.status(500).json({ message: "Failed to fetch leads" });
+    }
+};
+
+// Parent: see tutors who unlocked a specific lead
+exports.getInterestedTutors = async (req, res) => {
+    try {
+        if (!isValidId(req.params.id)) {
+            return res.status(400).json({ message: "Invalid lead ID" });
+        }
+
+        const lead = await TuitionLead.findOne({ _id: req.params.id, parentId: req.user.id });
+        if (!lead) {
+            return res.status(404).json({ message: "Lead not found or you are not authorized to view it" });
+        }
+
+        const unlocks = await LeadUnlock.find({ leadId: lead._id })
+            .populate("tutorId", "name email phone subjects location experience mode hourlyRate tagline rating reviewsCount isVerified emailVerified phoneVerified")
+            .sort({ createdAt: -1 });
+
+        res.json(unlocks
+            .filter(unlock => unlock.tutorId)
+            .map(unlock => ({
+                unlockedAt: unlock.createdAt,
+                tutor: unlock.tutorId
+            })));
+    } catch (err) {
+        logger.error({ err: err }, "GetInterestedTutors Error");
+        res.status(500).json({ message: "Failed to fetch interested tutors" });
+    }
+};
+
+// Tutor: list leads this tutor has already unlocked
+exports.getMyUnlockedLeads = async (req, res) => {
+    try {
+        const unlocks = await LeadUnlock.find({ tutorId: req.user.id })
+            .populate({
+                path: "leadId",
+                populate: { path: "parentId", select: "name phone email location" }
+            })
+            .sort({ createdAt: -1 });
+
+        const result = unlocks
+            .filter(unlock => unlock.leadId)
+            .map(unlock => {
+                const lead = unlock.leadId.toObject();
+                const parentContact = lead.parentId ? {
+                    name: lead.parentId.name,
+                    phone: lead.parentId.phone || "Not provided",
+                    email: lead.parentId.email
+                } : null;
+
+                delete lead.parentId;
+
+                return {
+                    ...lead,
+                    unlockedAt: unlock.createdAt,
+                    unlockPrice: unlock.price,
+                    isUnlocked: true,
+                    parentContact
+                };
+            });
+
+        res.json(result);
+    } catch (err) {
+        logger.error({ err: err }, "GetMyUnlockedLeads Error");
+        res.status(500).json({ message: "Failed to fetch unlocked leads" });
     }
 };
 
@@ -179,30 +251,88 @@ exports.unlockLead = async (req, res) => {
         }
 
         // Atomically deduct 1 point — only succeeds if points >= 1 (prevents race condition)
-        const tutor = await User.findOneAndUpdate(
-            { _id: tutorId, points: { $gte: 1 } },
-            { $inc: { points: -1 } },
-            { new: true }
-        );
-        if (!tutor) {
-            return res.status(403).json({
-                message: "Insufficient points. Please buy a plan to continue.",
-                code: "INSUFFICIENT_POINTS"
+        let tutor = null;
+        const session = await mongoose.startSession();
+        try {
+            await session.withTransaction(async () => {
+                const unlock = await LeadUnlock.findOne({ tutorId, leadId }).session(session);
+                if (unlock) return;
+
+                tutor = await User.findOneAndUpdate(
+                    { _id: tutorId, points: { $gte: 1 } },
+                    { $inc: { points: -1 } },
+                    { new: true, session }
+                );
+                if (!tutor) {
+                    const error = new Error("INSUFFICIENT_POINTS");
+                    error.statusCode = 403;
+                    throw error;
+                }
+
+                await LeadUnlock.create([{ tutorId, leadId, price: 1 }], { session });
+
+                await Transaction.create([{
+                    userId: tutorId,
+                    amount: 0,
+                    points: 1,
+                    type: "DEBIT",
+                    description: `Unlocked lead: ${lead.title}`,
+                    status: "SUCCESS",
+                    processedAt: new Date()
+                }], { session });
             });
+        } catch (err) {
+            if (err.statusCode === 403) {
+                return res.status(403).json({
+                    message: "Insufficient points. Please buy a plan to continue.",
+                    code: "INSUFFICIENT_POINTS"
+                });
+            }
+            if (isTransactionUnsupported(err)) {
+                tutor = await User.findOneAndUpdate(
+                    { _id: tutorId, points: { $gte: 1 } },
+                    { $inc: { points: -1 } },
+                    { new: true }
+                );
+                if (!tutor) {
+                    return res.status(403).json({
+                        message: "Insufficient points. Please buy a plan to continue.",
+                        code: "INSUFFICIENT_POINTS"
+                    });
+                }
+
+                try {
+                    await LeadUnlock.create({ tutorId, leadId, price: 1 });
+                    await Transaction.create({
+                        userId: tutorId,
+                        amount: 0,
+                        points: 1,
+                        type: "DEBIT",
+                        description: `Unlocked lead: ${lead.title}`,
+                        status: "SUCCESS",
+                        processedAt: new Date()
+                    });
+                } catch (fallbackErr) {
+                    await User.updateOne({ _id: tutorId }, { $inc: { points: 1 } }).catch(() => {});
+                    if (fallbackErr.code === 11000) {
+                        tutor = await User.findById(tutorId).select("points");
+                    } else {
+                        throw fallbackErr;
+                    }
+                }
+            } else
+            if (err.code === 11000) {
+                tutor = await User.findById(tutorId).select("points");
+            } else {
+                throw err;
+            }
+        } finally {
+            session.endSession();
         }
 
-        // Record unlock
-        await LeadUnlock.create({ tutorId, leadId, price: 1 });
-
-        // Record debit transaction
-        await Transaction.create({
-            userId: tutorId,
-            amount: 0,
-            points: 1,
-            type: "DEBIT",
-            description: `Unlocked lead: ${lead.title}`,
-            status: "SUCCESS"
-        });
+        if (!tutor) {
+            tutor = await User.findById(tutorId).select("points");
+        }
 
         // KPI tracking (non-blocking)
         KPIEvent.create({
@@ -221,8 +351,47 @@ exports.unlockLead = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error("Unlock Error:", err);
+        logger.error({ err: err }, "Unlock Error");
         res.status(500).json({ message: "Unlock failed. Please try again." });
+    }
+};
+
+// Tutor: report a bad lead after unlocking it
+exports.reportLead = async (req, res) => {
+    try {
+        const tutorId = req.user.id;
+        const leadId = req.params.id;
+        const { reason, details } = req.body;
+
+        if (!isValidId(leadId)) {
+            return res.status(400).json({ message: "Invalid lead ID" });
+        }
+        if (!["NO_RESPONSE", "WRONG_CONTACT", "DUPLICATE", "ALREADY_FILLED", "OTHER"].includes(reason)) {
+            return res.status(400).json({ message: "Valid report reason is required" });
+        }
+
+        const unlock = await LeadUnlock.findOne({ tutorId, leadId });
+        if (!unlock) {
+            return res.status(403).json({ message: "You can report only leads you have unlocked" });
+        }
+
+        const report = await LeadReport.create({
+            tutorId,
+            leadId,
+            reason,
+            details: details ? String(details).trim() : undefined
+        });
+
+        res.status(201).json({
+            message: "Report submitted. Our team will review it.",
+            report
+        });
+    } catch (err) {
+        if (err.code === 11000) {
+            return res.status(409).json({ message: "You have already reported this lead" });
+        }
+        logger.error({ err: err }, "ReportLead Error");
+        res.status(500).json({ message: "Could not submit report" });
     }
 };
 
@@ -277,7 +446,7 @@ exports.updateLead = async (req, res) => {
         if (err.name === "ValidationError") {
             return res.status(400).json({ message: err.message });
         }
-        console.error("Update Lead Error:", err);
+        logger.error({ err: err }, "Update Lead Error");
         res.status(500).json({ message: "Failed to update lead" });
     }
 };
@@ -295,7 +464,7 @@ exports.getLeadById = async (req, res) => {
         }
         res.json(lead);
     } catch (err) {
-        console.error("GetLeadById Error:", err);
+        logger.error({ err: err }, "GetLeadById Error");
         res.status(500).json({ message: "Failed to fetch lead" });
     }
 };
@@ -307,6 +476,6 @@ exports.expireOldLeads = async () => {
         { status: "OPEN", createdAt: { $lt: cutoff } },
         { $set: { status: "CLOSED" } }
     );
-    console.log(`[expireOldLeads] Closed ${result.modifiedCount} expired lead(s).`);
+    logger.info(`[expireOldLeads] Closed ${result.modifiedCount} expired lead(s).`);
     return result.modifiedCount;
 };

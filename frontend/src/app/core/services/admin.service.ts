@@ -3,6 +3,16 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_CONFIG } from '../api.config';
+import {
+    AdminLeadReport,
+    AdminStats,
+    CloseLeadResponse,
+    LeadReportAction,
+    LeadReportStatus,
+    ResolveLeadReportResponse,
+    ResolveProcessingResponse,
+    RetryCreditResponse
+} from '../models';
 
 @Injectable({
     providedIn: 'root'
@@ -12,8 +22,8 @@ export class AdminService {
 
     constructor(private http: HttpClient) { }
 
-    getStats(): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/stats`);
+    getStats(): Observable<AdminStats> {
+        return this.http.get<AdminStats>(`${this.apiUrl}/stats`);
     }
 
     // Users
@@ -42,8 +52,8 @@ export class AdminService {
         return this.http.get<any>(`${this.apiUrl}/leads`, { params: httpParams });
     }
 
-    closeLead(leadId: string): Observable<any> {
-        return this.http.patch(`${this.apiUrl}/leads/${leadId}/close`, {});
+    closeLead(leadId: string): Observable<CloseLeadResponse> {
+        return this.http.patch<CloseLeadResponse>(`${this.apiUrl}/leads/${leadId}/close`, {});
     }
 
     deleteLead(leadId: string): Observable<any> {
@@ -52,6 +62,24 @@ export class AdminService {
 
     setLeadVerification(leadId: string, status: 'PENDING' | 'VERIFIED' | 'NOT_VERIFIED', note: string): Observable<any> {
         return this.http.patch(`${this.apiUrl}/leads/${leadId}/verification`, { status, note });
+    }
+
+    // Lead reports (tutor-submitted reports of bad/spam leads)
+    getLeadReports(status: LeadReportStatus | '' = ''): Observable<AdminLeadReport[]> {
+        return this.http.get<AdminLeadReport[]>(`${this.apiUrl}/lead-reports`, {
+            params: status ? new HttpParams().set('status', status) : new HttpParams()
+        });
+    }
+
+    resolveLeadReport(
+        reportId: string,
+        action: LeadReportAction,
+        adminNote = ''
+    ): Observable<ResolveLeadReportResponse> {
+        return this.http.post<ResolveLeadReportResponse>(
+            `${this.apiUrl}/lead-reports/${reportId}/resolve`,
+            { action, adminNote }
+        );
     }
 
     // Transactions
@@ -63,6 +91,14 @@ export class AdminService {
             }
         });
         return this.http.get<any>(`${this.apiUrl}/transactions`, { params: httpParams });
+    }
+
+    retryPendingCredit(transactionId: string): Observable<RetryCreditResponse> {
+        return this.http.post<RetryCreditResponse>(`${this.apiUrl}/transactions/${transactionId}/retry-credit`, {});
+    }
+
+    resolveProcessing(transactionId: string): Observable<ResolveProcessingResponse> {
+        return this.http.post<ResolveProcessingResponse>(`${this.apiUrl}/transactions/${transactionId}/resolve-processing`, {});
     }
 
     // Coupons

@@ -1,3 +1,4 @@
+const { logger } = require("../utils/logger.cjs");
 const User = require("../models/user.model.cjs");
 const SubscriptionPlan = require("../models/SubscriptionPlan.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
@@ -14,12 +15,12 @@ const seedPlans = async () => {
             { name: "Growth Pack", price: 2000, points: 50, discountDescription: "Save 20%" },
             { name: "Pro Pack", price: 5000, points: 150, discountDescription: "Save 33% - Best Value" }
         ]);
-        console.log("Plans seeded");
+        logger.info("Plans seeded");
     }
     const coupons = await Coupon.find();
     if (coupons.length === 0) {
         await Coupon.create({ code: "WELCOME10", discountPercentage: 10, usageLimit: 10000 });
-        console.log("Coupons seeded");
+        logger.info("Coupons seeded");
     }
 };
 seedPlans();

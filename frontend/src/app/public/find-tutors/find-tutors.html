@@ -55,7 +55,7 @@
             @for (tutor of filteredTutors; track tutor._id) {
                 <div class="tutor-card animate-fade-in">
                     <div class="tutor-header">
-                        <div class="avatar">{{ tutor.name?.charAt(0)?.toUpperCase() || 'T' }}</div>
+                        <div class="avatar">{{ tutor.name.charAt(0).toUpperCase() || 'T' }}</div>
                         <div class="tutor-info">
                             <h3>
                                 {{ tutor.name }}
@@ -78,7 +78,7 @@
                                 <i class="fa-solid fa-briefcase"></i> {{ tutor.experience }}
                             </span>
                         }
-                        <span class="meta-item mode-chip" [class]="'mode-' + tutor.mode?.toLowerCase()">
+                        <span class="meta-item mode-chip" [class]="'mode-' + tutor.mode.toLowerCase()">
                             <i class="fa-solid fa-wifi"></i> {{ tutor.mode }}
                         </span>
                         @if (tutor.rating) {
@@ -91,7 +91,7 @@
                         }
                     </div>
 
-                    @if (tutor.subjects?.length > 0) {
+                    @if (tutor.subjects.length > 0) {
                         <div class="subject-tags">
                             @for (sub of tutor.subjects; track sub) {
                                 <span class="badge">{{ sub }}</span>

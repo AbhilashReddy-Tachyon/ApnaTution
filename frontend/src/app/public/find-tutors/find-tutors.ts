@@ -7,6 +7,8 @@ import { API_CONFIG } from '../../core/api.config';
 import { ChangeDetectorRef } from '@angular/core';
 import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
 
+const PINCODE_RE = /^\d{6}$/;
+
 @Component({
   selector: 'app-find-tutors',
   standalone: true,
@@ -18,10 +20,18 @@ export class FindTutors implements OnInit {
   tutors: any[] = [];
   filteredTutors: any[] = [];
   loading = true;
-  filters = { location: '', subject: '', class: '', mode: '' };
+  filters = { location: '', pincode: '', subject: '', class: '', mode: '' };
+
+  // Set once a valid pincode resolves to nearby results — non-null means the
+  // base list below is scoped to that area instead of every tutor.
+  nearbyTutors: any[] | null = null;
+  resolvedArea: { name: string; district: string; state: string } | null = null;
+  nearbySearching = false;
+  nearbyError = '';
 
   filterFields: FilterFieldConfig[] = [
     { key: 'location', label: 'Location / Area', type: 'text', placeholder: 'e.g. Gachibowli, Kukatpally' },
+    { key: 'pincode', label: 'Pincode', type: 'text', placeholder: 'e.g. 500032' },
     { key: 'subject', label: 'Subject', type: 'text', placeholder: 'e.g. Mathematics, Physics' },
     { key: 'class', label: 'Class Level', type: 'text', placeholder: 'e.g. Class 10, JEE' },
     {
@@ -60,17 +70,56 @@ export class FindTutors implements OnInit {
   }
 
   onFilterChange(field: string, value: string) {
+    if (field === 'pincode') {
+      const pincode = value.trim();
+      this.filters.pincode = pincode;
+      if (PINCODE_RE.test(pincode)) {
+        this.fetchNearby(pincode);
+      } else {
+        this.nearbyTutors = null;
+        this.resolvedArea = null;
+        this.nearbyError = '';
+        this.applyFilters();
+      }
+      return;
+    }
     this.filters[field as keyof typeof this.filters] = value.toLowerCase();
     this.applyFilters();
   }
 
+  fetchNearby(pincode: string) {
+    this.nearbySearching = true;
+    this.nearbyError = '';
+    this.http.get<any>(`${API_CONFIG.baseUrl}/public/tutors/nearby?pincode=${pincode}`).subscribe({
+      next: (res) => {
+        this.nearbyTutors = res.tutors || [];
+        this.resolvedArea = res.area || null;
+        this.nearbySearching = false;
+        this.applyFilters();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.nearbySearching = false;
+        this.nearbyTutors = [];
+        this.resolvedArea = null;
+        this.nearbyError = 'Could not look up that pincode. Please try again.';
+        this.applyFilters();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   clearFilters() {
-    this.filters = { location: '', subject: '', class: '', mode: '' };
+    this.filters = { location: '', pincode: '', subject: '', class: '', mode: '' };
+    this.nearbyTutors = null;
+    this.resolvedArea = null;
+    this.nearbyError = '';
     this.filteredTutors = [...this.tutors];
   }
 
   applyFilters() {
-    this.filteredTutors = this.tutors.filter(tutor => {
+    const baseList = this.nearbyTutors ?? this.tutors;
+    this.filteredTutors = baseList.filter(tutor => {
       const locationMatch = !this.filters.location ||
         (tutor.location && tutor.location.toLowerCase().includes(this.filters.location));
 

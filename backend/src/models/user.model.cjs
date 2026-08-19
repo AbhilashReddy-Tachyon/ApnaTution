@@ -44,6 +44,10 @@ const UserSchema = new mongoose.Schema(
         location: {
             type: String
         },
+        pincode: {
+            type: String,
+            match: /^\d{6}$/
+        },
         rating: {
             type: Number,
             default: 0

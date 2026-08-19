@@ -28,8 +28,9 @@ export class LeadService {
         return this.http.get<any[]>(`${this.apiUrl}/my`);
     }
 
-    getLeadsForTutor(): Observable<any[]> {
-        return this.http.get<any[]>(this.apiUrl);
+    getLeadsForTutor(pincode?: string): Observable<{ leads: any[]; area: { name: string; district: string; state: string } | null }> {
+        const url = pincode ? `${this.apiUrl}?pincode=${pincode}` : this.apiUrl;
+        return this.http.get<{ leads: any[]; area: any }>(url);
     }
 
     unlockLead(leadId: string): Observable<any> {

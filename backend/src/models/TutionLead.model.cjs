@@ -27,6 +27,10 @@ const TuitionLeadSchema = new mongoose.Schema(
         location: {
             type: String
         },
+        pincode: {
+            type: String,
+            match: /^\d{6}$/
+        },
         budgetRange: {
             type: String
         },

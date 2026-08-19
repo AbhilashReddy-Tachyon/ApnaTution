@@ -30,7 +30,8 @@ export class RegisterComponent {
             password: ['', [Validators.required, Validators.minLength(6)]],
             phone:    [''],
             subjects: [''],
-            location: ['']
+            location: [''],
+            pincode:  ['', [Validators.pattern(/^\d{6}$/)]]
         });
     }
 

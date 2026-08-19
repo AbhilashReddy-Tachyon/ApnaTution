@@ -28,6 +28,7 @@ export class ProfileComponent implements OnInit {
             tagline:    [''],
             subjects:   [''],  // stored as comma-separated string, converted to array on save
             location:   [''],
+            pincode:    ['', [Validators.pattern(/^\d{6}$/)]],
             experience: [''],
             hourlyRate: [''],
             mode:       ['ONLINE']

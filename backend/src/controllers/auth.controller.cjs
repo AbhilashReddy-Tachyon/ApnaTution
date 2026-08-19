@@ -6,6 +6,7 @@ const { OAuth2Client } = require("google-auth-library");
 const sendEmail = require("../utils/sendEmail.cjs");
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PINCODE_RE = /^\d{6}$/;
 
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
 
@@ -64,7 +65,7 @@ async function findOrCreateGoogleUser({ googleId, email, name, role }) {
 
 exports.register = async (req, res) => {
     try {
-        const { role, name, email, password, phone, subjects, location } = req.body;
+        const { role, name, email, password, phone, subjects, location, pincode } = req.body;
 
         if (!role || !name || !email || !password) {
             return res.status(400).json({ message: "role, name, email and password are required" });
@@ -74,6 +75,9 @@ exports.register = async (req, res) => {
         }
         if (!EMAIL_RE.test(email)) {
             return res.status(400).json({ message: "Invalid email address" });
+        }
+        if (pincode && !PINCODE_RE.test(pincode.trim())) {
+            return res.status(400).json({ message: "Pincode must be a 6-digit number" });
         }
         if (password.length < 6) {
             return res.status(400).json({ message: "Password must be at least 6 characters" });
@@ -98,6 +102,7 @@ exports.register = async (req, res) => {
 
         if (phone) userData.phone = phone.trim();
         if (location) userData.location = location.trim();
+        if (pincode) userData.pincode = pincode.trim();
         if (role === "TUTOR" && subjects) {
             userData.subjects = Array.isArray(subjects)
                 ? subjects.map(s => s.trim()).filter(Boolean)

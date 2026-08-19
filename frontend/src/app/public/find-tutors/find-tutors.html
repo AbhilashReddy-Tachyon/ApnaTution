@@ -19,6 +19,23 @@
             </div>
         </div>
 
+        @if (nearbySearching) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Looking up that pincode...
+            </div>
+        }
+        @if (!nearbySearching && resolvedArea) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                Showing tutors near {{ resolvedArea.name }}, {{ resolvedArea.district }}
+            </div>
+        }
+        @if (!nearbySearching && nearbyError) {
+            <div class="nearby-banner nearby-banner-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ nearbyError }}
+            </div>
+        }
+
         @if (loading) {
             <div class="loading-state">
                 <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -53,7 +70,7 @@
                     <div class="tutor-meta">
                         @if (tutor.location) {
                             <span class="meta-item">
-                                <i class="fa-solid fa-location-dot"></i> {{ tutor.location }}
+                                <i class="fa-solid fa-location-dot"></i> {{ tutor.location }}{{ tutor.pincode ? ' - ' + tutor.pincode : '' }}
                             </span>
                         }
                         @if (tutor.experience) {

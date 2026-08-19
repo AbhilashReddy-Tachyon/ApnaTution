@@ -50,6 +50,23 @@
             </div>
         </div>
 
+        @if (nearbySearching) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Looking up that pincode...
+            </div>
+        }
+        @if (!nearbySearching && resolvedArea) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                Showing requirements near {{ resolvedArea.name }}, {{ resolvedArea.district }}
+            </div>
+        }
+        @if (!nearbySearching && nearbyError) {
+            <div class="nearby-banner nearby-banner-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ nearbyError }}
+            </div>
+        }
+
         @if (loading) {
             <div class="loading-state">
                 <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -94,7 +111,7 @@
                                 <span class="spec-label">Location</span>
                                 <span class="spec-value">
                                     <i class="fa-solid fa-location-dot loc-icon"></i>
-                                    {{ lead.location || 'Not specified' }}
+                                    {{ lead.location || 'Not specified' }}{{ lead.pincode ? ' - ' + lead.pincode : '' }}
                                 </span>
                             </div>
                             <div class="spec-item">

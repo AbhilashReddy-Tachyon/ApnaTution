@@ -26,6 +26,13 @@
       </div>
 
       <div class="filter-group">
+        <label>Pincode</label>
+        <input type="text" placeholder="e.g. 500032" maxlength="6"
+          [value]="filters.pincode"
+          (input)="onFilterChange('pincode', $event)">
+      </div>
+
+      <div class="filter-group">
         <label>Class / Course</label>
         <input type="text" placeholder="e.g. Class 10, JEE"
           [value]="filters.course"
@@ -73,6 +80,18 @@
         <i class="fa-solid fa-wallet"></i> Buy Points
       </a>
     </div>
+
+    @if (!loadingLeads && resolvedArea) {
+      <div class="nearby-banner">
+        <i class="fa-solid fa-location-crosshairs"></i>
+        Showing requirements near {{ resolvedArea.name }}, {{ resolvedArea.district }}
+      </div>
+    }
+    @if (!loadingLeads && nearbyError) {
+      <div class="nearby-banner nearby-banner-error">
+        <i class="fa-solid fa-triangle-exclamation"></i> {{ nearbyError }}
+      </div>
+    }
 
     <!-- ── Skeleton Loading ───────────────────────────────���─ -->
     @if (loadingLeads) {

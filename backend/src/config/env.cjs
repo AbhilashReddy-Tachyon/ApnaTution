@@ -71,11 +71,17 @@ const webhookEnabled = feature("Razorpay webhook verification", ["RAZORPAY_WEBHO
 const cronEnabled = feature("Scheduled jobs (lead expiry)", ["CRON_SECRET"]);
 
 // Payments without webhook verification means we cannot trust async payment
-// callbacks — in production that is a correctness problem, not a warning.
+// callbacks. The payment routes themselves already refuse to operate without
+// this (see hasRazorpayConfig()/hasWebhookConfig() in payment.controller.cjs,
+// which return a scoped 503 instead of processing the payment) — so this is a
+// warning, not a fatal error. It must NOT be pushed to `errors`: that array
+// makes validateEnv() throw and take the *entire* app down in production,
+// which would break every unrelated route (OTP, auth, public stats, ...)
+// over a payments-only misconfiguration.
 if (isProduction && paymentsEnabled && !webhookEnabled) {
-    errors.push(
-        "RAZORPAY_WEBHOOK_SECRET is required in production when Razorpay is enabled — " +
-            "unverified webhooks let anyone credit points to any account"
+    warnings.push(
+        "RAZORPAY_WEBHOOK_SECRET is not set — Razorpay payment/webhook routes will return 503 " +
+            "until it's configured (payments endpoints already refuse to run unverified, so this is safe)"
     );
 }
 

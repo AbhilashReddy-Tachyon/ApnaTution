@@ -33,6 +33,7 @@ export interface UpdateProfileRequest {
     readonly tagline?: string;
     readonly subjects?: readonly string[] | string;
     readonly location?: string;
+    readonly pincode?: string;
     readonly experience?: string;
     readonly hourlyRate?: string;
     readonly mode?: TeachingMode;

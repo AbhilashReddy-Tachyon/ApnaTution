@@ -60,9 +60,17 @@
                 <div class="form-group">
                     <label>Location / City</label>
                     <input type="text" formControlName="location"
-                        placeholder="e.g. Andheri West, Mumbai">
+                        placeholder="e.g. Gachibowli, Hyderabad">
                     <span class="field-hint">Required for home tuition</span>
                 </div>
+            </div>
+
+            <div class="form-group" [class.has-error]="leadForm.get('pincode')?.invalid && leadForm.get('pincode')?.touched">
+                <label>Pincode</label>
+                <input type="text" formControlName="pincode" placeholder="e.g. 500032" maxlength="6">
+                @if (leadForm.get('pincode')?.hasError('pattern') && leadForm.get('pincode')?.touched) {
+                    <span class="field-error">Enter a valid 6-digit pincode</span>
+                }
             </div>
 
             <div class="form-group">

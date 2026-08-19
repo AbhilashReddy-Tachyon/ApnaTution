@@ -5,7 +5,9 @@ import { LeadService } from '../../core/services/lead.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { apiErrorMessage } from '../../core/errors/api-error';
-import { LeadReportReason, TutorLead } from '../../core/models';
+import { LeadReportReason, ResolvedArea, TutorLead } from '../../core/models';
+
+const PINCODE_RE = /^\d{6}$/;
 
 @Component({
     selector: 'app-lead-list',
@@ -17,12 +19,17 @@ import { LeadReportReason, TutorLead } from '../../core/models';
 export class LeadListComponent implements OnInit {
     allLeads: TutorLead[] = [];
     filteredLeads: TutorLead[] = [];
-    filters = { location: '', course: '', subject: '', mode: '' };
+    filters = { location: '', pincode: '', course: '', subject: '', mode: '' };
     loadingLeads = false;
     unlockingId: string | null = null;
     reportingId: string | null = null;
     reportReason: Record<string, LeadReportReason> = {};
     reportDetails: Record<string, string> = {};
+
+    // Set once a valid pincode resolves to an area — while active, allLeads
+    // itself is scoped to that area/pincode instead of every open lead.
+    resolvedArea: ResolvedArea | null = null;
+    nearbyError = '';
 
     constructor(
         private leadService: LeadService,
@@ -36,12 +43,14 @@ export class LeadListComponent implements OnInit {
         this.loadLeads();
     }
 
-    loadLeads() {
+    loadLeads(pincode?: string) {
         this.loadingLeads = true;
-        this.leadService.getLeadsForTutor().subscribe({
-            next: (data) => {
-                this.allLeads = data;
-                this.filteredLeads = [...data];
+        this.leadService.getLeadsForTutor(pincode).subscribe({
+            next: (res) => {
+                this.allLeads = res.leads || [];
+                this.resolvedArea = res.area || null;
+                this.filteredLeads = [...this.allLeads];
+                this.applyFilters();
                 this.loadingLeads = false;
                 this.cdr.detectChanges();
             },
@@ -54,8 +63,22 @@ export class LeadListComponent implements OnInit {
     }
 
     onFilterChange(field: string, event: Event) {
-        const value = (event.target as HTMLInputElement | HTMLSelectElement).value.toLowerCase();
-        this.filters[field as keyof typeof this.filters] = value;
+        const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
+
+        if (field === 'pincode') {
+            const pincode = value.trim();
+            this.filters.pincode = pincode;
+            this.nearbyError = '';
+            if (PINCODE_RE.test(pincode)) {
+                this.loadLeads(pincode);
+            } else {
+                this.resolvedArea = null;
+                this.loadLeads();
+            }
+            return;
+        }
+
+        this.filters[field as keyof typeof this.filters] = value.toLowerCase();
         this.applyFilters();
     }
 
@@ -78,8 +101,10 @@ export class LeadListComponent implements OnInit {
     }
 
     clearFilters() {
-        this.filters = { location: '', course: '', subject: '', mode: '' };
-        this.filteredLeads = [...this.allLeads];
+        this.filters = { location: '', pincode: '', course: '', subject: '', mode: '' };
+        this.resolvedArea = null;
+        this.nearbyError = '';
+        this.loadLeads();
     }
 
     unlockLead(lead: TutorLead) {

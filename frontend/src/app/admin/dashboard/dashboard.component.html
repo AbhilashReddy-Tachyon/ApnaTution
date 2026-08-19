@@ -4,6 +4,8 @@
         <p>Platform overview and key metrics</p>
     </div>
 
+    <app-admin-nav></app-admin-nav>
+
     @if (!stats) {
         <div class="loading-state">
             <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -97,7 +99,7 @@
                                     </td>
                                     <td>Rs {{ txn.amount }}</td>
                                     <td>{{ txn.type === 'CREDIT' ? '+' : '-' }}{{ txn.points }}</td>
-                                    <td><span class="status-pill" [class]="'status-' + txn.status?.toLowerCase()">{{ txn.status }}</span></td>
+                                    <td><span class="status-pill" [class]="'status-' + txn.status.toLowerCase()">{{ txn.status }}</span></td>
                                     <td class="mono">{{ txn.paymentId || '-' }}</td>
                                     <td>{{ txn.createdAt | date:'dd MMM, h:mm a' }}</td>
                                     <td class="actions-cell">
@@ -171,7 +173,7 @@
                                         <strong>{{ report.reason }}</strong>
                                         <span>{{ report.details || 'No details' }}</span>
                                     </td>
-                                    <td><span class="status-pill" [class]="'status-' + report.status?.toLowerCase()">{{ report.status }}</span></td>
+                                    <td><span class="status-pill" [class]="'status-' + report.status.toLowerCase()">{{ report.status }}</span></td>
                                     <td>{{ report.createdAt | date:'dd MMM, h:mm a' }}</td>
                                     <td class="actions-cell">
                                         @if (report.status === 'PENDING') {

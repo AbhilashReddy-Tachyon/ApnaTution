@@ -18,6 +18,7 @@ export interface User {
     readonly subjects: readonly string[];
     readonly tagline?: string;
     readonly location?: string;
+    readonly pincode?: string;
     readonly rating: number;
     readonly reviewsCount: number;
     readonly experience?: string;

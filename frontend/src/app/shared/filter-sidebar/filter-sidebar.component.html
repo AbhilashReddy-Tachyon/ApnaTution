@@ -1,0 +1,30 @@
+<div class="filter-card">
+    <div class="filter-header">
+        <h3>{{ title }}</h3>
+        @if (showClear) {
+            <button class="clear-btn" (click)="onClear()">Clear</button>
+        }
+    </div>
+
+    @for (field of fields; track field.key) {
+        <div class="filter-group">
+            <label>{{ field.label }}</label>
+            @if (field.type === 'text') {
+                <input type="text" [placeholder]="field.placeholder || ''"
+                    [value]="filters[field.key] || ''" (input)="onFieldChange(field.key, $event)">
+            } @else {
+                <select [value]="filters[field.key] || ''" (change)="onFieldChange(field.key, $event)">
+                    @for (opt of field.options; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                    }
+                </select>
+            }
+        </div>
+    }
+
+    @if (resultsLabel) {
+        <div class="results-count">
+            <span>{{ resultsLabel }}</span>
+        </div>
+    }
+</div>

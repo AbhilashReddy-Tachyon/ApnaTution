@@ -4,6 +4,7 @@ const LeadUnlock = require("../models/LeadUnlock.model.cjs");
 const KPIEvent = require("../models/KPIEvent.model.cjs");
 const User = require("../models/user.model.cjs");
 const Transaction = require("../models/Transaction.model.cjs");
+const { resolvePincode, PINCODE_RE, buildProximityOr, rankByProximity } = require("../utils/pincode.cjs");
 const LeadReport = require("../models/LeadReport.model.cjs");
 const { logger } = require("../utils/logger.cjs");
 
@@ -19,13 +20,16 @@ const isTransactionUnsupported = (err) =>
 // Parent: create a new lead
 exports.createLead = async (req, res) => {
     try {
-        const { title, subjects, classLevel, mode, location, budgetRange, description } = req.body;
+        const { title, subjects, classLevel, mode, location, pincode, budgetRange, description } = req.body;
 
         if (!title || !subjects || !classLevel || !mode) {
             return res.status(400).json({ message: "title, subjects, classLevel and mode are required" });
         }
         if (!Array.isArray(subjects) || subjects.length === 0) {
             return res.status(400).json({ message: "subjects must be a non-empty array" });
+        }
+        if (pincode && !PINCODE_RE.test(pincode.trim())) {
+            return res.status(400).json({ message: "Pincode must be a 6-digit number" });
         }
 
         // Spam protection: cap open leads per parent
@@ -43,6 +47,7 @@ exports.createLead = async (req, res) => {
             classLevel: classLevel.trim(),
             mode,
             location: location ? location.trim() : undefined,
+            pincode: pincode ? pincode.trim() : undefined,
             budgetRange: budgetRange ? budgetRange.trim() : undefined,
             description: description ? description.trim() : undefined
         });
@@ -84,10 +89,25 @@ exports.getMyLeads = async (req, res) => {
     }
 };
 
-// Tutor: list all OPEN leads (with unlock status + parent contact for unlocked)
+// Tutor: list all OPEN leads (with unlock status + parent contact for unlocked),
+// optionally scoped to a pincode's area (exact pincode, then same postal
+// prefix, then a text match on the resolved area/district name).
 exports.getLeadsForTutor = async (req, res) => {
     try {
-        const leads = await TuitionLead.find({ status: "OPEN" })
+        const { pincode } = req.query;
+        let area = null;
+        const query = { status: "OPEN" };
+
+        if (pincode) {
+            if (!PINCODE_RE.test(pincode)) {
+                return res.status(400).json({ message: "Pincode must be a 6-digit number" });
+            }
+            const resolved = await resolvePincode(pincode);
+            area = resolved ? { name: resolved.area, district: resolved.district, state: resolved.state } : null;
+            query.$or = buildProximityOr(pincode, resolved);
+        }
+
+        const leads = await TuitionLead.find(query)
             .populate("parentId", "name phone email location")
             .sort({ createdAt: -1 });
 
@@ -122,7 +142,10 @@ exports.getLeadsForTutor = async (req, res) => {
             metadata: { count: leads.length }
         }).catch(() => {});
 
-        res.json(result);
+        res.json({
+            leads: pincode ? rankByProximity(result, pincode) : result,
+            area
+        });
     } catch (err) {
         logger.error({ err: err }, "GetLeadsForTutor Error");
         res.status(500).json({ message: "Failed to fetch leads" });
@@ -402,7 +425,7 @@ exports.updateLead = async (req, res) => {
             return res.status(404).json({ message: "Lead not found or you are not authorized to edit it" });
         }
 
-        const allowedUpdates = ["title", "subjects", "classLevel", "mode", "location", "budgetRange", "description", "status"];
+        const allowedUpdates = ["title", "subjects", "classLevel", "mode", "location", "pincode", "budgetRange", "description", "status"];
         const updates = {};
         allowedUpdates.forEach(field => {
             if (req.body[field] !== undefined) updates[field] = req.body[field];

@@ -102,8 +102,15 @@
 
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label>Location / City</label>
-                        <input type="text" formControlName="location" placeholder="e.g. Mumbai, Maharashtra">
+                        <label>Location / Area</label>
+                        <input type="text" formControlName="location" placeholder="e.g. Gachibowli, Hyderabad">
+                    </div>
+                    <div class="form-group" [class.has-error]="profileForm.get('pincode')?.invalid && profileForm.get('pincode')?.touched">
+                        <label>Pincode</label>
+                        <input type="text" formControlName="pincode" placeholder="e.g. 500032" maxlength="6">
+                        @if (profileForm.get('pincode')?.hasError('pattern') && profileForm.get('pincode')?.touched) {
+                            <span class="field-error">Enter a valid 6-digit pincode</span>
+                        }
                     </div>
                     <div class="form-group">
                         <label>Years of Experience</label>

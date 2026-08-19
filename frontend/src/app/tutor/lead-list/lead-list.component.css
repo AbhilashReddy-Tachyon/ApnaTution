@@ -124,6 +124,14 @@
 .header-section h2 { font-size: 1.5rem; margin: 0 0 0.25rem; color: #111827; font-family: 'Poppins', sans-serif; }
 .header-sub { font-size: 0.875rem; color: #6b7280; margin: 0; }
 
+.nearby-banner {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1rem; margin-bottom: 1.25rem;
+  border-radius: 8px; font-size: 0.9rem;
+  background: rgba(79, 70, 229, 0.08); color: #4f46e5;
+}
+.nearby-banner-error { background: rgba(220, 38, 38, 0.08); color: #dc2626; }
+
 .btn-buy-points {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: #fff;
@@ -248,6 +256,27 @@
 .mode-both    { background: #ede9fe; color: #6d28d9; }
 .mode-offline { background: #f1f5f9; color: #475569; }
 .posted-date  { font-size: 0.78rem; color: #9ca3af; }
+
+/* Verification */
+.verification-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  width: fit-content;
+}
+.verification-verified     { background: #d1fae5; color: #065f46; }
+.verification-not-verified { background: #fee2e2; color: #991b1b; }
+.verification-pending      { background: #f1f5f9; color: #64748b; }
+.verification-note-text {
+  margin: -0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #991b1b;
+  font-style: italic;
+}
 
 /* Title */
 .lead-title {

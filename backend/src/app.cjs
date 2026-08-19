@@ -92,6 +92,51 @@ app.use(cors(corsOptions));
 // that is precisely when you need them.
 app.use(require("./routes/health.routes.cjs"));
 
+// Payment gateway readiness. Reports whether the Razorpay env vars reached this
+// deployment — useful for diagnosing the "Payment gateway is not configured" 503.
+// Safe to expose: key_id is already public (it is sent to the browser at checkout);
+// the secret is never returned, only its presence and length so typos/truncation show up.
+app.get("/health/payments", (_req, res) => {
+    const keyId = process.env.RAZORPAY_KEY_ID || "";
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+    res.json({
+        nodeEnv: process.env.NODE_ENV || null,
+        configured: !!(keyId && keySecret),
+        keyId: {
+            present: !!keyId,
+            value: keyId || null,
+            mode: keyId.startsWith("rzp_live_") ? "live" : keyId.startsWith("rzp_test_") ? "test" : null
+        },
+        keySecret: {
+            present: !!keySecret,
+            length: keySecret.length
+        }
+    });
+});
+
+// Database identity. Reports which cluster/database this deployment is actually
+// connected to — the connection string itself is never exposed, only the host and
+// db name, so a misdirected MONGO_URI can be spotted without leaking credentials.
+app.get("/health/db", async (_req, res) => {
+    const mongoose = require("mongoose");
+    try {
+        await connectDB();
+        const conn = mongoose.connection;
+        const counts = {};
+        for (const name of ["users", "subscriptionplans", "tuitionleads", "transactions"]) {
+            counts[name] = await conn.db.collection(name).countDocuments().catch(() => null);
+        }
+        res.json({
+            connected: conn.readyState === 1,
+            database: conn.name,
+            host: conn.host,
+            counts
+        });
+    } catch (err) {
+        res.status(500).json({ connected: false, error: err.message });
+    }
+});
+
 // DB + Seed middleware (serverless safe - reuses connection)
 let seeded = false;
 const ensureDatabaseReady = async (_req, _res, next) => {
@@ -149,6 +194,7 @@ app.use(ensureDatabaseReady);
 
 // Routes
 app.use("/auth",       require("./routes/auth.routes.cjs"));
+app.use("/otp",        require("./routes/otp.routes.cjs"));
 app.use("/leads",      require("./routes/lead.routes.cjs"));
 app.use("/admin",      require("./routes/admin.routes.cjs"));
 app.use("/payments",   require("./routes/payment.routes.cjs"));
@@ -159,7 +205,7 @@ app.use("/dashboard",  require("./routes/dashboard.routes.cjs"));
 if (process.env.NODE_ENV !== "production") {
     app.get("/debug/routes", (_req, res) => {
         const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
-        const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL"];
+        const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL", "GOOGLE_CLIENT_ID", "MSG91_AUTH_KEY", "MSG91_TEMPLATE_ID"];
 
         const routes = ROUTES.map((r) => {
             const missing = r.envVars.filter((v) => !process.env[v]);

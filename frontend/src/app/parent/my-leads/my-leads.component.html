@@ -46,9 +46,9 @@
                                 <i class="fa-solid fa-graduation-cap"></i> {{ lead.classLevel }}
                             </span>
                             <span class="meta-item">
-                                <i class="fa-solid fa-book"></i> {{ lead.subjects?.join(', ') }}
+                                <i class="fa-solid fa-book"></i> {{ lead.subjects.join(', ') }}
                             </span>
-                            <span class="meta-item mode-item" [class]="'mode-' + lead.mode?.toLowerCase()">
+                            <span class="meta-item mode-item" [class]="'mode-' + lead.mode.toLowerCase()">
                                 <i class="fa-solid fa-wifi"></i> {{ lead.mode }}
                             </span>
                             @if (lead.location) {
@@ -101,7 +101,7 @@
                                                 </span>
                                             }
                                         </div>
-                                        <span>{{ item.tutor.subjects?.join(', ') || 'Subjects not listed' }}</span>
+                                        <span>{{ item.tutor.subjects.join(', ') || 'Subjects not listed' }}</span>
                                         <span>{{ item.tutor.experience || 'Experience not listed' }} · {{ item.tutor.mode || 'ONLINE' }}</span>
                                         @if (item.tutor.tagline) {
                                             <p>{{ item.tutor.tagline }}</p>

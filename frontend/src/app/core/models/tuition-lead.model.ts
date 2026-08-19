@@ -2,6 +2,16 @@ import { TeachingMode, TutorSummary } from './user.model';
 
 export type LeadStatus = 'OPEN' | 'CLOSED';
 
+/** Set by an admin after manually calling the parent to confirm the requirement is real. */
+export type LeadVerificationStatus = 'PENDING' | 'VERIFIED' | 'NOT_VERIFIED';
+
+/** A pincode resolved to its serviceable area, returned alongside a pincode-scoped lead search. */
+export interface ResolvedArea {
+    readonly name: string;
+    readonly district: string;
+    readonly state: string;
+}
+
 /** A tuition requirement posted by a parent. */
 export interface TuitionLead {
     readonly _id: string;
@@ -15,6 +25,8 @@ export interface TuitionLead {
     readonly budgetRange?: string;
     readonly description?: string;
     readonly status: LeadStatus;
+    readonly verificationStatus?: LeadVerificationStatus;
+    readonly verificationNote?: string;
     readonly createdAt: string;
     readonly updatedAt: string;
 }
@@ -61,6 +73,7 @@ export interface PublicLead {
     readonly mode: TeachingMode;
     readonly budgetRange?: string;
     readonly location?: string;
+    readonly pincode?: string;
     readonly createdAt: string;
 }
 

@@ -1,0 +1,85 @@
+<div class="terms-page container animate-fade-in">
+  <div class="page-header">
+    <a routerLink="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+    <h2>Terms &amp; Conditions</h2>
+    <p class="header-sub">Last updated: 19 August 2026</p>
+  </div>
+
+  <div class="terms-body glass-panel">
+    <p>
+      Please read these Terms &amp; Conditions carefully before using ApnaTutors. We want every parent
+      and tutor to understand exactly how the platform works before registering, so that there are no
+      misunderstandings later. By registering on ApnaTutors as a Parent/Student or a Tutor, you agree to
+      these terms in full.
+    </p>
+
+    <h3>General Terms — Applicable to All Members</h3>
+    <ol class="terms-list">
+      <li>ApnaTutors is a marketplace that connects parents/students looking for tuition with tutors offering it. Registration is completely free for both parents and tutors.</li>
+      <li>Please provide a valid mobile number and a personal email address at the time of registration. We want genuine parents and tutors interacting with each other — fake or duplicate profiles may lead to suspension of the account without prior notice.</li>
+      <li>Profiles containing irrelevant, illegal, obscene, or otherwise inappropriate content are strictly prohibited and will be removed. We reserve the right to deny or revoke access to anyone who does not follow these terms.</li>
+      <li>A tutor or parent should not operate multiple accounts or share login credentials with others. Any such misuse may result in closure of the account(s) involved.</li>
+      <li>ApnaTutors will never ask a tutor to transfer money to a parent, or a parent to pay a tutor through the platform, in order to "confirm" a booking. If anyone claiming to represent ApnaTutors asks you to do this, treat it as fraud and report it to us immediately.</li>
+      <li>Members acknowledge that ApnaTutors is not liable for any direct, indirect, incidental, or consequential loss or damage — including loss of data, information, or financial or physical loss — arising from the use of the platform.</li>
+      <li>ApnaTutors does not guarantee that a tutor will be found for a student, that a lead will result in a successful tuition arrangement, or that any specific fee will be agreed upon between the parties.</li>
+      <li>ApnaTutors reserves the right to update these Terms &amp; Conditions at any time, without prior notice. Continued use of the platform after such changes constitutes acceptance of the revised terms.</li>
+      <li>By using ApnaTutors you agree to receive communications from us via Email, SMS, WhatsApp, and other electronic channels related to your account, leads, and platform updates.</li>
+      <li>ApnaTutors is not responsible for the conduct of any tutor towards a student, or any student towards a tutor. All members, especially female students and tutors, are advised to take reasonable safety precautions (e.g. meeting in safe/public spaces initially, informing a family member) before entering into a tuition arrangement with another member. ApnaTutors is not liable for any loss or harm arising from interactions between members.</li>
+      <li>These terms are governed by the laws of the Republic of India, and the courts at Hyderabad, Telangana shall have exclusive jurisdiction over any dispute arising out of the use of this platform. Please continue only if you accept all of the above conditions of your own free will.</li>
+    </ol>
+
+    <div class="terms-tabs">
+      <button type="button" class="terms-tab" [class.active]="activeTab === 'parent'" (click)="setTab('parent')">
+        <i class="fa-solid fa-user"></i> For Parents / Students
+      </button>
+      <button type="button" class="terms-tab" [class.active]="activeTab === 'tutor'" (click)="setTab('tutor')">
+        <i class="fa-solid fa-chalkboard-user"></i> For Tutors
+      </button>
+    </div>
+
+    @if (activeTab === 'parent') {
+      <ol class="terms-list">
+        <li>You can post a tuition requirement ("lead") for free at any time and may post as many requirements as you need. There is no charge to post, edit, or manage your requirements.</li>
+        <li>You should not pay any advance amount to a tutor before classes begin. ApnaTutors is not responsible for any loss resulting from advance payments made directly to a tutor outside the platform. You may report a tutor's misconduct to us and we will review the account.</li>
+        <li>It is your own responsibility to verify a tutor's identity, qualifications, and credentials before engaging them for tuition.</li>
+        <li>You are encouraged to verify a tutor's address and residential details before making any direct payment arrangements with them.</li>
+        <li>Tutors who contact you have unlocked your requirement using Points purchased from ApnaTutors. ApnaTutors does not charge you, the parent/student, for being contacted or for any tuition arrangement you enter into.</li>
+      </ol>
+    } @else {
+      <ol class="terms-list">
+        <li>You can create a profile and browse tuition requirements on ApnaTutors for free. To view a parent's contact details for a specific requirement, you must unlock that lead using Points — 1 Point per lead.</li>
+        <li>Points are purchased in plans shown on the Buy Points page and do not expire.</li>
+        <li>Points are non-transferable and non-refundable once a lead has been successfully unlocked, since the contact information has already been revealed to you. If a payment is deducted but a lead fails to unlock due to a technical error on our end, contact support and we will restore the Points or the amount paid.</li>
+        <li>You should not collect advance payment for classes that have not yet been conducted. You may request payment only for sessions already delivered.</li>
+        <li>You acknowledge that you are not an employee of ApnaTutors and are solely responsible for any income tax or other statutory liabilities arising from fees earned through tuition arranged via the platform. ApnaTutors does not issue experience certificates to registered members.</li>
+        <li>Points and subscription plans are priced for use by individual tutors. Tuition/coaching agencies are not permitted to use individual tutor plans to run their business; agencies that wish to use ApnaTutors should contact us to discuss a suitable arrangement. Misuse of an individual account for agency purposes may lead to closure of the account.</li>
+        <li>ApnaTutors reserves the right to revise Points pricing and plans at any time without prior notice.</li>
+      </ol>
+    }
+
+    <h3>Platform Only</h3>
+    <p>
+      ApnaTutors serves only as a platform to connect parents/students and tutors. Any tuition
+      arrangement, contract, or agreement you enter into with another member is solely between you and
+      that member. ApnaTutors has no liability, obligation, or responsibility for such arrangements, and
+      you agree to release ApnaTutors from all claims arising from them.
+    </p>
+
+    <h3>Limitation of Liability</h3>
+    <p>
+      The platform, its content, and its services are provided "as is", without warranty of any kind,
+      express or implied. ApnaTutors shall not be liable for any direct, indirect, incidental, special,
+      punitive, or consequential damages, including but not limited to loss of profits, goodwill, use,
+      data, or other intangible losses, resulting from the use of, or inability to use, our services.
+    </p>
+    <p>
+      ApnaTutors makes no warranty that the platform will meet your requirements or be available on an
+      uninterrupted, secure, or error-free basis, and makes no warranty regarding the accuracy,
+      timeliness, or completeness of any information obtained through the platform.
+    </p>
+
+    <p class="terms-footnote">
+      Questions about these terms? Reach out to us through the contact details on our Home page.
+    </p>
+  </div>
+</div>

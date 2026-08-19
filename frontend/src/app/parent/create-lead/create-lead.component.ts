@@ -32,6 +32,7 @@ export class CreateLeadComponent implements OnInit {
             classLevel:  ['', Validators.required],
             mode:        ['ONLINE', Validators.required],
             location:    [''],
+            pincode:     ['', [Validators.pattern(/^\d{6}$/)]],
             budgetRange: [''],
             description: ['']
         });

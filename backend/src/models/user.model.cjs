@@ -22,8 +22,17 @@ const UserSchema = new mongoose.Schema(
             type: String
         },
         password: {
+            type: String
+        },
+        googleId: {
             type: String,
-            required: true
+            index: true,
+            sparse: true
+        },
+        authProvider: {
+            type: String,
+            enum: ["LOCAL", "GOOGLE"],
+            default: "LOCAL"
         },
         subjects: {
             type: [String], // only for tutors
@@ -34,6 +43,10 @@ const UserSchema = new mongoose.Schema(
         },
         location: {
             type: String
+        },
+        pincode: {
+            type: String,
+            match: /^\d{6}$/
         },
         rating: {
             type: Number,
@@ -57,6 +70,10 @@ const UserSchema = new mongoose.Schema(
         isVerified: {
             type: Boolean,
             default: false
+        },
+        isActive: {
+            type: Boolean,
+            default: true
         },
         emailVerified: {
             type: Boolean,

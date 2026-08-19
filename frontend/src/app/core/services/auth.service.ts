@@ -44,6 +44,14 @@ export class AuthService {
         );
     }
 
+    loginWithGoogle(idToken: string, role?: string | null): Observable<any> {
+        return this.http.post<{ token: string }>(`${this.apiUrl}/google`, { idToken, role }).pipe(
+            tap(response => {
+                this.storeToken(response.token);
+            })
+        );
+    }
+
     logout() {
         localStorage.removeItem(this.tokenKey);
         this.userSubject.next(null);

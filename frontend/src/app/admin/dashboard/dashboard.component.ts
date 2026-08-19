@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../core/services/admin.service';
+import { AdminNavComponent } from '../admin-nav/admin-nav.component';
 import { apiErrorMessage } from '../../core/errors/api-error';
 import {
     AdminLeadReport,
@@ -8,13 +9,12 @@ import {
     AdminTransaction,
     LeadReportAction,
     LeadReportStatus,
-    TransactionStatus,
 } from '../../core/models';
 
 @Component({
     selector: 'app-admin-dashboard',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, AdminNavComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -22,7 +22,7 @@ export class AdminDashboardComponent implements OnInit {
     stats: AdminStats | null = null;
     transactions: AdminTransaction[] = [];
     reports: AdminLeadReport[] = [];
-    transactionStatus: TransactionStatus | '' = '';
+    transactionStatus = '';
     reportStatus: LeadReportStatus | '' = 'PENDING';
     loadingTransactions = false;
     loadingReports = false;
@@ -46,9 +46,9 @@ export class AdminDashboardComponent implements OnInit {
 
     loadTransactions() {
         this.loadingTransactions = true;
-        this.adminService.getTransactions(this.transactionStatus).subscribe({
+        this.adminService.getTransactions({ status: this.transactionStatus }).subscribe({
             next: (data) => {
-                this.transactions = data;
+                this.transactions = data.transactions ?? data;
                 this.loadingTransactions = false;
                 this.cdr.detectChanges();
             },
@@ -61,7 +61,7 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     setStatus(event: Event) {
-        this.transactionStatus = (event.target as HTMLSelectElement).value as TransactionStatus | '';
+        this.transactionStatus = (event.target as HTMLSelectElement).value;
         this.loadTransactions();
     }
 

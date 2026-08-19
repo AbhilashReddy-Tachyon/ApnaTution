@@ -1,44 +1,14 @@
 <div class="page-wrapper">
     <!-- Sidebar Filters -->
     <aside class="sidebar">
-        <div class="filter-card">
-            <div class="filter-header">
-                <h3>Filter Requirements</h3>
-                <button class="clear-btn" (click)="clearFilters()">Clear</button>
-            </div>
-
-            <div class="filter-group">
-                <label>Location / City</label>
-                <input type="text" placeholder="e.g. Mumbai, Delhi"
-                    [value]="filters.location" (input)="onFilterChange('location', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Class / Course</label>
-                <input type="text" placeholder="e.g. Class 10, JEE"
-                    [value]="filters.course" (input)="onFilterChange('course', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Subject</label>
-                <input type="text" placeholder="e.g. Mathematics, Physics"
-                    [value]="filters.subject" (input)="onFilterChange('subject', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Teaching Mode</label>
-                <select [value]="filters.mode" (change)="onFilterChange('mode', $event)">
-                    <option value="">All Modes</option>
-                    <option value="online">Online</option>
-                    <option value="home">Home Tuition</option>
-                    <option value="both">Both</option>
-                </select>
-            </div>
-
-            <div class="results-count">
-                <span>{{ filteredLeads.length }} requirement{{ filteredLeads.length !== 1 ? 's' : '' }} found</span>
-            </div>
-        </div>
+        <app-filter-sidebar
+            title="Filter Requirements"
+            [fields]="filterFields"
+            [filters]="filters"
+            [resultsLabel]="resultsLabel"
+            (filterChange)="onFilterChange($event.key, $event.value)"
+            (clear)="clearFilters()">
+        </app-filter-sidebar>
 
         <!-- CTA Box -->
         <div class="cta-box">
@@ -80,6 +50,23 @@
             </div>
         </div>
 
+        @if (nearbySearching) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Looking up that pincode...
+            </div>
+        }
+        @if (!nearbySearching && resolvedArea) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                Showing requirements near {{ resolvedArea.name }}, {{ resolvedArea.district }}
+            </div>
+        }
+        @if (!nearbySearching && nearbyError) {
+            <div class="nearby-banner nearby-banner-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ nearbyError }}
+            </div>
+        }
+
         @if (loading) {
             <div class="loading-state">
                 <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -103,7 +90,7 @@
 
                         <!-- Card Top Bar -->
                         <div class="card-top-bar">
-                            <span class="mode-badge" [class]="'mode-' + lead.mode?.toLowerCase()">
+                            <span class="mode-badge" [class]="'mode-' + lead.mode.toLowerCase()">
                                 {{ lead.mode }}
                             </span>
                             <span class="posted-date">
@@ -124,7 +111,7 @@
                                 <span class="spec-label">Location</span>
                                 <span class="spec-value">
                                     <i class="fa-solid fa-location-dot loc-icon"></i>
-                                    {{ lead.location || 'Not specified' }}
+                                    {{ lead.location || 'Not specified' }}{{ lead.pincode ? ' - ' + lead.pincode : '' }}
                                 </span>
                             </div>
                             <div class="spec-item">
@@ -134,7 +121,7 @@
                         </div>
 
                         <!-- Subjects -->
-                        @if ((lead.subjects?.length ?? 0) > 0) {
+                        @if (lead.subjects.length > 0) {
                             <div class="subject-tags">
                                 @for (sub of lead.subjects; track sub) {
                                     <span class="badge">{{ sub }}</span>

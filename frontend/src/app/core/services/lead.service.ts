@@ -9,6 +9,7 @@ import {
     LeadReportReason,
     ParentLead,
     ReportLeadResponse,
+    ResolvedArea,
     TuitionLead,
     TutorLead,
     UnlockedLead,
@@ -44,8 +45,9 @@ export class LeadService {
         return this.http.get<InterestedTutor[]>(`${this.apiUrl}/${leadId}/interested-tutors`);
     }
 
-    getLeadsForTutor(): Observable<TutorLead[]> {
-        return this.http.get<TutorLead[]>(this.apiUrl);
+    getLeadsForTutor(pincode?: string): Observable<{ leads: TutorLead[]; area: ResolvedArea | null }> {
+        const url = pincode ? `${this.apiUrl}?pincode=${pincode}` : this.apiUrl;
+        return this.http.get<{ leads: TutorLead[]; area: ResolvedArea | null }>(url);
     }
 
     getUnlockedLeads(): Observable<UnlockedLead[]> {

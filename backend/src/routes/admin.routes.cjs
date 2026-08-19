@@ -7,19 +7,50 @@ const { getAdminStats } = require("../controllers/kpi.controller.cjs");
 const { closeLead, expireOldLeads } = require("../controllers/lead.controller.cjs");
 const { logger } = require("../utils/logger.cjs");
 const {
-    getAdminTransactions,
     adminRetryPendingCredit,
     adminMarkProcessingResolved
 } = require("../controllers/payment.controller.cjs");
-const { getLeadReports, resolveLeadReport } = require("../controllers/admin.controller.cjs");
+const {
+    listUsers,
+    getUserById,
+    setUserStatus,
+    listLeadsAdmin,
+    deleteLeadAdmin,
+    setLeadVerification,
+    listTransactions,
+    listCoupons,
+    createCoupon,
+    updateCoupon,
+    getLeadReports,
+    resolveLeadReport
+} = require("../controllers/admin.controller.cjs");
 
 router.get("/stats", auth, role("ADMIN"), getAdminStats);
-router.get("/transactions", auth, role("ADMIN"), getAdminTransactions);
-router.post("/transactions/:id/retry-credit", auth, role("ADMIN"), adminRetryPendingCredit);
-router.post("/transactions/:id/resolve-processing", auth, role("ADMIN"), adminMarkProcessingResolved);
+
+// Users
+router.get("/users",            auth, role("ADMIN"), listUsers);
+router.get("/users/:id",        auth, role("ADMIN"), getUserById);
+router.patch("/users/:id/status", auth, role("ADMIN"), setUserStatus);
+
+// Leads
+router.get("/leads",            auth, role("ADMIN"), listLeadsAdmin);
+router.patch("/leads/:id/close", auth, role("ADMIN"), closeLead);
+router.patch("/leads/:id/verification", auth, role("ADMIN"), setLeadVerification);
+router.delete("/leads/:id",     auth, role("ADMIN"), deleteLeadAdmin);
+
+// Lead reports (tutor-submitted reports of bad/spam leads)
 router.get("/lead-reports", auth, role("ADMIN"), getLeadReports);
 router.post("/lead-reports/:id/resolve", auth, role("ADMIN"), resolveLeadReport);
-router.patch("/leads/:id/close", auth, role("ADMIN"), closeLead);
+
+// Transactions
+router.get("/transactions",     auth, role("ADMIN"), listTransactions);
+router.post("/transactions/:id/retry-credit", auth, role("ADMIN"), adminRetryPendingCredit);
+router.post("/transactions/:id/resolve-processing", auth, role("ADMIN"), adminMarkProcessingResolved);
+
+// Coupons
+router.get("/coupons",          auth, role("ADMIN"), listCoupons);
+router.post("/coupons",         auth, role("ADMIN"), createCoupon);
+router.patch("/coupons/:id",    auth, role("ADMIN"), updateCoupon);
 
 // Vercel cron endpoint — secured by CRON_SECRET env var
 // Vercel calls: GET /admin/cron/expire-leads

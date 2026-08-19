@@ -158,6 +158,33 @@
   color: #4f46e5;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+.role-error { display: block; margin: -0.75rem 0 1rem; }
+.role-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.social-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #9ca3af;
+  font-size: 0.82rem;
+}
+.social-divider::before,
+.social-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+.social-divider span { padding: 0 0.75rem; }
 
 /* Form */
 .form-group {
@@ -209,6 +236,63 @@
   transition: color 0.2s;
 }
 .toggle-pwd:hover { color: #4f46e5; }
+
+.phone-input-otp { padding-right: 6.5rem !important; }
+.btn-send-otp {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #eef2ff;
+  border: none;
+  color: #4f46e5;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 0.75rem;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.btn-send-otp:hover:not(:disabled) { background: #e0e7ff; }
+.btn-send-otp:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.otp-verify-row {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+.otp-input {
+  flex: 1;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+}
+.btn-otp-verify {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-otp-verify:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.otp-verified-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  color: #16a34a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.otp-hint-success { color: #16a34a; }
 
 .field-error { font-size: 0.8rem; color: #ef4444; }
 .field-hint  { font-size: 0.78rem; color: #9ca3af; }

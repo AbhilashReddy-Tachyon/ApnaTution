@@ -19,10 +19,13 @@ const ROUTES = [
     { group: "Health",    method: "GET",   path: "/health",                     auth: false, role: null,      envVars: [],                                                   note: "Always available" },
     { group: "Auth",      method: "POST",  path: "/auth/register",              auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Auth",      method: "POST",  path: "/auth/login",                 auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
+    { group: "Auth",      method: "POST",  path: "/auth/google",                auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET", "GOOGLE_CLIENT_ID"],       note: "Verifies a Google ID token" },
     { group: "Auth",      method: "GET",   path: "/auth/profile",               auth: true,  role: "ANY",     envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "Bearer token required" },
     { group: "Auth",      method: "PUT",   path: "/auth/profile",               auth: true,  role: "ANY",     envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "Bearer token required" },
     { group: "Auth",      method: "POST",  path: "/auth/forgot-password",       auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET", "EMAIL_USER", "EMAIL_PASSWORD"], note: "Sends email" },
     { group: "Auth",      method: "PUT",   path: "/auth/reset-password/:token", auth: false, role: null,      envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
+    { group: "OTP",       method: "POST",  path: "/otp/send",                   auth: false, role: null,      envVars: [],                                                   note: "Falls back to console-logged OTP without MSG91 vars" },
+    { group: "OTP",       method: "POST",  path: "/otp/verify",                 auth: false, role: null,      envVars: ["JWT_SECRET"],                                        note: "" },
     { group: "Leads",     method: "GET",   path: "/leads/my",                   auth: true,  role: "PARENT",  envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Leads",     method: "GET",   path: "/leads",                      auth: true,  role: "TUTOR",   envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Leads",     method: "POST",  path: "/leads",                      auth: true,  role: "PARENT",  envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
@@ -31,6 +34,7 @@ const ROUTES = [
     { group: "Leads",     method: "PUT",   path: "/leads/:id",                  auth: true,  role: "PARENT",  envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Admin",     method: "GET",   path: "/admin/stats",                auth: true,  role: "ADMIN",   envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Admin",     method: "PATCH", path: "/admin/leads/:id/close",      auth: true,  role: "ADMIN",   envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
+    { group: "Admin",     method: "PATCH", path: "/admin/leads/:id/verification", auth: true, role: "ADMIN",  envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "Sets verificationStatus after a manual call" },
     { group: "Admin",     method: "GET",   path: "/admin/cron/expire-leads",    auth: false, role: null,      envVars: ["CRON_SECRET"],                                       note: "Secured by CRON_SECRET header" },
     { group: "Payments",  method: "GET",   path: "/payments/plans",             auth: true,  role: "TUTOR",   envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
     { group: "Payments",  method: "POST",  path: "/payments/validate-coupon",   auth: true,  role: "TUTOR",   envVars: ["MONGO_URI", "JWT_SECRET"],                           note: "" },
@@ -45,7 +49,7 @@ const ROUTES = [
 
 // Env vars to surface in the table
 const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
-const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL"];
+const OPTIONAL_VARS = ["CRON_SECRET", "EMAIL_USER", "EMAIL_PASSWORD", "EMAIL_SERVICE", "FROM_NAME", "FROM_EMAIL", "FRONTEND_URL", "GOOGLE_CLIENT_ID", "MSG91_AUTH_KEY", "MSG91_TEMPLATE_ID"];
 
 function pad(str, len) {
     const s = String(str ?? "");

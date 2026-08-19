@@ -43,6 +43,18 @@
         <i class="fa-solid fa-chalkboard-user"></i> I'm a Tutor
       </button>
     </div>
+    @if (registerForm.get('role')?.invalid && registerForm.get('role')?.touched) {
+      <span class="field-error role-error">Please select Parent or Tutor</span>
+    }
+
+    @if (selectedRole) {
+      <app-social-login #social [role]="selectedRole" (authError)="onSocialAuthError($event)"></app-social-login>
+      @if (social.googleEnabled) {
+        <div class="social-divider"><span>or sign up with email</span></div>
+      }
+    } @else {
+      <p class="role-hint">Choose Parent or Tutor above to sign up with Google, or fill in the form below.</p>
+    }
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group" [class.has-error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
@@ -78,14 +90,59 @@
         }
       </div>
 
-      <div class="form-group">
-        <label>Phone Number</label>
-        <input type="tel" formControlName="phone" placeholder="+91 98765 43210">
-        <span class="field-hint">
-          @if (selectedRole === 'PARENT') { Shared only with tutors who contact you }
-          @if (selectedRole === 'TUTOR') { Helps parents reach you quickly }
-        </span>
-      </div>
+      @if (selectedRole === 'PARENT') {
+        <div class="form-group" [class.has-error]="phoneControl?.invalid && phoneControl?.touched">
+          <label>Phone Number *</label>
+          <div class="input-with-icon">
+            <input type="tel" formControlName="phone" placeholder="10-digit mobile number" maxlength="10" [readonly]="otpVerified" class="phone-input-otp">
+            <button type="button" class="btn-send-otp" (click)="sendOtp()" [disabled]="!isPhoneValidForOtp || otpSending || otpVerified">
+              @if (otpSending) {
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+              } @else {
+                {{ otpSent ? 'Resend' : 'Send OTP' }}
+              }
+            </button>
+          </div>
+          @if (phoneControl?.hasError('required') && phoneControl?.touched) {
+            <span class="field-error">Phone number is required</span>
+          }
+          @if (phoneControl?.hasError('pattern') && phoneControl?.touched) {
+            <span class="field-error">Enter a valid 10-digit mobile number</span>
+          }
+          <span class="field-hint">Shared only with tutors who unlock your requirement</span>
+
+          @if (otpVerified) {
+            <div class="otp-verified-badge">
+              <i class="fa-solid fa-circle-check"></i> Mobile number verified
+            </div>
+          } @else if (otpSent) {
+            <div class="otp-verify-row">
+              <input type="text" class="otp-input" placeholder="Enter OTP" maxlength="6" [(ngModel)]="otpValue" [ngModelOptions]="{standalone: true}">
+              <button type="button" class="btn-otp-verify" (click)="verifyOtp()" [disabled]="otpVerifying">
+                @if (otpVerifying) {
+                  <i class="fa-solid fa-circle-notch fa-spin"></i>
+                } @else {
+                  Verify
+                }
+              </button>
+            </div>
+          }
+          @if (otpMessage) {
+            <span class="field-hint otp-hint-success">{{ otpMessage }}</span>
+          }
+          @if (otpError) {
+            <span class="field-error">{{ otpError }}</span>
+          }
+        </div>
+      }
+
+      @if (selectedRole === 'TUTOR') {
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" formControlName="phone" placeholder="+91 98765 43210">
+          <span class="field-hint">Helps parents reach you quickly</span>
+        </div>
+      }
 
       @if (selectedRole === 'TUTOR') {
         <div class="form-group">
@@ -94,8 +151,15 @@
           <span class="field-hint">Separate multiple subjects with commas</span>
         </div>
         <div class="form-group">
-          <label>Your City / Location</label>
-          <input type="text" formControlName="location" placeholder="e.g. Mumbai, Delhi, Bangalore">
+          <label>Your Area / Location</label>
+          <input type="text" formControlName="location" placeholder="e.g. Gachibowli, Jubilee Hills, Kukatpally">
+        </div>
+        <div class="form-group" [class.has-error]="registerForm.get('pincode')?.invalid && registerForm.get('pincode')?.touched">
+          <label>Pincode</label>
+          <input type="text" formControlName="pincode" placeholder="e.g. 500032" maxlength="6">
+          @if (registerForm.get('pincode')?.hasError('pattern') && registerForm.get('pincode')?.touched) {
+            <span class="field-error">Enter a valid 6-digit pincode</span>
+          }
         </div>
       }
 

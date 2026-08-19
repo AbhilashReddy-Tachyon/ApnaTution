@@ -44,6 +44,11 @@
       </div>
     }
 
+    <app-social-login #social (authError)="onSocialAuthError($event)"></app-social-login>
+    @if (social.googleEnabled) {
+      <div class="social-divider"><span>or sign in with email</span></div>
+    }
+
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="form-group" [class.has-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
         <label>Email Address</label>

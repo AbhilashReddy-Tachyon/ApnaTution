@@ -12,27 +12,28 @@
 
     <!-- ── Desktop Links ────────────────────────────────── -->
     <div class="nav-links">
-      @if ((role$ | async) !== 'TUTOR') {
-        <a routerLink="/find-tutors" routerLinkActive="active" class="nav-link">Find Tutors</a>
-      }
-      @if ((role$ | async) !== 'PARENT') {
-        <a routerLink="/find-students" routerLinkActive="active" class="nav-link">Find Students</a>
-      }
+      @if ((role$ | async) === 'ADMIN') {
+        <a routerLink="/admin" routerLinkActive="active" class="nav-link">Admin Console</a>
+      } @else {
+        @if ((role$ | async) !== 'TUTOR') {
+          <a routerLink="/find-tutors" routerLinkActive="active" class="nav-link">Find Tutors</a>
+        }
+        @if ((role$ | async) !== 'PARENT') {
+          <a routerLink="/find-students" routerLinkActive="active" class="nav-link">Find Students</a>
+        }
 
-      @if (isLoggedIn$ | async) {
-        @if ((role$ | async) === 'PARENT') {
-          <a routerLink="/parent/my-leads"    routerLinkActive="active" class="nav-link">My Leads</a>
-          <a routerLink="/parent/create-lead" routerLinkActive="active" class="nav-link">Post Requirement</a>
-        }
-        @if ((role$ | async) === 'TUTOR') {
-          <a routerLink="/tutor/leads" routerLinkActive="active" class="nav-link">Browse Leads</a>
-          <a routerLink="/tutor/unlocked-leads" routerLinkActive="active" class="nav-link">My Unlocks</a>
-          <a routerLink="/tutor/buy-points" routerLinkActive="active" class="nav-link nav-link-accent">
-            <i class="fa-solid fa-coins"></i> Buy Points
-          </a>
-        }
-        @if ((role$ | async) === 'ADMIN') {
-          <a routerLink="/admin" routerLinkActive="active" class="nav-link">Admin</a>
+        @if (isLoggedIn$ | async) {
+          @if ((role$ | async) === 'PARENT') {
+            <a routerLink="/parent/my-leads"    routerLinkActive="active" class="nav-link">My Leads</a>
+            <a routerLink="/parent/create-lead" routerLinkActive="active" class="nav-link">Post Requirement</a>
+          }
+          @if ((role$ | async) === 'TUTOR') {
+            <a routerLink="/tutor/leads" routerLinkActive="active" class="nav-link">Browse Leads</a>
+            <a routerLink="/tutor/unlocked-leads" routerLinkActive="active" class="nav-link">My Unlocks</a>
+            <a routerLink="/tutor/buy-points" routerLinkActive="active" class="nav-link nav-link-accent">
+              <i class="fa-solid fa-coins"></i> Buy Points
+            </a>
+          }
         }
       }
     </div>
@@ -40,7 +41,9 @@
     <!-- ── Desktop Auth / User ──────────────────────────── -->
     <div class="nav-actions">
       @if (isLoggedIn$ | async) {
-        <a routerLink="/dashboard" class="nav-link hide-mobile">Dashboard</a>
+        @if ((role$ | async) !== 'ADMIN') {
+          <a routerLink="/dashboard" class="nav-link hide-mobile">Dashboard</a>
+        }
         <div class="user-menu">
           <a routerLink="/profile" class="user-avatar" title="Profile">
             <span>{{ getInitials((userName$ | async) || '') }}</span>
@@ -77,45 +80,10 @@
     </div>
 
     <nav class="drawer-links">
-      @if ((role$ | async) !== 'TUTOR') {
-        <a routerLink="/find-tutors" routerLinkActive="active" (click)="closeMobile()">
-          <i class="fa-solid fa-chalkboard-user"></i> Find Tutors
+      @if ((role$ | async) === 'ADMIN') {
+        <a routerLink="/admin" routerLinkActive="active" (click)="closeMobile()">
+          <i class="fa-solid fa-shield-halved"></i> Admin Console
         </a>
-      }
-      @if ((role$ | async) !== 'PARENT') {
-        <a routerLink="/find-students" routerLinkActive="active" (click)="closeMobile()">
-          <i class="fa-solid fa-users"></i> Find Students
-        </a>
-      }
-
-      @if (isLoggedIn$ | async) {
-        <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMobile()">
-          <i class="fa-solid fa-gauge-high"></i> Dashboard
-        </a>
-        @if ((role$ | async) === 'PARENT') {
-          <a routerLink="/parent/my-leads"    routerLinkActive="active" (click)="closeMobile()">
-            <i class="fa-solid fa-list-check"></i> My Leads
-          </a>
-          <a routerLink="/parent/create-lead" routerLinkActive="active" (click)="closeMobile()">
-            <i class="fa-solid fa-plus-circle"></i> Post Requirement
-          </a>
-        }
-        @if ((role$ | async) === 'TUTOR') {
-          <a routerLink="/tutor/leads"      routerLinkActive="active" (click)="closeMobile()">
-            <i class="fa-solid fa-search"></i> Browse Leads
-          </a>
-          <a routerLink="/tutor/unlocked-leads" routerLinkActive="active" (click)="closeMobile()">
-            <i class="fa-solid fa-address-book"></i> My Unlocks
-          </a>
-          <a routerLink="/tutor/buy-points" routerLinkActive="active" (click)="closeMobile()" class="drawer-link-accent">
-            <i class="fa-solid fa-coins"></i> Buy Points
-          </a>
-        }
-        @if ((role$ | async) === 'ADMIN') {
-          <a routerLink="/admin" routerLinkActive="active" (click)="closeMobile()">
-            <i class="fa-solid fa-shield-halved"></i> Admin Panel
-          </a>
-        }
         <a routerLink="/profile" routerLinkActive="active" (click)="closeMobile()">
           <i class="fa-solid fa-user-pen"></i> Profile
         </a>
@@ -124,6 +92,50 @@
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       } @else {
+        @if ((role$ | async) !== 'TUTOR') {
+          <a routerLink="/find-tutors" routerLinkActive="active" (click)="closeMobile()">
+            <i class="fa-solid fa-chalkboard-user"></i> Find Tutors
+          </a>
+        }
+        @if ((role$ | async) !== 'PARENT') {
+          <a routerLink="/find-students" routerLinkActive="active" (click)="closeMobile()">
+            <i class="fa-solid fa-users"></i> Find Students
+          </a>
+        }
+
+        @if (isLoggedIn$ | async) {
+          <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMobile()">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+          </a>
+          @if ((role$ | async) === 'PARENT') {
+            <a routerLink="/parent/my-leads"    routerLinkActive="active" (click)="closeMobile()">
+              <i class="fa-solid fa-list-check"></i> My Leads
+            </a>
+            <a routerLink="/parent/create-lead" routerLinkActive="active" (click)="closeMobile()">
+              <i class="fa-solid fa-plus-circle"></i> Post Requirement
+            </a>
+          }
+          @if ((role$ | async) === 'TUTOR') {
+            <a routerLink="/tutor/leads"      routerLinkActive="active" (click)="closeMobile()">
+              <i class="fa-solid fa-search"></i> Browse Leads
+            </a>
+            <a routerLink="/tutor/unlocked-leads" routerLinkActive="active" (click)="closeMobile()">
+              <i class="fa-solid fa-address-book"></i> My Unlocks
+            </a>
+            <a routerLink="/tutor/buy-points" routerLinkActive="active" (click)="closeMobile()" class="drawer-link-accent">
+              <i class="fa-solid fa-coins"></i> Buy Points
+            </a>
+          }
+          <a routerLink="/profile" routerLinkActive="active" (click)="closeMobile()">
+            <i class="fa-solid fa-user-pen"></i> Profile
+          </a>
+          <hr class="drawer-divider">
+          <button class="drawer-logout" (click)="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        }
+      }
+      @if (!(isLoggedIn$ | async)) {
         <hr class="drawer-divider">
         <a routerLink="/login"    class="drawer-btn-secondary" (click)="closeMobile()">Login</a>
         <a routerLink="/register" class="drawer-btn-primary"   (click)="closeMobile()">Join Free — It's Free</a>

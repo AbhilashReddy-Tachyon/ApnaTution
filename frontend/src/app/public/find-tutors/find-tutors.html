@@ -1,36 +1,13 @@
 <div class="page-wrapper">
     <!-- Sidebar Filters -->
     <aside class="sidebar">
-        <div class="filter-card">
-            <div class="filter-header">
-                <h3>Filter Tutors</h3>
-            </div>
-
-            <div class="filter-group">
-                <label>Location / City</label>
-                <input type="text" placeholder="e.g. Mumbai, Delhi" (input)="onFilterChange('location', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Subject</label>
-                <input type="text" placeholder="e.g. Mathematics, Physics" (input)="onFilterChange('subject', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Class Level</label>
-                <input type="text" placeholder="e.g. Class 10, JEE" (input)="onFilterChange('class', $event)">
-            </div>
-
-            <div class="filter-group">
-                <label>Teaching Mode</label>
-                <select (change)="onFilterChange('mode', $event)">
-                    <option value="">All Modes</option>
-                    <option value="online">Online</option>
-                    <option value="home">Home Tuition</option>
-                    <option value="both">Both</option>
-                </select>
-            </div>
-        </div>
+        <app-filter-sidebar
+            title="Filter Tutors"
+            [fields]="filterFields"
+            [filters]="filters"
+            (filterChange)="onFilterChange($event.key, $event.value)"
+            (clear)="clearFilters()">
+        </app-filter-sidebar>
     </aside>
 
     <!-- Main Content -->
@@ -41,6 +18,23 @@
                 <p class="header-sub">{{ filteredTutors.length }} tutor{{ filteredTutors.length !== 1 ? 's' : '' }} available</p>
             </div>
         </div>
+
+        @if (nearbySearching) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Looking up that pincode...
+            </div>
+        }
+        @if (!nearbySearching && resolvedArea) {
+            <div class="nearby-banner">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                Showing tutors near {{ resolvedArea.name }}, {{ resolvedArea.district }}
+            </div>
+        }
+        @if (!nearbySearching && nearbyError) {
+            <div class="nearby-banner nearby-banner-error">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ nearbyError }}
+            </div>
+        }
 
         @if (loading) {
             <div class="loading-state">
@@ -61,7 +55,7 @@
             @for (tutor of filteredTutors; track tutor._id) {
                 <div class="tutor-card animate-fade-in">
                     <div class="tutor-header">
-                        <div class="avatar">{{ tutor.name?.charAt(0)?.toUpperCase() || 'T' }}</div>
+                        <div class="avatar">{{ tutor.name.charAt(0).toUpperCase() || 'T' }}</div>
                         <div class="tutor-info">
                             <h3>
                                 {{ tutor.name }}
@@ -76,7 +70,7 @@
                     <div class="tutor-meta">
                         @if (tutor.location) {
                             <span class="meta-item">
-                                <i class="fa-solid fa-location-dot"></i> {{ tutor.location }}
+                                <i class="fa-solid fa-location-dot"></i> {{ tutor.location }}{{ tutor.pincode ? ' - ' + tutor.pincode : '' }}
                             </span>
                         }
                         @if (tutor.experience) {
@@ -84,7 +78,7 @@
                                 <i class="fa-solid fa-briefcase"></i> {{ tutor.experience }}
                             </span>
                         }
-                        <span class="meta-item mode-chip" [class]="'mode-' + tutor.mode?.toLowerCase()">
+                        <span class="meta-item mode-chip" [class]="'mode-' + tutor.mode.toLowerCase()">
                             <i class="fa-solid fa-wifi"></i> {{ tutor.mode }}
                         </span>
                         @if (tutor.rating) {
@@ -97,7 +91,7 @@
                         }
                     </div>
 
-                    @if ((tutor.subjects?.length ?? 0) > 0) {
+                    @if (tutor.subjects.length > 0) {
                         <div class="subject-tags">
                             @for (sub of tutor.subjects; track sub) {
                                 <span class="badge">{{ sub }}</span>

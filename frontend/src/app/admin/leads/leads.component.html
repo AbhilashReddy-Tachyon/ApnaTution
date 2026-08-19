@@ -1,0 +1,150 @@
+<div class="admin-page container animate-fade-in">
+    <div class="admin-header">
+        <h2>Leads</h2>
+        <p>Moderate all tuition requirements posted on the platform</p>
+    </div>
+
+    <app-admin-nav></app-admin-nav>
+
+    <div class="filters-bar">
+        <input
+            type="text"
+            class="form-input"
+            placeholder="Search by title, location or pincode..."
+            [(ngModel)]="search"
+            (keyup.enter)="onFilterChange()"
+        />
+        <select class="form-input" [(ngModel)]="status" (change)="onFilterChange()">
+            <option value="">All Statuses</option>
+            <option value="OPEN">Open</option>
+            <option value="CLOSED">Closed</option>
+        </select>
+        <button class="btn btn-outline-sm" (click)="onFilterChange()">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+        </button>
+    </div>
+
+    @if (error) {
+        <div class="alert alert-error">{{ error }}</div>
+    }
+
+    @if (loading) {
+        <div class="loading-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Loading leads...</p>
+        </div>
+    }
+
+    @if (!loading && leads.length === 0) {
+        <div class="empty-state glass-panel">
+            <i class="fa-solid fa-file-circle-xmark"></i>
+            <h3>No leads found</h3>
+        </div>
+    }
+
+    @if (!loading && leads.length > 0) {
+        <div class="table-wrap glass-panel">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Parent</th>
+                        <th>Contact</th>
+                        <th>Subjects</th>
+                        <th>Mode</th>
+                        <th>Status</th>
+                        <th>Verification</th>
+                        <th>Interest</th>
+                        <th>Posted</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (lead of leads; track lead._id) {
+                        <tr>
+                            <td class="title-cell">{{ lead.title }}</td>
+                            <td>{{ lead.parentId?.name || '—' }}</td>
+                            <td class="contact-cell">
+                                @if (lead.parentId?.phone) {
+                                    <div><i class="fa-solid fa-phone"></i> {{ lead.parentId.phone }}</div>
+                                }
+                                @if (lead.parentId?.email) {
+                                    <div><i class="fa-solid fa-envelope"></i> {{ lead.parentId.email }}</div>
+                                }
+                                @if (!lead.parentId?.phone && !lead.parentId?.email) {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>{{ lead.subjects?.join(', ') }}</td>
+                            <td>{{ lead.mode }}</td>
+                            <td>
+                                <span class="badge" [class.badge-success]="lead.status === 'OPEN'" [class.badge-danger]="lead.status === 'CLOSED'">
+                                    {{ lead.status }}
+                                </span>
+                            </td>
+                            <td class="verification-cell">
+                                <span class="badge"
+                                    [class.badge-success]="lead.verificationStatus === 'VERIFIED'"
+                                    [class.badge-danger]="lead.verificationStatus === 'NOT_VERIFIED'"
+                                    [class.badge-pending]="!lead.verificationStatus || lead.verificationStatus === 'PENDING'"
+                                >
+                                    {{ lead.verificationStatus === 'VERIFIED' ? 'Verified' : lead.verificationStatus === 'NOT_VERIFIED' ? 'Not Verified' : 'Pending' }}
+                                </span>
+                                @if (lead.verificationNote) {
+                                    <div class="verification-note" [title]="lead.verificationNote">{{ lead.verificationNote }}</div>
+                                }
+                            </td>
+                            <td>{{ lead.interestCount || 0 }}</td>
+                            <td>{{ lead.createdAt | date:'dd MMM yyyy' }}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-outline-sm" (click)="openVerification(lead)">Verify</button>
+                                @if (lead.status === 'OPEN') {
+                                    <button class="btn btn-outline-sm" [disabled]="busyId === lead._id" (click)="close(lead)">Close</button>
+                                }
+                                <button class="btn btn-danger btn-sm" [disabled]="busyId === lead._id" (click)="remove(lead)">Delete</button>
+                            </td>
+                        </tr>
+                        @if (verifyingId === lead._id) {
+                            <tr class="verify-editor-row">
+                                <td colspan="9">
+                                    <div class="verify-editor">
+                                        <div class="verify-editor-title">
+                                            Record the outcome of your call with <strong>{{ lead.parentId?.name || 'the parent' }}</strong>
+                                        </div>
+                                        <div class="verify-editor-fields">
+                                            <select class="form-input" [(ngModel)]="verifyDraft.status">
+                                                <option value="PENDING">Pending</option>
+                                                <option value="VERIFIED">Verified</option>
+                                                <option value="NOT_VERIFIED">Not Verified</option>
+                                            </select>
+                                            <input
+                                                type="text"
+                                                class="form-input note-input"
+                                                placeholder="Note (e.g. 'Already found a tutor', 'Number unreachable')"
+                                                [(ngModel)]="verifyDraft.note"
+                                            />
+                                            <button class="btn btn-primary btn-sm" [disabled]="savingVerification" (click)="saveVerification(lead)">
+                                                @if (savingVerification) {
+                                                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                                } @else {
+                                                    Save
+                                                }
+                                            </button>
+                                            <button class="btn btn-outline-sm" (click)="cancelVerification()">Cancel</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="btn btn-outline-sm" [disabled]="page <= 1" (click)="goToPage(page - 1)">Previous</button>
+            <span>Page {{ page }} of {{ pages }} ({{ total }} leads)</span>
+            <button class="btn btn-outline-sm" [disabled]="page >= pages" (click)="goToPage(page + 1)">Next</button>
+        </div>
+    }
+</div>

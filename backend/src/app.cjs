@@ -8,27 +8,12 @@ const { logger } = require("./utils/logger.cjs");
 const requestLogger = require("./middleware/requestLogger.cjs");
 const { errorHandler, notFoundHandler } = require("./middleware/errorHandler.cjs");
 
-// Fails fast in production, warns in development.
-validateEnv({ logger });
-// express-mongo-sanitize is incompatible with Express v5 (req.query is read-only).
-// Inline sanitizer: strips keys starting with $ or containing . from body/params.
-function sanitizeMongo(val) {
-    if (Array.isArray(val)) { val.forEach(sanitizeMongo); return; }
-    if (val && typeof val === "object") {
-        for (const key of Object.keys(val)) {
-            if (key.startsWith("$") || key.includes(".")) { delete val[key]; }
-            else sanitizeMongo(val[key]);
-        }
-    }
-}
-const connectDB = require("./config/db.cjs");
-const { seedPlans } = require("./controllers/payment.controller.cjs");
-const { createOrder, verifyPayment, handleRazorpayWebhook } = require("./controllers/payment.controller.cjs");
-const auth = require("./middleware/auth.middleware.cjs");
-const role = require("./middleware/role.middleware.cjs");
-const { ROUTES } = require("./utils/startupCheck.cjs");
-const { buildDashboardHtml } = require("./utils/devDashboard.cjs");
-
+// Build the app and mount CORS before validating env vars. validateEnv()
+// throws in production on a missing/invalid var — if that happened before
+// Express/cors ever mounted (as it used to), the whole serverless function
+// crashed pre-boot and every response (including the error itself) came back
+// with no CORS headers at all. The browser then reports a misleading
+// "blocked by CORS policy" error on every route, hiding the real cause.
 const app = express();
 
 // Behind Vercel/any proxy, req.ip is the proxy's address unless we trust the
@@ -39,13 +24,7 @@ app.disable("x-powered-by");
 // First in the chain so every subsequent log line carries the request id.
 app.use(requestLogger);
 
-// Dev dashboard at / — registered BEFORE helmet so its CSP doesn't block inline styles
-if (!config.isProduction) {
-    app.get("/", (_req, res) => {
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.send(buildDashboardHtml(config.port));
-    });
-}
+app.use(helmet());
 
 // Allowed origins
 const allowedOrigins = [
@@ -66,8 +45,6 @@ const allowedOrigins = [
 // Matches Vercel preview URLs for this project.
 const vercelPreviewPattern = /^https:\/\/(?:apna-tution-frontend|apnatutors|apnatutors-frontend)(-[a-z0-9-]+)?\.vercel\.app$/;
 
-app.use(helmet());
-
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, Postman, curl)
@@ -87,6 +64,47 @@ const corsOptions = {
 // Express v5/path-to-regexp does not accept "*" string routes; use a RegExp to match all paths.
 app.options(/.*/, cors(corsOptions));
 app.use(cors(corsOptions));
+
+// Fails fast in production, warns in development. Now that cors() is already
+// mounted above, a thrown error here still reaches the client with proper
+// CORS headers instead of surfacing as an opaque browser-side CORS failure.
+try {
+    validateEnv({ logger });
+} catch (err) {
+    logger.error({ err }, "environment validation failed — serving 503 for all routes");
+    app.use((_req, res) => {
+        res.status(503).json({ message: "Service misconfigured", error: err.message });
+    });
+    module.exports = app;
+    return;
+}
+
+// express-mongo-sanitize is incompatible with Express v5 (req.query is read-only).
+// Inline sanitizer: strips keys starting with $ or containing . from body/params.
+function sanitizeMongo(val) {
+    if (Array.isArray(val)) { val.forEach(sanitizeMongo); return; }
+    if (val && typeof val === "object") {
+        for (const key of Object.keys(val)) {
+            if (key.startsWith("$") || key.includes(".")) { delete val[key]; }
+            else sanitizeMongo(val[key]);
+        }
+    }
+}
+const connectDB = require("./config/db.cjs");
+const { seedPlans } = require("./controllers/payment.controller.cjs");
+const { createOrder, verifyPayment, handleRazorpayWebhook } = require("./controllers/payment.controller.cjs");
+const auth = require("./middleware/auth.middleware.cjs");
+const role = require("./middleware/role.middleware.cjs");
+const { ROUTES } = require("./utils/startupCheck.cjs");
+const { buildDashboardHtml } = require("./utils/devDashboard.cjs");
+
+// Dev dashboard at / — registered BEFORE helmet so its CSP doesn't block inline styles
+if (!config.isProduction) {
+    app.get("/", (_req, res) => {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.send(buildDashboardHtml(config.port));
+    });
+}
 
 // Probes mount before the DB middleware so they answer during an outage —
 // that is precisely when you need them.

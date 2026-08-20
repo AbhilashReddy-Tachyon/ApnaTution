@@ -1,7 +1,10 @@
 // One-off CLI script to create (or promote) an admin account.
 // Usage: node src/scripts/createAdmin.cjs <email> <password> [name]
-// Requires MONGO_URI to be set (via .env or the environment).
-require("dotenv").config();
+//
+// The connection string comes from config/env.cjs (loaded transitively via
+// config/db.cjs), which picks .env or .env.test based on NODE_ENV. This script
+// deliberately does NOT call dotenv itself: doing so loaded .env even under
+// NODE_ENV=test, putting the production credentials into a test process.
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const connectDB = require("../config/db.cjs");

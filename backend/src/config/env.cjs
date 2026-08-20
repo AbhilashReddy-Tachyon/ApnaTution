@@ -9,7 +9,18 @@
  * Nothing here logs a secret value, only whether it is present.
  */
 
-require("dotenv").config();
+const path = require("path");
+
+const isTest = process.env.NODE_ENV === "test";
+
+/*
+ * A test run loads ONLY `.env.test`. Not `.env` as well, and not as a fallback:
+ * if the production connection string is never read into the process, no bug
+ * downstream can aim a test at production. The cost is that `.env.test` must
+ * repeat anything the tests need.
+ */
+const envFile = isTest ? ".env.test" : ".env";
+require("dotenv").config({ path: path.resolve(__dirname, "..", "..", envFile) });
 
 const isProduction = process.env.NODE_ENV === "production";
 const isServerless = !!process.env.VERCEL;
@@ -43,7 +54,30 @@ function feature(name, varNames) {
 }
 
 // ── Required in every environment ────────────────────────────────────────────
-const MONGO_URI = required("MONGO_URI", { description: "MongoDB connection string" });
+/*
+ * Two separate variables rather than one reused name, so a test config cannot
+ * be mistaken for a production one at a glance, and so a machine set up for
+ * tests need not hold the production string at all.
+ */
+/*
+ * Under test this is read but never connected to: it exists only so the guard
+ * can prove the test target is not the production cluster. That matters in CI,
+ * where MONGO_URI is often present in the environment as a repo secret even
+ * though `.env` is not loaded. Reading it as optional (not required) keeps a
+ * developer machine with no production credentials working.
+ */
+const MONGO_URI = isTest
+    ? optional("MONGO_URI")
+    : required("MONGO_URI", { description: "MongoDB connection string" });
+
+const MONGO_URI_TEST = isTest
+    ? required("MONGO_URI_TEST", {
+          description: "test-cluster connection string, required when NODE_ENV=test",
+      })
+    : optional("MONGO_URI_TEST");
+
+/** The one connection string this process is allowed to use. */
+const activeMongoUri = isTest ? MONGO_URI_TEST : MONGO_URI;
 
 // A short JWT secret is brute-forceable; 32 chars is the practical floor for HS256.
 const JWT_SECRET = required("JWT_SECRET", {
@@ -88,11 +122,15 @@ if (isProduction && paymentsEnabled && !webhookEnabled) {
 const config = Object.freeze({
     env: process.env.NODE_ENV || "development",
     isProduction,
+    isTest,
     isServerless,
     port: Number(process.env.PORT) || 5000,
     logLevel: optional("LOG_LEVEL", isProduction ? "info" : "debug"),
 
-    mongoUri: MONGO_URI,
+    /** The connection string to use. Read this, never process.env directly. */
+    mongoUri: activeMongoUri,
+    /** Only for the guard's "is this the production cluster?" check. */
+    productionMongoUri: MONGO_URI,
     jwtSecret: JWT_SECRET,
     jwtExpiresIn: optional("JWT_EXPIRES_IN", "7d"),
 

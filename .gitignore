@@ -2,9 +2,18 @@
 node_modules/
 **/node_modules/
 
-# Environment variables
+# Environment variables.
+# The `.env.*` patterns matter: `.env` alone does NOT cover `.env.test`,
+# `.env.local` etc., so without them a filled-in test config would be
+# committed. The *.example templates are deliberately re-included.
 .env
 **/.env
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+!.env.*.example
+!**/.env.*.example
 
 # IDEs
 .vscode/

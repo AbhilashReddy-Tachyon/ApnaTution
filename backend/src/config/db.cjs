@@ -1,6 +1,8 @@
 const { logger } = require("../utils/logger.cjs");
 const mongoose = require("mongoose");
 const dns = require("dns");
+const { config } = require("./env.cjs");
+const { assertMongoTarget, describeMongoUri } = require("./mongoTarget.cjs");
 
 // On local dev (Windows/Node 22) the system DNS can refuse SRV lookups for Atlas.
 // Force public DNS only outside Vercel/production so we don't touch their infra DNS.
@@ -23,14 +25,30 @@ const connectDB = async () => {
         return;
     }
 
-    if (!process.env.MONGO_URI) {
-        throw new Error("MONGO_URI environment variable is not defined.");
+    const uri = config.mongoUri;
+
+    if (!uri) {
+        throw new Error(
+            config.isTest
+                ? "MONGO_URI_TEST is not defined. NODE_ENV=test reads backend/.env.test only — " +
+                  "copy .env.test.example and point it at your test cluster."
+                : "MONGO_URI environment variable is not defined."
+        );
     }
 
-    try {
-        logger.info("Connecting to MongoDB...");
+    // Fail closed before opening a socket: a test run must not be able to
+    // reach production, and production must not be serving test data.
+    assertMongoTarget({
+        uri,
+        nodeEnv: config.env,
+        productionUri: config.productionMongoUri,
+    });
 
-        await mongoose.connect(process.env.MONGO_URI, {
+    try {
+        // Logged so the target is never a guess. describeMongoUri drops credentials.
+        logger.info({ target: describeMongoUri(uri), env: config.env }, "Connecting to MongoDB...");
+
+        await mongoose.connect(uri, {
             serverSelectionTimeoutMS: 10000,
             socketTimeoutMS: 45000,
         });

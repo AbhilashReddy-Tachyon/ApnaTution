@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { PublicService } from '../../core/services/public.service';
@@ -8,13 +8,14 @@ import { API_CONFIG } from '../../core/api.config';
 import { PublicTutor, ResolvedArea } from '../../core/models';
 import { ChangeDetectorRef } from '@angular/core';
 import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
+import { TutorCardComponent } from '../../shared/tutor-card/tutor-card.component';
 
 const PINCODE_RE = /^\d{6}$/;
 
 @Component({
   selector: 'app-find-tutors',
   standalone: true,
-  imports: [CommonModule, RouterLink, FilterSidebarComponent],
+  imports: [CommonModule, FilterSidebarComponent, TutorCardComponent],
   templateUrl: './find-tutors.html',
   styleUrl: './find-tutors.css',
 })

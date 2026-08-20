@@ -50,62 +50,13 @@
                 <p>Try adjusting your filters or check back later.</p>
             </div>
         }
-@if (!loading && filteredTutors.length > 0) {
-        <div class="tutor-grid">
-            @for (tutor of filteredTutors; track tutor._id) {
-                <div class="tutor-card animate-fade-in">
-                    <div class="tutor-header">
-                        <div class="avatar">{{ tutor.name.charAt(0).toUpperCase() || 'T' }}</div>
-                        <div class="tutor-info">
-                            <h3>
-                                {{ tutor.name }}
-                                @if (tutor.isVerified) {
-                                    <i class="fa-solid fa-circle-check verified-icon" title="Verified Tutor"></i>
-                                }
-                            </h3>
-                            <p class="tagline">{{ tutor.tagline || 'Passionate educator ready to help.' }}</p>
-                        </div>
-                    </div>
 
-                    <div class="tutor-meta">
-                        @if (tutor.location) {
-                            <span class="meta-item">
-                                <i class="fa-solid fa-location-dot"></i> {{ tutor.location }}{{ tutor.pincode ? ' - ' + tutor.pincode : '' }}
-                            </span>
-                        }
-                        @if (tutor.experience) {
-                            <span class="meta-item">
-                                <i class="fa-solid fa-briefcase"></i> {{ tutor.experience }}
-                            </span>
-                        }
-                        <span class="meta-item mode-chip" [class]="'mode-' + tutor.mode.toLowerCase()">
-                            <i class="fa-solid fa-wifi"></i> {{ tutor.mode }}
-                        </span>
-                        @if (tutor.rating) {
-                            <span class="meta-item rating-item">
-                                <i class="fa-solid fa-star"></i> {{ tutor.rating | number:'1.1-1' }}
-                                @if (tutor.reviewsCount) {
-                                    <span>({{ tutor.reviewsCount }})</span>
-                                }
-                            </span>
-                        }
-                    </div>
-
-                    @if (tutor.subjects.length > 0) {
-                        <div class="subject-tags">
-                            @for (sub of tutor.subjects; track sub) {
-                                <span class="badge">{{ sub }}</span>
-                            }
-                        </div>
-                    }
-
-                    <div class="tutor-footer">
-                        <span class="rate">{{ tutor.hourlyRate || 'Negotiable' }}</span>
-                        <a routerLink="/register" class="btn-contact">Post Requirement</a>
-                    </div>
-                </div>
-            }
-        </div>
-    }
+        @if (!loading && filteredTutors.length > 0) {
+            <div class="tutor-grid">
+                @for (tutor of filteredTutors; track tutor._id) {
+                    <app-tutor-card class="animate-fade-in" [tutor]="tutor" />
+                }
+            </div>
+        }
     </main>
 </div>

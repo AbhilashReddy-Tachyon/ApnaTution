@@ -1,3 +1,6 @@
+/* The card itself lives in shared/tutor-card so this page and the landing
+   page can't drift apart. Only the page chrome and the grid belong here. */
+
 .page-wrapper {
     display: flex;
     gap: 1.5rem;
@@ -32,88 +35,24 @@
 .loading-state i, .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
 .empty-state h3 { color: var(--text-secondary); }
 
-/* Tutor Grid */
+/* Tutor Grid — always three across on desktop */
 .tutor-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
 }
 
-.tutor-card {
-    background: white;
-    border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition: all 0.25s;
+@media (max-width: 1200px) {
+    .tutor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.tutor-card:hover {
-    border-color: rgba(37, 99, 235, 0.3);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-}
-
-.tutor-header { display: flex; gap: 1rem; align-items: flex-start; }
-
-.avatar {
-    width: 52px; height: 52px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; font-weight: 800; color: white; flex-shrink: 0;
-}
-
-.tutor-info { flex: 1; min-width: 0; }
-.tutor-info h3 {
-    font-size: 1rem; margin: 0 0 0.25rem 0; color: var(--text-main);
-    display: flex; align-items: center; gap: 0.4rem;
-}
-.verified-icon { color: #2563eb; font-size: 0.9rem; }
-.tagline { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.4; }
-
-.tutor-meta {
-    display: flex; flex-wrap: wrap; gap: 0.4rem 1rem;
-}
-.meta-item {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.83rem; color: var(--text-secondary);
-}
-.meta-item i { font-size: 0.78rem; color: var(--text-muted); }
-
-.rating-item { color: #92400e; }
-.rating-item i { color: #f59e0b; }
-
-.mode-chip { font-weight: 600; }
-.mode-online  { color: #1d4ed8 !important; }
-.mode-home    { color: #be185d !important; }
-.mode-both    { color: #6d28d9 !important; }
-
-.subject-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.badge {
-    background: rgba(37, 99, 235, 0.07); color: var(--primary);
-    border: 1px solid rgba(37, 99, 235, 0.15);
-    padding: 0.2rem 0.65rem; border-radius: 99px; font-size: 0.78rem; font-weight: 500;
-}
-
-.tutor-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: 0.75rem; border-top: 1px solid var(--border-light);
-    margin-top: auto;
-}
-.rate { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
-
-.btn-contact {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white; padding: 0.5rem 1.1rem; border-radius: 8px;
-    font-weight: 600; font-size: 0.85rem; text-decoration: none;
-    transition: all 0.2s; cursor: pointer; border: none;
-}
-.btn-contact:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
 
 @media (max-width: 900px) {
     .page-wrapper  { flex-direction: column; padding: 1rem; height: auto; overflow: visible; }
     .sidebar       { width: 100%; }
     .main-content  { height: auto; overflow-y: visible; }
-    .tutor-grid    { grid-template-columns: 1fr; }
+    .tutor-grid    { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+    .tutor-grid { grid-template-columns: minmax(0, 1fr); }
 }

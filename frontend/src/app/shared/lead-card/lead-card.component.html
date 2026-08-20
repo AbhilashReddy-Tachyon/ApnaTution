@@ -1,0 +1,71 @@
+<!-- Card Top Bar -->
+<div class="card-top-bar">
+    <span class="mode-badge" [class]="'mode-' + lead.mode.toLowerCase()">{{ modeLabel }}</span>
+    @if (isFresh) {
+        <span class="fresh-badge">New</span>
+    }
+    <span class="posted-date" [title]="lead.createdAt ? (lead.createdAt | date:'d MMM y') : ''">
+        <i class="fa-regular fa-clock"></i> {{ postedAgo }}
+    </span>
+</div>
+
+<!-- Lead Title -->
+<h3 class="lead-title" [title]="lead.title">{{ lead.title }}</h3>
+
+<!-- Facts, two per row -->
+<div class="lead-facts">
+    <span class="fact" [title]="lead.classLevel">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span class="fact-val">{{ lead.classLevel }}</span>
+    </span>
+    <span class="fact"
+          [title]="(lead.location || 'Location not specified') + (lead.pincode ? ' - ' + lead.pincode : '')">
+        <i class="fa-solid fa-location-dot"></i>
+        <span class="fact-val">{{ lead.location || 'Not specified' }}</span>
+    </span>
+    <span class="fact fact-budget"
+          [title]="lead.budgetRange ? 'Budget: ' + lead.budgetRange : 'Budget negotiable'">
+        <!-- Wallet, not a rupee sign: budgetRange usually already starts with
+             "₹" and the pair read as "₹ ₹5,000". -->
+        <i class="fa-solid fa-wallet"></i>
+        <span class="fact-val">{{ lead.budgetRange || 'Negotiable' }}</span>
+    </span>
+    <span class="fact" [title]="lead.pincode ? 'Pincode ' + lead.pincode : 'Pincode not given'">
+        <i class="fa-solid fa-map-pin"></i>
+        <span class="fact-val">{{ lead.pincode || '—' }}</span>
+    </span>
+</div>
+
+<!-- Subjects, capped so every card stays the same height -->
+<div class="subject-tags">
+    @if (lead.subjects.length) {
+        @for (sub of visibleSubjects; track sub) {
+            <span class="badge">{{ sub }}</span>
+        }
+        @if (hiddenSubjects.length) {
+            <span class="badge badge-more" [title]="hiddenSubjects.join(', ')">
+                +{{ hiddenSubjects.length }}
+            </span>
+        }
+    } @else {
+        <span class="badge badge-empty">No subjects listed</span>
+    }
+</div>
+
+<!-- Locked contact info -->
+<div class="locked-contact">
+    <i class="fa-solid fa-lock lock-icon"></i>
+    <span>Parent contact hidden</span>
+    @if (lead.subjects.length) {
+        <span class="subject-count">
+            {{ lead.subjects.length }} subject{{ lead.subjects.length === 1 ? '' : 's' }}
+        </span>
+    }
+</div>
+
+<!-- Action -->
+<div class="card-actions">
+    <a [routerLink]="ctaLink" class="btn-unlock">
+        <i class="fa-solid fa-lock-open"></i> {{ ctaLabel }}
+    </a>
+</div>

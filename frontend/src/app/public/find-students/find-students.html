@@ -86,62 +86,7 @@
         @if (!loading && filteredLeads.length > 0) {
             <div class="leads-grid">
                 @for (lead of filteredLeads; track lead._id) {
-                    <div class="lead-card animate-fade-in">
-
-                        <!-- Card Top Bar -->
-                        <div class="card-top-bar">
-                            <span class="mode-badge" [class]="'mode-' + lead.mode.toLowerCase()">
-                                {{ lead.mode }}
-                            </span>
-                            <span class="posted-date">
-                                {{ lead.createdAt ? (lead.createdAt | date:'dd MMM yyyy') : 'Recent' }}
-                            </span>
-                        </div>
-
-                        <!-- Lead Title -->
-                        <h3 class="lead-title">{{ lead.title }}</h3>
-
-                        <!-- Specs Grid -->
-                        <div class="specs-grid">
-                            <div class="spec-item">
-                                <span class="spec-label">Class</span>
-                                <span class="spec-value">{{ lead.classLevel }}</span>
-                            </div>
-                            <div class="spec-item">
-                                <span class="spec-label">Location</span>
-                                <span class="spec-value">
-                                    <i class="fa-solid fa-location-dot loc-icon"></i>
-                                    {{ lead.location || 'Not specified' }}{{ lead.pincode ? ' - ' + lead.pincode : '' }}
-                                </span>
-                            </div>
-                            <div class="spec-item">
-                                <span class="spec-label">Budget</span>
-                                <span class="spec-value budget-val">{{ lead.budgetRange || 'Negotiable' }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Subjects -->
-                        @if (lead.subjects.length > 0) {
-                            <div class="subject-tags">
-                                @for (sub of lead.subjects; track sub) {
-                                    <span class="badge">{{ sub }}</span>
-                                }
-                            </div>
-                        }
-
-                        <!-- Locked contact info -->
-                        <div class="locked-contact">
-                            <i class="fa-solid fa-lock lock-icon"></i>
-                            <span>Parent contact details are hidden</span>
-                        </div>
-
-                        <!-- Action -->
-                        <div class="card-actions">
-                            <a routerLink="/register" class="btn-unlock">
-                                <i class="fa-solid fa-lock-open"></i> Register to Contact
-                            </a>
-                        </div>
-                    </div>
+                    <app-lead-card class="animate-fade-in" [lead]="lead" />
                 }
             </div>
         }

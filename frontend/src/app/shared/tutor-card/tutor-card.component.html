@@ -1,0 +1,85 @@
+<!-- Identity + rating -->
+<div class="tutor-header">
+    <div class="avatar">{{ tutor.name.charAt(0).toUpperCase() || 'T' }}</div>
+    <div class="tutor-info">
+        <h3 [title]="tutor.name">
+            <span class="tutor-name">{{ tutor.name }}</span>
+            @if (tutor.isVerified) {
+                <i class="fa-solid fa-circle-check verified-icon" title="Verified tutor"></i>
+            }
+        </h3>
+        <p class="tagline" [title]="tutor.tagline || ''">
+            {{ tutor.tagline || 'Passionate educator ready to help.' }}
+        </p>
+    </div>
+    @if (tutor.reviewsCount) {
+        <span class="rating-pill" [title]="tutor.reviewsCount + ' reviews'">
+            <i class="fa-solid fa-star"></i>
+            <b>{{ tutor.rating | number:'1.1-1' }}</b>
+            <small>({{ tutor.reviewsCount }})</small>
+        </span>
+    } @else {
+        <span class="rating-pill rating-pill-new" title="No reviews yet">New</span>
+    }
+</div>
+
+<!-- Facts, two per row -->
+<div class="tutor-facts">
+    <span class="fact" [title]="tutor.location ? tutor.location + (tutor.pincode ? ' - ' + tutor.pincode : '') : 'Location not set'">
+        <i class="fa-solid fa-location-dot"></i>
+        <span class="fact-val">{{ tutor.location || 'Not specified' }}</span>
+    </span>
+    <span class="fact" [title]="tutor.experience || 'Experience not set'">
+        <i class="fa-solid fa-briefcase"></i>
+        <span class="fact-val">{{ tutor.experience || 'Not specified' }}</span>
+    </span>
+    <span class="fact">
+        <i class="fa-solid fa-wifi"></i>
+        <span class="fact-val mode-chip" [class]="'mode-' + tutor.mode.toLowerCase()">{{ modeLabel }}</span>
+    </span>
+    <span class="fact" [title]="'Joined ' + (tutor.createdAt | date:'d MMM y')">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span class="fact-val">Since {{ tutor.createdAt | date:'MMM y' }}</span>
+    </span>
+</div>
+
+<!-- Subjects, capped so every card stays the same height -->
+<div class="subject-tags">
+    @if (tutor.subjects.length) {
+        @for (sub of visibleSubjects; track sub) {
+            <span class="badge">{{ sub }}</span>
+        }
+        @if (hiddenSubjects.length) {
+            <span class="badge badge-more" [title]="hiddenSubjects.join(', ')">
+                +{{ hiddenSubjects.length }}
+            </span>
+        }
+    } @else {
+        <span class="badge badge-empty">No subjects listed</span>
+    }
+</div>
+
+<!-- Trust signals -->
+<div class="trust-row">
+    <span class="trust-chip" [class.trust-off]="!tutor.phoneVerified"
+          [title]="tutor.phoneVerified ? 'Phone verified' : 'Phone not verified'">
+        <i class="fa-solid" [class.fa-check]="tutor.phoneVerified" [class.fa-xmark]="!tutor.phoneVerified"></i>
+        Phone
+    </span>
+    <span class="trust-chip" [class.trust-off]="!tutor.emailVerified"
+          [title]="tutor.emailVerified ? 'Email verified' : 'Email not verified'">
+        <i class="fa-solid" [class.fa-check]="tutor.emailVerified" [class.fa-xmark]="!tutor.emailVerified"></i>
+        Email
+    </span>
+    @if (tutor.subjects.length) {
+        <span class="subject-count">
+            {{ tutor.subjects.length }} subject{{ tutor.subjects.length === 1 ? '' : 's' }}
+        </span>
+    }
+</div>
+
+<div class="tutor-footer">
+    <span class="rate">{{ tutor.hourlyRate || 'Negotiable'
+        }}@if (hasNumericRate) {<small>/hr</small>}</span>
+    <a [routerLink]="ctaLink" class="btn-contact">{{ ctaLabel }}</a>
+</div>

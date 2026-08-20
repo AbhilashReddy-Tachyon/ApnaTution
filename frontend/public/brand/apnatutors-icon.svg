@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="ApnaTutors">
+  <title>ApnaTutors</title>
+  <defs>
+    <linearGradient id="apnatutorsIconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C5CFA"/>
+      <stop offset="100%" stop-color="#5B32C9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="200" height="200" rx="46" fill="url(#apnatutorsIconGradient)"/>
+
+  <g transform="translate(22.6,11.6) scale(0.95)">
+    <path d="M80,78 L46,158" stroke="#FBF8F3" stroke-width="17" fill="none" stroke-linecap="round"/>
+    <path d="M80,78 L114,158" stroke="#FBF8F3" stroke-width="17" fill="none" stroke-linecap="round"/>
+    <path d="M58,128 L102,128" stroke="#F5B324" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <polygon points="80,20 152,42 80,58 8,42" fill="#FBF8F3"/>
+    <path d="M54,50 L106,50 L104,72 Q80,82 56,72 Z" fill="#FBF8F3"/>
+    <path d="M80,40 L138,48 Q150,54 148,70" stroke="#F5B324" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="148" cy="78" r="7" fill="#F5B324"/>
+    <circle cx="80" cy="40" r="6" fill="#F5B324"/>
+  </g>
+</svg>

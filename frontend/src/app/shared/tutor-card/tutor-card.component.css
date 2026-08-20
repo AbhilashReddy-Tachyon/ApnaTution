@@ -1,0 +1,141 @@
+/* The host *is* the card, so it drops straight into a grid or flex row
+   without an extra wrapper element in between. */
+:host {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    /* The nowrap subject row gives this card a wide min-content; without this
+       a `1fr` grid track would grow to fit it and overflow the viewport. */
+    min-width: 0;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+:host(:hover) {
+    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
+}
+
+/* ── Identity ─────────────────────────────────────────────── */
+.tutor-header { display: flex; gap: 0.6rem; align-items: flex-start; }
+
+.avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95rem; font-weight: 800; color: white; flex-shrink: 0;
+}
+
+.tutor-info { flex: 1; min-width: 0; }
+.tutor-info h3 {
+    font-size: 0.9rem; margin: 0 0 0.1rem 0; color: var(--text-main);
+    display: flex; align-items: center; gap: 0.3rem; min-width: 0;
+}
+.tutor-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.verified-icon { color: #2563eb; font-size: 0.8rem; flex-shrink: 0; }
+
+/* Two lines max, so a long tagline can't stretch the card */
+.tagline {
+    font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.35;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.rating-pill {
+    display: inline-flex; align-items: center; gap: 0.2rem;
+    flex-shrink: 0; align-self: flex-start;
+    background: #fffbeb; border: 1px solid #fde68a;
+    color: #92400e; border-radius: 99px;
+    padding: 0.18rem 0.5rem; font-size: 0.74rem; line-height: 1;
+}
+.rating-pill i { color: #f59e0b; font-size: 0.66rem; }
+.rating-pill b { font-weight: 700; }
+.rating-pill small { font-size: 0.66rem; opacity: 0.75; }
+.rating-pill-new {
+    background: var(--bg-subtle); border-color: var(--border-light);
+    color: var(--text-muted); font-weight: 600; padding: 0.22rem 0.55rem;
+}
+
+/* ── Facts grid — two per row ─────────────────────────────── */
+.tutor-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem 0.65rem;
+}
+.fact {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.75rem; color: var(--text-secondary); min-width: 0;
+}
+.fact i { font-size: 0.7rem; color: var(--text-light); flex-shrink: 0; width: 0.85rem; text-align: center; }
+.fact-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mode-chip { font-weight: 600; }
+.mode-online  { color: #1d4ed8; }
+.mode-home    { color: #be185d; }
+.mode-both    { color: #6d28d9; }
+
+/* ── Subjects ─────────────────────────────────────────────── */
+.subject-tags { display: flex; flex-wrap: nowrap; gap: 0.3rem; overflow: hidden; min-width: 0; }
+.badge {
+    background: rgba(37, 99, 235, 0.07); color: var(--primary);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    padding: 0.15rem 0.5rem; border-radius: 99px;
+    font-size: 0.7rem; font-weight: 500; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 8.5rem;
+}
+.badge-more {
+    background: var(--bg-subtle); color: var(--text-muted);
+    border-color: var(--border-light); cursor: help; flex-shrink: 0;
+}
+.badge-empty {
+    background: transparent; color: var(--text-light);
+    border-style: dashed; font-style: italic;
+}
+
+/* ── Trust signals ────────────────────────────────────────── */
+.trust-row { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
+.trust-chip {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    font-size: 0.68rem; font-weight: 600; line-height: 1;
+    padding: 0.2rem 0.45rem; border-radius: 5px;
+    background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;
+}
+.trust-chip i { font-size: 0.6rem; }
+.trust-off {
+    background: var(--bg-subtle); color: var(--text-light);
+    border-color: var(--border-light);
+}
+.subject-count {
+    margin-left: auto; font-size: 0.68rem; color: var(--text-light);
+    white-space: nowrap;
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+.tutor-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.6rem; border-top: 1px solid var(--border-light);
+    margin-top: auto;
+}
+.rate {
+    font-size: 0.85rem; font-weight: 700; color: var(--text-main);
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rate small { font-size: 0.68rem; font-weight: 500; color: var(--text-muted); }
+
+.btn-contact {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white; padding: 0.4rem 0.75rem; border-radius: 7px;
+    font-weight: 600; font-size: 0.74rem; text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: none;
+    white-space: nowrap; flex-shrink: 0;
+}
+.btn-contact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    text-decoration: none;
+}

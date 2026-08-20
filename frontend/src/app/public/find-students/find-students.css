@@ -1,3 +1,6 @@
+/* The card itself lives in shared/lead-card so this page and the landing
+   page can't drift apart. Only the page chrome and the grid belong here. */
+
 .page-wrapper {
     display: flex;
     gap: 1.5rem;
@@ -90,88 +93,30 @@
 }
 .btn-clear:hover { border-color: var(--primary); color: var(--primary); }
 
-/* Leads Grid */
+/* Leads Grid — always three across on desktop */
 .leads-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
 }
-
-.lead-card {
-    background: white; border: 1px solid var(--border-light);
-    border-radius: 14px; padding: 1.5rem;
-    display: flex; flex-direction: column; gap: 1rem;
-    transition: all 0.25s;
-}
-.lead-card:hover {
-    border-color: rgba(37, 99, 235, 0.3);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-}
-
-/* Card Top Bar */
-.card-top-bar {
-    display: flex; justify-content: space-between; align-items: center;
-}
-.mode-badge {
-    font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.7rem;
-    border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.mode-online  { background: #dbeafe; color: #1d4ed8; }
-.mode-home    { background: #fce7f3; color: #be185d; }
-.mode-both    { background: #ede9fe; color: #6d28d9; }
-.posted-date  { font-size: 0.78rem; color: var(--text-muted); }
-
-.lead-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0; line-height: 1.35; }
-
-/* Specs */
-.specs-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 0.6rem 1rem;
-}
-.spec-item { display: flex; flex-direction: column; gap: 0.15rem; }
-.spec-label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
-.spec-value { font-size: 0.88rem; color: var(--text-main); font-weight: 500; }
-.loc-icon { color: var(--primary); font-size: 0.75rem; margin-right: 0.2rem; }
-.budget-val { color: #065f46; font-weight: 600; }
-
-/* Subject Tags */
-.subject-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.badge {
-    background: rgba(37, 99, 235, 0.07); color: var(--primary);
-    border: 1px solid rgba(37, 99, 235, 0.15);
-    padding: 0.2rem 0.65rem; border-radius: 99px; font-size: 0.78rem; font-weight: 500;
-}
-
-/* Locked Contact */
-.locked-contact {
-    display: flex; align-items: center; gap: 0.5rem;
-    background: #f8fafc; border: 1px dashed var(--border-light);
-    border-radius: 8px; padding: 0.7rem 1rem;
-    font-size: 0.83rem; color: var(--text-muted);
-}
-.lock-icon { color: var(--text-muted); font-size: 0.8rem; }
-
-/* Actions */
-.card-actions { margin-top: auto; }
-.btn-unlock {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    width: 100%; padding: 0.6rem 1rem; border-radius: 9px; font-size: 0.88rem;
-    font-weight: 600; text-decoration: none; cursor: pointer;
-    background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;
-    transition: all 0.2s;
-}
-.btn-unlock:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .animate-fade-in { animation: fadeIn 0.3s ease both; }
+
+@media (max-width: 1200px) {
+    .leads-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media (max-width: 900px) {
     .page-wrapper   { flex-direction: column; padding: 1rem; height: auto; overflow: visible; }
     .sidebar        { width: 100%; position: static; }
     .main-content   { height: auto; overflow-y: visible; }
-    .leads-grid     { grid-template-columns: 1fr; }
+    .leads-grid     { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .how-it-works   { gap: 0.75rem; padding: 0.75rem 1rem; }
     .step-arrow     { display: none; }
     .header-section { flex-direction: column; gap: 1rem; }
+}
+
+@media (max-width: 620px) {
+    .leads-grid { grid-template-columns: minmax(0, 1fr); }
 }

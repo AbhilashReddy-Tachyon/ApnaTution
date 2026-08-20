@@ -295,33 +295,8 @@
         </div>
         <div class="leads-grid">
           @for (lead of leads; track lead._id) {
-            <div class="lead-preview-card animate-fade-in">
-              <div class="lpc-top">
-                <span class="badge" [class]="'badge-' + (lead.mode === 'ONLINE' ? 'primary' : 'success')">
-                  {{ lead.mode }}
-                </span>
-                <span class="lpc-date">{{ lead.createdAt | date:'dd MMM' }}</span>
-              </div>
-              <h4 class="lpc-title">{{ lead.title }}</h4>
-              <div class="lpc-specs">
-                <span><i class="fa-solid fa-graduation-cap"></i> {{ lead.classLevel }}</span>
-                @if (lead.location) {
-                  <span><i class="fa-solid fa-location-dot"></i> {{ lead.location }}</span>
-                }
-              </div>
-              <div class="lpc-subjects">
-                @for (sub of (lead.subjects || []).slice(0, 3); track sub) {
-                  <span class="badge badge-gray">{{ sub }}</span>
-                }
-              </div>
-              <div class="lpc-footer">
-                <span class="lpc-budget">
-                  @if (lead.budgetRange) { <i class="fa-solid fa-lock"></i> Budget hidden }
-                  @else { Flexible budget }
-                </span>
-                <a routerLink="/tutor/leads" class="btn btn-outline btn-sm">Unlock</a>
-              </div>
-            </div>
+            <app-lead-card class="animate-fade-in" [lead]="lead"
+                           [ctaLink]="leadCtaLink" [ctaLabel]="leadCtaLabel" />
           }
         </div>
         <div class="text-center mt-4">
@@ -346,25 +321,8 @@
         </div>
         <div class="tutors-grid">
           @for (tutor of tutors; track tutor._id) {
-            <div class="tutor-card animate-fade-in">
-              <div class="tc-avatar">{{ tutor.name.charAt(0) }}</div>
-              <div class="tc-info">
-                <h4>{{ tutor.name }}</h4>
-                <p>{{ tutor.tagline || 'Expert ' + (tutor.subjects[0] || 'Tutor') }}</p>
-                <div class="tc-rating">
-                  @for (i of [1,2,3,4,5]; track i) {
-                    <i class="fa-solid fa-star"></i>
-                  }
-                  <span>{{ tutor.rating || '5.0' }}</span>
-                </div>
-              </div>
-              <div class="tc-subjects">
-                @for (sub of (tutor.subjects || []).slice(0, 3); track sub) {
-                  <span class="badge badge-primary">{{ sub }}</span>
-                }
-              </div>
-              <a routerLink="/find-tutors" class="btn btn-secondary btn-sm btn-block mt-2">View Profile</a>
-            </div>
+            <app-tutor-card class="animate-fade-in" [tutor]="tutor"
+                            ctaLink="/find-tutors" ctaLabel="View Profile" />
           }
         </div>
         <div class="text-center mt-4">
@@ -456,114 +414,62 @@
         }
       </div>
 
-      <!-- Slider wrapper -->
-      <div class="tslider"
-           (mouseenter)="pauseAutoPlay()"
-           (mouseleave)="resumeAutoPlay()">
-
-        <!-- Overflow viewport -->
-        <div class="tslider-viewport">
-          <div class="tslider-track"
-               [style.transform]="'translateX(-' + activeTestimonial * 100 + '%)'">
-            @for (t of testimonials; track t.name; let i = $index) {
-              <div class="tslide">
-                <div class="tslide-card" [class.tslide-card-active]="i === activeTestimonial">
-
-                  <!-- Role pill -->
-                  <span class="tslide-role-pill"
-                        [class.pill-tutor]="t.forRole === 'TUTOR'"
-                        [class.pill-parent]="t.forRole === 'PARENT'">
-                    @if (t.forRole === 'TUTOR') {
-                      <i class="fa-solid fa-chalkboard-user"></i> Tutor
-                    } @else {
-                      <i class="fa-solid fa-users"></i> Parent
-                    }
-                  </span>
-
-                  <!-- Decorative quote -->
-                  <div class="tslide-quote-icon">
-                    <i class="fa-solid fa-quote-left"></i>
-                  </div>
-
-                  <!-- Stars -->
-                  <div class="tslide-stars">
-                    @for (s of [1,2,3,4,5]; track s) {
-                      <i class="fa-solid fa-star"></i>
-                    }
-                    <span class="tslide-rating">5.0</span>
-                  </div>
-
-                  <!-- Quote text -->
-                  <p class="tslide-text">{{ t.text }}</p>
-
-                  <!-- Author -->
-                  <div class="tslide-divider"></div>
-                  <div class="tslide-author">
-                    <div class="tslide-avatar"
-                         [class.avatar-tutor]="t.forRole === 'TUTOR'">
-                      {{ t.avatar }}
-                    </div>
-                    <div class="tslide-author-info">
-                      <div class="tslide-name">{{ t.name }}</div>
-                      <div class="tslide-location">{{ t.role }}</div>
-                    </div>
-                    <div class="tslide-verified">
-                      <i class="fa-solid fa-circle-check"></i> Verified
-                    </div>
-                  </div>
-
-                  <!-- Progress bar -->
-                  <div class="tslide-progress">
-                    <div class="tslide-progress-bar"
-                         [style.width.%]="i === activeTestimonial ? progressWidth : 0">
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            }
+      <!-- Rating summary -->
+      <div class="rev-summary">
+        <div class="rev-score">
+          <span class="rev-score-num">{{ avgRating }}</span>
+          <div class="rev-score-meta">
+            <div class="rev-score-stars">
+              @for (s of [1,2,3,4,5]; track s) {
+                <i class="fa-solid fa-star"></i>
+              }
+            </div>
+            <span class="rev-score-label">{{ reviewCount }} verified reviews</span>
           </div>
         </div>
-
-        <!-- Prev / Next arrows -->
-        <button class="tslider-arrow tslider-prev" (click)="prevTestimonial()" aria-label="Previous">
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <button class="tslider-arrow tslider-next" (click)="nextTestimonial()" aria-label="Next">
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
+        <div class="rev-facts">
+          <span class="rev-fact"><i class="fa-solid fa-shield-halved"></i> Every review verified</span>
+          <span class="rev-fact"><i class="fa-solid fa-location-dot"></i> Across Hyderabad</span>
+        </div>
       </div>
 
-      <!-- Author strip + dots -->
-      <div class="tslider-footer">
-        <div class="tauthor-strip">
-          @for (t of testimonials; track t.name; let i = $index) {
-            <button class="tauthor-thumb"
-                    [class.tauthor-active]="i === activeTestimonial"
-                    (click)="goToTestimonial(i)">
-              <div class="tauthor-av"
-                   [class.av-tutor]="t.forRole === 'TUTOR'">
+      <!-- Review wall — every quote visible, first one featured -->
+      <div class="rev-wall">
+        @for (t of testimonials; track t.name; let i = $index) {
+          <figure class="rev-card" [class.rev-card-featured]="i === 0">
+            <i class="fa-solid fa-quote-right rev-mark" aria-hidden="true"></i>
+
+            <div class="rev-top">
+              <div class="rev-stars">
+                @for (s of [1,2,3,4,5]; track s) {
+                  <i class="fa-solid fa-star"></i>
+                }
+              </div>
+              <span class="rev-role"
+                    [class.rev-role-tutor]="t.forRole === 'TUTOR'">
+                @if (t.forRole === 'TUTOR') {
+                  <i class="fa-solid fa-chalkboard-user"></i> Tutor
+                } @else {
+                  <i class="fa-solid fa-users"></i> Parent
+                }
+              </span>
+            </div>
+
+            <blockquote class="rev-quote">{{ t.text }}</blockquote>
+
+            <figcaption class="rev-author">
+              <span class="rev-avatar" [class.rev-avatar-tutor]="t.forRole === 'TUTOR'">
                 {{ t.avatar }}
-              </div>
-              <div class="tauthor-meta">
-                <span class="tauthor-name">{{ t.name }}</span>
-                <span class="tauthor-loc">{{ t.role }}</span>
-              </div>
-            </button>
-          }
-        </div>
-
-        <div class="tslider-dots">
-          @for (t of testimonials; track t.name; let i = $index) {
-            <button class="tdot"
-                    [class.tdot-active]="i === activeTestimonial"
-                    (click)="goToTestimonial(i)"
-                    [attr.aria-label]="'Go to review ' + (i + 1)">
-            </button>
-          }
-        </div>
+              </span>
+              <span class="rev-author-info">
+                <span class="rev-name">{{ t.name }}</span>
+                <span class="rev-loc">{{ t.role }}</span>
+              </span>
+              <i class="fa-solid fa-circle-check rev-check" aria-hidden="true"></i>
+            </figcaption>
+          </figure>
+        }
       </div>
-
     </div>
   </section>
 
@@ -628,8 +534,9 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="brand-text" style="font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:0.75rem;">
-            Apna<span style="color:#818cf8;">Tutors</span>
+          <div class="footer-logo">
+            <img src="brand/apnatutors-icon.svg" alt="" width="34" height="34">
+            <span class="footer-wordmark">Apna<span>Tutors</span></span>
           </div>
           <p>Hyderabad's smartest marketplace connecting parents with qualified tutors across the city.</p>
           <p class="footer-address"><i class="fa-solid fa-location-dot"></i> Plot 12, Road No. 36, Jubilee Hills, Hyderabad, Telangana 500033</p>

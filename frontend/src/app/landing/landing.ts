@@ -1,31 +1,25 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
 import { PublicService } from '../core/services/public.service';
 import { PublicLead, PublicStats, PublicTutor } from '../core/models';
+import { TutorCardComponent } from '../shared/tutor-card/tutor-card.component';
+import { LeadCardComponent } from '../shared/lead-card/lead-card.component';
 import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, TutorCardComponent, LeadCardComponent],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
-export class Landing implements OnInit, OnDestroy {
+export class Landing implements OnInit {
   userRole: string | null = null;
   userName: string = '';
   activeTab: 'PARENT' | 'TUTOR' = 'PARENT';
-
-  // Testimonial slider
-  activeTestimonial = 0;
-  progressWidth = 0;
-  private readonly AUTOPLAY_MS = 5000;
-  private readonly TICK_MS = 50;
-  private autoPlayTimer: ReturnType<typeof setInterval> | null = null;
-  private progressTimer: ReturnType<typeof setInterval> | null = null;
 
   stats: PublicStats = { tutors: 0, students: 0, activeLeads: 0 };
   leads:  PublicLead[] = [];
@@ -135,59 +129,9 @@ export class Landing implements OnInit, OnDestroy {
       this.userName = user?.name ?? '';
       if (this.userRole === 'TUTOR') this.activeTab = 'TUTOR';
       else this.activeTab = 'PARENT';
-      this.activeTestimonial = 0;
     });
     this.fetchPublicData();
-    this.startAutoPlay();
   }
-
-  ngOnDestroy() {
-    this.stopAutoPlay();
-  }
-
-  // ── Testimonial slider ──────────────────────────────────────
-
-  private startAutoPlay() {
-    this.progressWidth = 0;
-    this.progressTimer = setInterval(() => {
-      this.progressWidth = Math.min(
-        this.progressWidth + (this.TICK_MS / this.AUTOPLAY_MS) * 100,
-        100
-      );
-      this.cdr.detectChanges();
-    }, this.TICK_MS);
-
-    this.autoPlayTimer = setInterval(() => {
-      this.stepTestimonial(1);
-    }, this.AUTOPLAY_MS);
-  }
-
-  private stopAutoPlay() {
-    if (this.autoPlayTimer) { clearInterval(this.autoPlayTimer); this.autoPlayTimer = null; }
-    if (this.progressTimer) { clearInterval(this.progressTimer); this.progressTimer = null; }
-  }
-
-  private restartAutoPlay() {
-    this.stopAutoPlay();
-    this.startAutoPlay();
-  }
-
-  private stepTestimonial(dir: 1 | -1) {
-    const len = this.testimonials.length;
-    this.activeTestimonial = (this.activeTestimonial + dir + len) % len;
-    this.restartAutoPlay();
-  }
-
-  nextTestimonial() { this.stepTestimonial(1); }
-  prevTestimonial() { this.stepTestimonial(-1); }
-
-  goToTestimonial(i: number) {
-    this.activeTestimonial = i;
-    this.restartAutoPlay();
-  }
-
-  pauseAutoPlay()  { this.stopAutoPlay(); }
-  resumeAutoPlay() { this.startAutoPlay(); }
 
   fetchPublicData() {
     forkJoin({
@@ -209,6 +153,18 @@ export class Landing implements OnInit, OnDestroy {
     return this.userRole ? '/dashboard' : '/login';
   }
 
+  /**
+   * A signed-in tutor can go straight to the lead list and spend a point;
+   * everyone else has to register first.
+   */
+  get leadCtaLink(): string {
+    return this.userRole === 'TUTOR' ? '/tutor/leads' : '/register';
+  }
+
+  get leadCtaLabel(): string {
+    return this.userRole === 'TUTOR' ? 'Unlock Lead' : 'Register to Contact';
+  }
+
   get featureCards() {
     if (this.userRole === 'PARENT') return this.parentFeatures;
     if (this.userRole === 'TUTOR')  return this.tutorFeatures;
@@ -227,6 +183,18 @@ export class Landing implements OnInit, OnDestroy {
       );
     }
     return this.allTestimonials;
+  }
+
+  /** Average of the ratings actually shown, e.g. "5.0". */
+  get avgRating(): string {
+    const list = this.testimonials;
+    if (!list.length) return '0.0';
+    const sum = list.reduce((total, t) => total + t.rating, 0);
+    return (sum / list.length).toFixed(1);
+  }
+
+  get reviewCount(): number {
+    return this.testimonials.length;
   }
 
   setActiveTab(tab: 'PARENT' | 'TUTOR') {

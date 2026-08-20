@@ -1,0 +1,32 @@
+<!-- viewBox width is set from the measured text extents (wordmark ends at
+     x=507 in Poppins) plus slack, so the lockup does not clip when it falls
+     back to Arial in contexts that can't load a webfont. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 130"
+     font-family="'Poppins','Helvetica Neue',Arial,sans-serif" role="img"
+     aria-label="ApnaTutors — find the perfect tutor near you">
+  <title>ApnaTutors — find the perfect tutor near you</title>
+  <defs>
+    <linearGradient id="apnatutorsLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C5CFA"/>
+      <stop offset="100%" stop-color="#5B32C9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="130" height="130" rx="30" fill="url(#apnatutorsLogoGradient)"/>
+
+  <g transform="translate(14.69,7.54) scale(0.6175)">
+    <path d="M80,78 L46,158" stroke="#FBF8F3" stroke-width="17" fill="none" stroke-linecap="round"/>
+    <path d="M80,78 L114,158" stroke="#FBF8F3" stroke-width="17" fill="none" stroke-linecap="round"/>
+    <path d="M58,128 L102,128" stroke="#F5B324" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <polygon points="80,20 152,42 80,58 8,42" fill="#FBF8F3"/>
+    <path d="M54,50 L106,50 L104,72 Q80,82 56,72 Z" fill="#FBF8F3"/>
+    <path d="M80,40 L138,48 Q150,54 148,70" stroke="#F5B324" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="148" cy="78" r="7" fill="#F5B324"/>
+    <circle cx="80" cy="40" r="6" fill="#F5B324"/>
+  </g>
+
+  <text x="160" y="73" font-size="58" font-weight="800" letter-spacing="-1">
+    <tspan fill="#1A1A2E">Apna</tspan><tspan fill="#6C4CE0">Tutors</tspan>
+  </text>
+  <text x="162" y="105" font-size="16" font-weight="500" letter-spacing="1.5" fill="#9A9284">FIND THE PERFECT TUTOR NEAR YOU</text>
+</svg>

@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PublicService } from '../../core/services/public.service';
 import { API_CONFIG } from '../../core/api.config';
 import { FilterSidebarComponent, FilterFieldConfig } from '../../shared/filter-sidebar/filter-sidebar.component';
+import { LeadCardComponent } from '../../shared/lead-card/lead-card.component';
 import { PublicLead, ResolvedArea } from '../../core/models';
 
 const PINCODE_RE = /^\d{6}$/;
@@ -13,7 +14,7 @@ const PINCODE_RE = /^\d{6}$/;
 @Component({
     selector: 'app-find-students',
     standalone: true,
-    imports: [CommonModule, RouterLink, FilterSidebarComponent],
+    imports: [CommonModule, RouterLink, FilterSidebarComponent, LeadCardComponent],
     templateUrl: './find-students.html',
     styleUrl: './find-students.css',
 })

@@ -1,0 +1,117 @@
+/* The host *is* the card, so it drops straight into a grid or flex row
+   without an extra wrapper element in between. */
+:host {
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    /* The nowrap subject row gives this card a wide min-content; without this
+       a `1fr` grid track would grow to fit it and overflow the viewport. */
+    min-width: 0;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+:host(:hover) {
+    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+    transform: translateY(-2px);
+}
+
+/* ── Card Top Bar ─────────────────────────────────────────── */
+.card-top-bar { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
+
+.mode-badge {
+    font-size: 0.66rem; font-weight: 700; padding: 0.18rem 0.5rem;
+    border-radius: 99px; letter-spacing: 0.3px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.mode-online  { background: #dbeafe; color: #1d4ed8; }
+.mode-home    { background: #fce7f3; color: #be185d; }
+.mode-both    { background: #ede9fe; color: #6d28d9; }
+
+.fresh-badge {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.4px;
+    text-transform: uppercase; padding: 0.18rem 0.42rem; border-radius: 5px;
+    background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;
+    flex-shrink: 0;
+}
+
+.posted-date {
+    margin-left: auto; font-size: 0.7rem; color: var(--text-light);
+    white-space: nowrap; flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 0.25rem;
+}
+.posted-date i { font-size: 0.64rem; }
+
+/* Two lines max, so a long title can't stretch the card */
+.lead-title {
+    font-size: 0.92rem; font-weight: 700; color: var(--text-main);
+    margin: 0; line-height: 1.35;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── Facts grid — two per row ─────────────────────────────── */
+.lead-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem 0.65rem;
+}
+.fact {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.75rem; color: var(--text-secondary); min-width: 0;
+}
+.fact i { font-size: 0.7rem; color: var(--text-light); flex-shrink: 0; width: 0.85rem; text-align: center; }
+.fact-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fact-budget { color: #065f46; font-weight: 600; }
+.fact-budget i { color: #059669; }
+
+/* ── Subjects ─────────────────────────────────────────────── */
+.subject-tags { display: flex; flex-wrap: nowrap; gap: 0.3rem; overflow: hidden; min-width: 0; }
+.badge {
+    background: rgba(37, 99, 235, 0.07); color: var(--primary);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    padding: 0.15rem 0.5rem; border-radius: 99px;
+    font-size: 0.7rem; font-weight: 500; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 8.5rem;
+}
+.badge-more {
+    background: var(--bg-subtle); color: var(--text-muted);
+    border-color: var(--border-light); cursor: help; flex-shrink: 0;
+}
+.badge-empty {
+    background: transparent; color: var(--text-light);
+    border-style: dashed; font-style: italic;
+}
+
+/* ── Locked Contact ───────────────────────────────────────── */
+.locked-contact {
+    display: flex; align-items: center; gap: 0.4rem; min-width: 0;
+    background: #f8fafc; border: 1px dashed var(--border-light);
+    border-radius: 7px; padding: 0.4rem 0.6rem;
+    font-size: 0.72rem; color: var(--text-muted);
+}
+.lock-icon { color: var(--text-light); font-size: 0.7rem; flex-shrink: 0; }
+.subject-count {
+    margin-left: auto; font-size: 0.68rem; color: var(--text-light);
+    white-space: nowrap; flex-shrink: 0;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.card-actions { margin-top: auto; }
+.btn-unlock {
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    width: 100%; padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.78rem;
+    font-weight: 600; text-decoration: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-unlock i { font-size: 0.72rem; }
+.btn-unlock:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    text-decoration: none;
+}

@@ -399,73 +399,16 @@
   /* vertically centred by the stretch on steps-row */
 }
 
-/* ── LEADS PREVIEW ──────────────────────────────────────────── */
-.leads-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-.lead-preview-card {
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  transition: all 0.25s;
-}
-.lead-preview-card:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 6px 24px rgba(79, 70, 229, 0.1);
-  transform: translateY(-2px);
-}
-.lpc-top { display: flex; align-items: center; justify-content: space-between; }
-.lpc-date { font-size: 0.78rem; color: #9ca3af; }
-.lpc-title { font-size: 1rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.4; }
-.lpc-specs { display: flex; gap: 1rem; font-size: 0.82rem; color: #6b7280; flex-wrap: wrap; }
-.lpc-specs i { margin-right: 0.3rem; color: #9ca3af; }
-.lpc-subjects { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-.lpc-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; }
-.lpc-budget { font-size: 0.8rem; color: #9ca3af; }
-.lpc-budget i { margin-right: 0.3rem; }
-
-/* ── TUTORS GRID ────────────────────────────────────────────── */
+/* ── LEAD & TUTOR GRIDS ─────────────────────────────────────── */
+/* The cards themselves are shared/lead-card and shared/tutor-card, so this
+   page and the browse pages stay identical. Only the grids live here, and
+   they use the same three-across rhythm as /find-students and /find-tutors. */
+.leads-grid,
 .tutors-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
 }
-.tutor-card {
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
-  border-radius: var(--radius-lg);
-  padding: 2rem 1.5rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  transition: all 0.25s;
-}
-.tutor-card:hover { border-color: #4f46e5; box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1); transform: translateY(-3px); }
-.tc-avatar {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-.tc-info h4 { margin: 0; font-size: 1.05rem; }
-.tc-info p  { margin: 0; font-size: 0.85rem; color: #6b7280; }
-.tc-rating  { color: #fbbf24; font-size: 0.85rem; margin-top: 0.25rem; }
-.tc-rating span { color: #374151; font-weight: 700; margin-left: 0.3rem; }
-.tc-subjects { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
 
 /* ── CITIES GRID ────────────────────────────────────────────── */
 .cities-grid {
@@ -548,269 +491,252 @@
 .feature-card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
 .feature-card p  { font-size: 0.875rem; color: #6b7280; margin: 0; line-height: 1.65; }
 
-/* ── TESTIMONIALS SLIDER ────────────────────────────────────── */
-.testimonials-section { background: #f8fafc; }
-
-/* Outer wrapper — positions arrows absolutely */
-.tslider {
-  position: relative;
-  max-width: 580px;
-  margin: 0 auto 1.5rem;
+/* ── TESTIMONIALS — REVIEW WALL ─────────────────────────────── */
+.testimonials-section {
+  background:
+    radial-gradient(720px 400px at 50% -8%, rgba(79, 70, 229, 0.08), transparent 70%),
+    #f8fafc;
 }
 
-/* Clips the sliding track */
-.tslider-viewport {
-  overflow: hidden;
-  border-radius: var(--radius-xl);
-}
-
-/* Horizontal flex of all slides, animated */
-.tslider-track {
+/* ── Rating summary bar ─────────────────────────────────────── */
+.rev-summary {
   display: flex;
-  transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Each slide takes exactly the full width of the viewport */
-.tslide {
-  flex: 0 0 100%;
-  width: 100%;
-  padding: 0 2px; /* prevents edge clipping */
-}
-
-/* The card itself */
-.tslide-card {
-  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: 880px;
+  margin: -1rem auto 1.5rem;
+  padding: 0.8rem 1.15rem;
   background: #fff;
-  border: 1.5px solid #e5e7eb;
-  border-radius: var(--radius-xl);
-  padding: 1.75rem 2rem 1.25rem;
-  overflow: hidden;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-.tslide-card-active {
-  border-color: #c7d2fe;
-  box-shadow: 0 16px 48px rgba(79, 70, 229, 0.1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px -6px rgba(17, 24, 39, 0.08);
 }
 
-/* Role pill */
-.tslide-role-pill {
+.rev-score { display: flex; align-items: center; gap: 0.65rem; }
+.rev-score-num {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1.2px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.rev-score-meta { display: flex; flex-direction: column; gap: 0.2rem; }
+.rev-score-stars { display: flex; gap: 0.1rem; color: #fbbf24; font-size: 0.75rem; }
+.rev-score-label { font-size: 0.74rem; color: #6b7280; }
+
+.rev-facts { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.rev-fact {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 0.3rem 0.75rem;
-  border-radius: var(--radius-full);
-  position: absolute;
-  top: 1.5rem;
-  right: 1.75rem;
-  text-transform: uppercase;
-}
-.pill-parent { background: #eef2ff; color: #4f46e5; }
-.pill-tutor  { background: #d1fae5; color: #059669; }
-
-/* Decorative quote icon */
-.tslide-quote-icon {
-  font-size: 2.25rem;
-  line-height: 1;
-  color: #e0e7ff;
-  margin-bottom: 0.6rem;
-  font-family: Georgia, serif;
-}
-
-/* Stars row */
-.tslide-stars {
-  display: flex;
-  align-items: center;
-  gap: 0.15rem;
-  margin-bottom: 0.75rem;
-  color: #fbbf24;
-  font-size: 0.85rem;
-}
-.tslide-rating {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #374151;
-  margin-left: 0.35rem;
-}
-
-/* Quote text */
-.tslide-text {
-  font-size: 0.92rem;
-  line-height: 1.7;
-  color: #1f2937;
-  font-style: italic;
-  margin: 0 0 1.25rem;
-  font-family: 'Poppins', sans-serif;
-}
-
-/* Divider */
-.tslide-divider {
-  height: 1px;
-  background: #f3f4f6;
-  margin-bottom: 1rem;
-}
-
-/* Author row */
-.tslide-author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-.tslide-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #818cf8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-  border: 2px solid #eef2ff;
-}
-.avatar-tutor {
-  background: linear-gradient(135deg, #059669, #34d399);
-  border-color: #d1fae5;
-}
-.tslide-author-info { flex: 1; }
-.tslide-name     { font-weight: 700; font-size: 0.875rem; color: #111827; }
-.tslide-location { font-size: 0.75rem; color: #9ca3af; margin-top: 0.1rem; }
-.tslide-verified {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.72rem;
   font-weight: 600;
-  color: #059669;
-  background: #d1fae5;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-full);
-}
-
-/* Progress bar */
-.tslide-progress {
-  height: 3px;
-  background: #f3f4f6;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-.tslide-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #818cf8);
-  border-radius: var(--radius-full);
-  transition: width 0.05s linear;
-}
-
-/* Prev / Next arrows */
-.tslider-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
   color: #374151;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  z-index: 2;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-full);
 }
-.tslider-arrow:hover {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  color: #fff;
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
-}
-.tslider-prev { left: -22px; }
-.tslider-next { right: -22px; }
+.rev-fact i { color: #4f46e5; font-size: 0.85em; }
 
-/* Footer: author strip + dots */
-.tslider-footer {
-  max-width: 580px;
+/* ── The wall ───────────────────────────────────────────────── */
+/* Featured card spans the full width, the remaining three fill the row
+   beneath it — with four reviews the wall always balances. */
+.rev-wall {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  max-width: 880px;
   margin: 0 auto;
+}
+
+.rev-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  margin: 0;
+  padding: 1.15rem 1.2rem 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 0.3s, border-color 0.3s;
+}
+.rev-card:hover {
+  transform: translateY(-3px);
+  border-color: #c7d2fe;
+  box-shadow: 0 14px 30px -16px rgba(79, 70, 229, 0.32);
 }
 
-/* Clickable author thumbnails */
-.tauthor-strip {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: center;
+/* The first review is the focal point of the wall. Kept light on
+   purpose — the CTA panel just below is the page's one dark moment. */
+.rev-card-featured {
+  grid-column: 1 / -1;
+  padding: 1.5rem 1.75rem 1.35rem;
+  border-color: #c7d2fe;
+  background:
+    radial-gradient(420px 240px at 92% -20%, rgba(124, 58, 237, 0.12), transparent 70%),
+    linear-gradient(120deg, #f5f3ff 0%, #eef2ff 55%, #fff 100%);
+  box-shadow: 0 10px 28px -16px rgba(79, 70, 229, 0.28);
 }
-.tauthor-thumb {
+.rev-card-featured:hover {
+  border-color: #a5b4fc;
+  box-shadow: 0 16px 36px -18px rgba(79, 70, 229, 0.38);
+}
+
+/* Oversized quote glyph, only on the featured card — on the smaller
+   cards it sat behind the role pill and just muddied the text. */
+.rev-mark { display: none; }
+.rev-card-featured .rev-mark {
+  display: block;
+  position: absolute;
+  line-height: 1;
+  pointer-events: none;
+}
+.rev-card-featured .rev-mark {
+  font-size: 5.5rem;
+  top: 0.9rem;
+  right: 1.4rem;
+  color: #4f46e5;
+  opacity: 0.09;
+}
+
+/* Top row: stars + role pill */
+.rev-top {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.8rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+}
+.rev-stars { display: flex; gap: 0.1rem; color: #fbbf24; font-size: 0.72rem; }
+
+.rev-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 0.24rem 0.6rem;
   border-radius: var(--radius-full);
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.2s;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #ddd6fe;
+  flex-shrink: 0;
+}
+.rev-role-tutor { background: #d1fae5; color: #059669; border-color: #a7f3d0; }
+.rev-card-featured .rev-role { background: #fff; }
+
+/* Quote — Inter, because Poppins ships no italic or 400 weight here
+   and the browser would otherwise synthesise both. */
+.rev-quote {
   font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.012em;
+  color: #1f2937;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+  position: relative;
+  flex: 1;
 }
-.tauthor-thumb:hover {
-  border-color: #a5b4fc;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+.rev-card-featured .rev-quote {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.025em;
+  color: #111827;
+  max-width: 46ch;
+  margin-bottom: 1.15rem;
 }
-.tauthor-active {
-  border-color: #4f46e5 !important;
-  background: #eef2ff !important;
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15) !important;
+
+/* Author */
+.rev-author {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #f3f4f6;
+  position: relative;
 }
-.tauthor-av {
-  width: 26px;
-  height: 26px;
+.rev-card-featured .rev-author { border-top-color: #ddd6fe; }
+
+.rev-avatar {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #4f46e5, #818cf8);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
+  font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px -4px rgba(79, 70, 229, 0.8);
 }
-.av-tutor { background: linear-gradient(135deg, #059669, #34d399); }
-.tauthor-meta { display: flex; flex-direction: column; text-align: left; }
-.tauthor-name { font-size: 0.78rem; font-weight: 700; color: #374151; line-height: 1.2; }
-.tauthor-loc  { font-size: 0.68rem; color: #9ca3af; }
+.rev-avatar-tutor {
+  background: linear-gradient(135deg, #059669, #34d399);
+  box-shadow: 0 4px 10px -4px rgba(5, 150, 105, 0.8);
+}
+.rev-card-featured .rev-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 0.78rem;
+  border: 2px solid #fff;
+}
 
-/* Navigation dots */
-.tslider-dots {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+.rev-author-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.rev-name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #111827;
+  letter-spacing: -0.01em;
 }
-.tdot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  background: #d1d5db;
-  cursor: pointer;
-  transition: all 0.25s;
-  padding: 0;
+.rev-loc { font-size: 0.72rem; color: #6b7280; margin-top: 0.05rem; }
+.rev-card-featured .rev-name { font-size: 0.86rem; }
+
+.rev-check { font-size: 0.9rem; color: #10b981; flex-shrink: 0; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .rev-card-featured .rev-quote { max-width: none; }
 }
-.tdot-active {
-  background: #4f46e5;
-  width: 24px;
-  border-radius: 4px;
+
+@media (max-width: 768px) {
+  .rev-wall { grid-template-columns: 1fr; }
+  .rev-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.9rem 1.1rem;
+  }
+  .rev-card-featured { padding: 1.35rem 1.25rem 1.15rem; }
+  .rev-card-featured .rev-quote { font-size: 1rem; }
+  .rev-card-featured .rev-mark { font-size: 4rem; top: 0.8rem; right: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .rev-top { flex-wrap: wrap; gap: 0.6rem; }
+  .rev-facts { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rev-card, .rev-card:hover { transition: none; transform: none; }
 }
 
 /* ── CTA ────────────────────────────────────────────────────── */
@@ -873,6 +799,22 @@
   gap: 3rem;
   margin-bottom: 3rem;
 }
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.footer-logo img { width: 34px; height: 34px; display: block; flex-shrink: 0; }
+.footer-wordmark {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+.footer-wordmark span { color: #a48cff; }
+
 .footer-brand p { font-size: 0.9rem; color: #64748b; line-height: 1.7; margin-bottom: 1.25rem; }
 .footer-address {
   display: flex; align-items: flex-start; gap: 0.5rem;
@@ -924,6 +866,8 @@
 @media (max-width: 1024px) {
   .footer-grid   { grid-template-columns: 1fr 1fr; gap: 2rem; }
   .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .leads-grid,
+  .tutors-grid   { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
@@ -948,14 +892,11 @@
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .cta-box { padding: 3rem 1.5rem; }
   .cta-box h2 { font-size: 1.75rem; }
-  /* Slider responsive */
-  .tslider { padding: 0 2rem; }
-  .tslider-arrow { display: none; }
-  .tslide-card { padding: 2rem 1.5rem 1.25rem; }
-  .tslide-text { font-size: 1rem; }
-  .tslide-quote-icon { font-size: 2.75rem; }
-  .tauthor-strip { gap: 0.5rem; }
-  .tauthor-thumb { padding: 0.5rem 0.75rem; }
+}
+
+@media (max-width: 620px) {
+  .leads-grid,
+  .tutors-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 480px) {
@@ -965,9 +906,4 @@
   .trust-bar-inner { gap: 0.4rem; }
   .hstat-sep { display: none; }
   .hero-stats { gap: 1.25rem; }
-  /* Slider on mobile */
-  .tslide-card { padding: 1.75rem 1.25rem 1.25rem; }
-  .tslide-verified { display: none; }
-  .tauthor-strip { flex-direction: column; align-items: stretch; width: 100%; }
-  .tauthor-thumb { justify-content: center; }
 }

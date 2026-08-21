@@ -118,11 +118,28 @@ function assertMongoTarget({ uri, nodeEnv, productionUri }) {
         }
     }
 
-    if (nodeEnv === "production" && looksLikeTestDatabase(target.dbName)) {
-        throw new Error(
-            `Refusing to start: NODE_ENV=production but the database is "${target.dbName}", ` +
-                "which reads as a test database. Production would be serving test data."
-        );
+    if (nodeEnv === "production") {
+        /*
+         * An unnamed database is not a harmless default in production: the
+         * driver falls back to one literally called "test", so real users get
+         * written into it — and the test-name check below, reading an empty
+         * string, would find nothing to reject.
+         */
+        if (!target.dbName) {
+            throw new Error(
+                "Refusing to start: NODE_ENV=production but the MongoDB URI has no database " +
+                    'name, so the driver would use a database called "test" and production ' +
+                    "would write real data into it. Name it explicitly, e.g. " +
+                    "mongodb+srv://…/apnatutors"
+            );
+        }
+
+        if (looksLikeTestDatabase(target.dbName)) {
+            throw new Error(
+                `Refusing to start: NODE_ENV=production but the database is "${target.dbName}", ` +
+                    "which reads as a test database. Production would be serving test data."
+            );
+        }
     }
 
     return target;

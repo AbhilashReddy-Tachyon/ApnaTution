@@ -130,6 +130,17 @@ describe("assertMongoTarget in production mode", () => {
             /reads as a test database/
         );
     });
+
+    test("refuses a URI with no database name", () => {
+        assert.throws(
+            () =>
+                assertMongoTarget({
+                    uri: "mongodb+srv://u:p@prod-cluster.abcde.mongodb.net/",
+                    nodeEnv: "production",
+                }),
+            /no database name/
+        );
+    });
 });
 
 describe("assertMongoTarget in development mode", () => {

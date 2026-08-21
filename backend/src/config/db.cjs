@@ -59,13 +59,31 @@ const connectDB = async () => {
     } catch (error) {
         isConnected = false;
 
-        // The remediation for a failed connection is almost always one of two
-        // Atlas settings, so name it rather than making the reader guess.
+        /*
+         * These failures read almost identically in the logs and have nothing
+         * in common in their fixes, so the hint has to separate them. Ordered
+         * most-specific first: an SRV lookup that is refused also carries
+         * ECONNREFUSED, and blaming the Atlas allowlist for it sends the reader
+         * to the console when the problem is this machine's resolver.
+         */
         let hint;
-        if (error.code === "ECONNREFUSED" || error.message.includes("querySrv")) {
-            hint = "DNS lookup for Atlas failed — allow 0.0.0.0/0 under Network Access, or check your VPN.";
-        } else if (/IP|whitelist|selection timeout/.test(error.message)) {
-            hint = "Add this server's IP to Atlas → Network Access.";
+        if (error.syscall === "querySrv" || error.message.includes("querySrv")) {
+            hint =
+                "This machine's DNS refuses SRV lookups, so mongodb+srv:// cannot resolve — the " +
+                "cluster itself is probably fine. Point the host at public DNS (8.8.8.8, 1.1.1.1), " +
+                "or use the non-SRV connection string (Atlas → Connect → Drivers → older driver).";
+        } else if (/bad auth|authentication failed|not authorized/i.test(error.message)) {
+            hint =
+                "Credentials were rejected — check the database user, that the password is " +
+                "percent-encoded if it contains @ : / ? # or %, and authSource=admin.";
+        } else if (/whitelist|IP address|selection timeout|could not connect to any servers/i.test(error.message)) {
+            hint =
+                "Reached DNS but no server accepted us — add this host's IP under Atlas → " +
+                "Network Access (0.0.0.0/0 for serverless platforms with no fixed egress IP).";
+        } else if (error.code === "ECONNREFUSED" || error.code === "ETIMEDOUT") {
+            hint =
+                "Nothing accepted a connection on the MongoDB port — check that a local mongod " +
+                "is running, or that a firewall or VPN is not blocking 27017.";
         }
 
         logger.error({ err: error, ...(hint && { hint }) }, "MongoDB connection failed");
